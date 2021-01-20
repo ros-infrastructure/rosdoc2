@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from .doxygen_builder import DoxygenBuilder
+from .sphinx_builder import SphinxBuilder
 
 __all__ = [
     'create_builder_by_name',
@@ -23,6 +24,7 @@ def create_builder_by_name(builder_name, *, builder_dict, output_dir, build_cont
     # TODO(wjwwood): make this an extension point
     builders = {
         'doxygen': DoxygenBuilder,
+        'sphinx': SphinxBuilder,
     }
     builder_class = builders.get(builder_name, None)
     if builder_class is None:

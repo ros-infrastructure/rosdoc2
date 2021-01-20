@@ -163,3 +163,6 @@ class SphinxBuilder(Builder):
                     f"exist, using default Sphinx configuration.",
                     file=sys.stdout)
                 self.sphinx_sourcedir = os.path.join(self.output_dir, 'default_sphinx_project')
+
+    def generate_default_project_into_directory(self, directory):
+        pass

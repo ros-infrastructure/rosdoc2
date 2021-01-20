@@ -118,7 +118,7 @@ def main_impl(options):
         sys.exit(f"Error: given install directory '{options.install_directory}' does not exist")
 
     # Inspect package for additional settings, using defaults if none found.
-    # doc_build_settings = inspect_package_for_settings(package)
+    doc_build_settings = inspect_package_for_settings(package)
 
     # Create the cross reference directory if it doesn't exist.
     os.makedirs(os.path.join(options.cross_reference_directory, package.name), exist_ok=True)

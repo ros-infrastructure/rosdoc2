@@ -24,7 +24,7 @@ DEFAULT_ROSDOC_CONFIG_FILE = """\
 type: 'rosdoc2 config'
 version: 1
 
-----
+---
 
 settings:
     ## If this is true, a standard index page is generated in the output directory.

@@ -1,3 +1,5 @@
+!! This tool is still being finished, I will remove this message when it's ready for consumption !!
+
 # rosdoc2
 
 Command-line tool for generating documentation for ROS 2 packages.
@@ -125,7 +127,7 @@ TODO
 
 It might be helpful, in some cases, to understand how this tool functions.
 
-The tools follows these steps:
+The tool follows these steps:
 
 - Inspect the `package.xml` of the package for any rosdoc2 specific configurations.
   - Note: if none are found, a default configuration which tries to run Sphinx and Doxygen is used.
