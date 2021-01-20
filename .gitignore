@@ -9,6 +9,7 @@ __pycache__/
 .Python
 env/
 build/
+!rosdoc2/verbs/build
 develop-eggs/
 dist/
 downloads/

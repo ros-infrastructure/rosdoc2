@@ -1,0 +1,41 @@
+# Copyright 2020 Open Source Robotics Foundation, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import os
+import sys
+import webbrowser
+
+from ..build.impl import DEFAULT_BUILD_OUTPUT_DIR
+
+
+def prepare_arguments(parser):
+    parser.add_argument(
+        'package_output_directory',
+        nargs='?',
+        default=DEFAULT_BUILD_OUTPUT_DIR,
+        help='path where the built documentation for the package was output into',
+    )
+    return parser
+
+
+def main(options):
+    # Locate the entry point for the built documentation.
+    if not os.path.exists(options.package_output_directory):
+        sys.exit(f"given output directory '{options.package_output_directory}' does not exist")
+
+    expected_path = os.path.join(options.package_output_directory, 'build', 'index.html')
+    if not os.path.exists(expected_path):
+        sys.exit(f"did not find package documentation at the expected path '{expected_path}'")
+
+    webbrowser.open(f'file://{os.path.abspath(expected_path)}')
