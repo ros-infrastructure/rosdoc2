@@ -14,6 +14,7 @@
 
 import os
 
+from .build_context import BuildContext
 from .create_format_map_from_package import create_format_map_from_package
 from .parse_rosdoc2_yaml import parse_rosdoc2_yaml
 
@@ -52,16 +53,17 @@ builders:
     ## Required keys in the settings dictionary are 'builder' which determines the
     ## builder executed there, and 'name' which is used when referencing the built
     ## docs from the index.
+    'generated/doxygen':
+        builder: doxygen
+        name: '{package_name} Public C/C++ API'
     '':
         builder: sphinx
         name: '{package_name}'
-    'api/cpp':
-        builder: doxygen
-        name: '{package_name} Public C/C++ API'
+        doxygen_xml_directory: 'generated/doxygen'
 """
 
 
-def inspect_package_for_settings(package):
+def inspect_package_for_settings(package, tool_options):
     f"""
     Inspect the given package for additional documentation build settings.
 
@@ -100,4 +102,9 @@ def inspect_package_for_settings(package):
         rosdoc_config_file_name = '<default config>'
 
     # Parse config file
-    return parse_rosdoc2_yaml(rosdoc_config_file, package, rosdoc_config_file_name)
+    build_context = BuildContext(
+        configuration_file_path=rosdoc_config_file_name,
+        package_object=package,
+        tool_options=tool_options,
+    )
+    return parse_rosdoc2_yaml(rosdoc_config_file, build_context)

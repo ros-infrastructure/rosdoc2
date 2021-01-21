@@ -12,15 +12,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import re
 
-class BuildContext:
+
+def slugify(
+    string,
+    *,
+    lowercase=True,
+    whitespace=False,
+    whitespace_replacement='-',
+):
     """
-    Class which encapsulates the context of the build, and is used to calculate
-    default settings for builders based on things like the package directory,
-    when necessary.
+    Converts the given string into a "slug" which can be safely used in a directory name.
+
+    This function is naive, and doesn't handle unicode or anything special.
+    If we need that in the future, consider something like python-slugify.
     """
-    def __init__(self, *, configuration_file_path, package_object, tool_options):
-        super(BuildContext, self).__init__()
-        self.configuration_file_path = configuration_file_path
-        self.package = package_object
-        self.tool_options = tool_options
+    slug = string
+    if lowercase:
+        slug = slug.lower()
+    slug = re.sub(r"[^\w\s]", '', slug)
+    if not whitespace:
+        slug = re.sub(r"\s+", whitespace_replacement, slug)
+    return slug

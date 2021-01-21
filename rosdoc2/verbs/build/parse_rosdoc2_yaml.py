@@ -15,7 +15,6 @@
 import yaml
 
 from .builders import create_builder_by_name
-from .build_context import BuildContext
 
 
 def parse_builder_entry(output_directory, builder_dict, build_context):
@@ -34,7 +33,7 @@ def parse_builder_entry(output_directory, builder_dict, build_context):
         build_context=build_context)
 
 
-def parse_rosdoc2_yaml(yaml_string, package, file_name):
+def parse_rosdoc2_yaml(yaml_string, build_context):
     """
     Parse a rosdoc2.yaml configuration string, returning it as a tuple of settings and builders.
 
@@ -42,6 +41,7 @@ def parse_rosdoc2_yaml(yaml_string, package, file_name):
         and the second item being a list of Builder objects.
     """
     configs = list(yaml.load_all(yaml_string, Loader=yaml.SafeLoader))
+    file_name = build_context.configuration_file_path
     if len(configs) != 2:
         raise ValueError(
             f"Error parsing file '{file_name}', "
@@ -69,10 +69,6 @@ def parse_rosdoc2_yaml(yaml_string, package, file_name):
             f"expected a dict{{output_dir: build_settings, ...}}, "
             f"got a '{type(builders_dict)}' instead")
     builders = []
-    build_context = BuildContext(
-        configuration_file_path=file_name,
-        package_object=package,
-    )
     for output_directory, entry in builders_dict.items():
         builders.append(parse_builder_entry(output_directory, entry, build_context))
     return (settings_dict, builders)

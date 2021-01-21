@@ -34,6 +34,12 @@ def main(options):
     if not os.path.exists(options.package_output_directory):
         sys.exit(f"given output directory '{options.package_output_directory}' does not exist")
 
+    if os.path.isfile(options.package_output_directory):
+        # Open directly.
+        webbrowser.open(f'file://{os.path.abspath(options.package_output_directory)}')
+        return
+
+    # TODO(wjwwood): fix this up, the expected path doesn't make sense now...
     expected_path = os.path.join(options.package_output_directory, 'build', 'index.html')
     if not os.path.exists(expected_path):
         sys.exit(f"did not find package documentation at the expected path '{expected_path}'")

@@ -12,7 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import logging
 import os
+import shutil
 import sys
 
 from catkin_pkg.package import has_ros_schema_reference
@@ -21,11 +23,13 @@ from catkin_pkg.package import package_exists_at
 from catkin_pkg.package import parse_package
 
 from .collect_inventory_files import collect_inventory_files
-from .collect_tag_files import collect_tag_files
 from .inspect_package_for_settings import inspect_package_for_settings
-from .setup_doc_build_prefix import setup_doc_build_prefix
+from rosdoc2.slugify import slugify
 
-DEFAULT_BUILD_OUTPUT_DIR = 'doc_build'
+logging.basicConfig(format='[%(name)s] [%(levelname)s] %(message)s', level=logging.INFO)
+logger = logging.getLogger('rosdoc2')
+
+DEFAULT_BUILD_OUTPUT_DIR = 'docs_build'
 
 
 def get_package(path):
@@ -72,15 +76,21 @@ def prepare_arguments(parser):
         help='directory containing cross reference files, like tag files and inventory files',
     )
     parser.add_argument(
+        '--base-url',
+        '-u',
+        default='http://docs.ros.org/en/latest/p',
+        help='The base url where the package docs will be hosted, used to configure tag files.',
+    )
+    parser.add_argument(
         '--output-directory',
         '-o',
-        default=DEFAULT_BUILD_OUTPUT_DIR,
+        required=True,
         help='directory to output the documenation artifacts into',
     )
     parser.add_argument(
         '--doc-build-directory',
         '-d',
-        default='doc_build',
+        default=DEFAULT_BUILD_OUTPUT_DIR,
         help='directory to setup build prefix'
     )
     parser.add_argument(
@@ -118,32 +128,75 @@ def main_impl(options):
         sys.exit(f"Error: given install directory '{options.install_directory}' does not exist")
 
     # Inspect package for additional settings, using defaults if none found.
-    doc_build_settings = inspect_package_for_settings(package)
+    tool_settings, builders = inspect_package_for_settings(
+        package,
+        options,
+    )
 
     # Create the cross reference directory if it doesn't exist.
     os.makedirs(os.path.join(options.cross_reference_directory, package.name), exist_ok=True)
 
-    # Collect Doxygen tag files in cross reference directory.
-    tag_files = collect_tag_files(options.cross_reference_directory)
-
     # Collect Sphinx inventory files.
     inventory_files = collect_inventory_files(options.cross_reference_directory)
 
-    # Generate the doc build prefix.
+    # Generate the doc build directory.
     package_doc_build_directory = os.path.join(options.doc_build_directory, package.name)
     os.makedirs(package_doc_build_directory, exist_ok=True)
-    setup_doc_build_prefix(
-        options.package_path,
-        package_doc_build_directory,
-        package,
-        tag_files,
-        inventory_files)
 
-    # Create the output directory for doxygen, because it will not create it on its own.
-    os.makedirs(os.path.join(package_doc_build_directory, 'generated', 'doxygen'), exist_ok=True)
+    # Generate the "output stagging" directory.
+    output_stagging_directory = os.path.join(package_doc_build_directory, 'output_stagging')
+    if os.path.exists(output_stagging_directory):
+        # Delete this directory because it is temporary and will cause "file collision"
+        # false positives if the tool fails to run to completion.
+        shutil.rmtree(output_stagging_directory)
+    os.makedirs(output_stagging_directory)
 
-    # Run the Sphinx.
-    import subprocess
-    subprocess.run(['sphinx-build', './', './build'], cwd=package_doc_build_directory)
+    # Generate the package header content.
+    pass     
+
+    # Run each builder.
+    for builder in builders:
+        # This is the working directory for the builder.
+        doc_build_folder = os.path.join(package_doc_build_directory, slugify(builder.name))
+        # This is the directory into which the results of the builder will be moved into.
+        builder_destination = os.path.join(output_stagging_directory, builder.output_dir)
+        # Run the builder, get the directory where the artifacts were placed.
+        # This should be inside the doc_build_folder, but might be a subfolder.
+        doc_output_directory = builder.build(doc_build_folder=doc_build_folder)
+        if doc_output_directory is None:
+            # This builder did not generate any output.
+            logger.info(
+                f"Note: the builder '{builder.name} ({builder.builder_type})' "
+                f"did not generate any output to be copied into the destination.")
+            continue
+        assert os.path.exists(doc_output_directory), \
+            f"builder gave invalid doc_output_directory: {doc_output_directory}"
+        # Move documentation artifacts from the builder into the output stagging.
+        # This is additionally in a subdirectory dictated by the output directory part of the
+        # builder configuration.
+        builder.move_files(
+            source=doc_output_directory,
+            destination=builder_destination)
+
+    # If enabled, create package index.
+    if tool_settings.get('generate_package_index', True):
+        pass     
+
+    # Move stagged files to user provided output directory.
+    package_output_directory = os.path.join(options.output_directory, package.name)
+    logger.info(f"Moving files to final destination in '{package_output_directory}'.")
+    for root, dirs, files in os.walk(output_stagging_directory):
+        for item in dirs + files:
+            source = os.path.abspath(os.path.join(root, item))
+            destination = \
+                os.path.abspath(os.path.join(package_output_directory, item))
+            if os.path.exists(destination):
+                # shutil.move behaves in a way such that if the destintation exists
+                # and is a directory, it would copy the source directory into it,
+                # rather than replacing its contents or appending to it.
+                # So deleting it first will prevent that.
+                shutil.rmtree(destination)
+            shutil.move(source, destination)
+        break
 
     return 0

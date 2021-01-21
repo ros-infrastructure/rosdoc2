@@ -21,5 +21,5 @@ def create_format_map_from_package(package):
         'package_name': package.name,
         'package_version': package.version,
         'package_description': package.description,
-        'package_directory': os.path.dirname(package.filename),
+        'package_directory': os.path.abspath(os.path.dirname(package.filename)),
     }
