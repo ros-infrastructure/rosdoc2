@@ -17,6 +17,8 @@ from .sphinx_builder import SphinxBuilder
 
 __all__ = [
     'create_builder_by_name',
+    'DoxygenBuilder',
+    'SphinxBuilder',
 ]
 
 

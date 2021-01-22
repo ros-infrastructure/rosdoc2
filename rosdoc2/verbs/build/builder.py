@@ -33,9 +33,13 @@ class Builder(object):
         self.output_dir = output_dir
         self.build_context = build_context
 
-    def build(self, *, doc_build_folder):
+    def build(self, *, doc_build_folder, output_stagging_directory):
         """
         Method called on builders to have them actually do the build.
+
+        The output_stagging_directory parameter may be useful to refer to
+        other builder outputs within this builder.
+        For example, if sphinx needs the XML output directory for Doxygen.
 
         :return: the directory where the documentation was built into, should be
             inside the doc_build_folder. Or None if no artifacts were generated.

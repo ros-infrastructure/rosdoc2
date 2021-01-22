@@ -162,7 +162,10 @@ def main_impl(options):
         builder_destination = os.path.join(output_stagging_directory, builder.output_dir)
         # Run the builder, get the directory where the artifacts were placed.
         # This should be inside the doc_build_folder, but might be a subfolder.
-        doc_output_directory = builder.build(doc_build_folder=doc_build_folder)
+        doc_output_directory = builder.build(
+            doc_build_folder=doc_build_folder,
+            output_stagging_directory=output_stagging_directory,
+        )
         if doc_output_directory is None:
             # This builder did not generate any output.
             logger.info(
@@ -190,7 +193,7 @@ def main_impl(options):
             source = os.path.abspath(os.path.join(root, item))
             destination = \
                 os.path.abspath(os.path.join(package_output_directory, item))
-            if os.path.exists(destination):
+            if os.path.isdir(destination):
                 # shutil.move behaves in a way such that if the destintation exists
                 # and is a directory, it would copy the source directory into it,
                 # rather than replacing its contents or appending to it.

@@ -59,6 +59,7 @@ builders:
     '':
         builder: sphinx
         name: '{package_name}'
+        ## This path is relative to output stagging.
         doxygen_xml_directory: 'generated/doxygen'
 """
 
