@@ -33,11 +33,11 @@ class Builder(object):
         self.output_dir = output_dir
         self.build_context = build_context
 
-    def build(self, *, doc_build_folder, output_stagging_directory):
+    def build(self, *, doc_build_folder, output_staging_directory):
         """
         Method called on builders to have them actually do the build.
 
-        The output_stagging_directory parameter may be useful to refer to
+        The output_staging_directory parameter may be useful to refer to
         other builder outputs within this builder.
         For example, if sphinx needs the XML output directory for Doxygen.
 
@@ -48,7 +48,7 @@ class Builder(object):
 
     def move_file(self, *, source, destination, common_suffix, move=True):
         """
-        Method called on each file as it is moved into the stagging directory.
+        Method called on each file as it is moved into the staging directory.
 
         May be overridden by downstream builders to selectively skip or rename files.
         """
@@ -64,7 +64,7 @@ class Builder(object):
 
     def move_files(self, *, source, destination):
         """
-        Method called on builders to move their files into the output stagging directory.
+        Method called on builders to move their files into the output staging directory.
 
         May be overridden by downstream builders to selectively skip or rename files.
         """

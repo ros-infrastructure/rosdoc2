@@ -143,13 +143,13 @@ def main_impl(options):
     package_doc_build_directory = os.path.join(options.doc_build_directory, package.name)
     os.makedirs(package_doc_build_directory, exist_ok=True)
 
-    # Generate the "output stagging" directory.
-    output_stagging_directory = os.path.join(package_doc_build_directory, 'output_stagging')
-    if os.path.exists(output_stagging_directory):
+    # Generate the "output staging" directory.
+    output_staging_directory = os.path.join(package_doc_build_directory, 'output_staging')
+    if os.path.exists(output_staging_directory):
         # Delete this directory because it is temporary and will cause "file collision"
         # false positives if the tool fails to run to completion.
-        shutil.rmtree(output_stagging_directory)
-    os.makedirs(output_stagging_directory)
+        shutil.rmtree(output_staging_directory)
+    os.makedirs(output_staging_directory)
 
     # Generate the package header content.
     pass     
@@ -159,12 +159,12 @@ def main_impl(options):
         # This is the working directory for the builder.
         doc_build_folder = os.path.join(package_doc_build_directory, slugify(builder.name))
         # This is the directory into which the results of the builder will be moved into.
-        builder_destination = os.path.join(output_stagging_directory, builder.output_dir)
+        builder_destination = os.path.join(output_staging_directory, builder.output_dir)
         # Run the builder, get the directory where the artifacts were placed.
         # This should be inside the doc_build_folder, but might be a subfolder.
         doc_output_directory = builder.build(
             doc_build_folder=doc_build_folder,
-            output_stagging_directory=output_stagging_directory,
+            output_staging_directory=output_staging_directory,
         )
         if doc_output_directory is None:
             # This builder did not generate any output.
@@ -174,7 +174,7 @@ def main_impl(options):
             continue
         assert os.path.exists(doc_output_directory), \
             f"builder gave invalid doc_output_directory: {doc_output_directory}"
-        # Move documentation artifacts from the builder into the output stagging.
+        # Move documentation artifacts from the builder into the output staging.
         # This is additionally in a subdirectory dictated by the output directory part of the
         # builder configuration.
         builder.move_files(
@@ -185,10 +185,10 @@ def main_impl(options):
     if tool_settings.get('generate_package_index', True):
         pass     
 
-    # Move stagged files to user provided output directory.
+    # Move staged files to user provided output directory.
     package_output_directory = os.path.join(options.output_directory, package.name)
     logger.info(f"Moving files to final destination in '{package_output_directory}'.")
-    for root, dirs, files in os.walk(output_stagging_directory):
+    for root, dirs, files in os.walk(output_staging_directory):
         for item in dirs + files:
             source = os.path.abspath(os.path.join(root, item))
             destination = \
