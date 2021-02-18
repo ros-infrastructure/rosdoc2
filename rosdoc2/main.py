@@ -75,6 +75,7 @@ def main(sysargs=None):
     # First allow the verb's argument preprocessor to strip any args
     # and return any "extra" information it wants as a dict
     processed_post_verb_args, extras = argument_preprocessors[verb](post_verb_args)
+
     # Then allow argparse to process the left over post-verb arguments along
     # with the pre-verb arguments and the verb itself
     args = parser.parse_args(pre_verb_args + [verb] + processed_post_verb_args)
