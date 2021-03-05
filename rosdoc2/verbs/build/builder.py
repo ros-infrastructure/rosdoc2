@@ -22,15 +22,18 @@ class Builder(object):
     """
     Base class for all builders, which just takes care of some boilerplate logic.
     """
-    def __init__(self, builder_entry_dictionary, output_dir, build_context):
-        if 'builder' not in builder_entry_dictionary:
-            raise RuntimeError("Error entry without 'builder' field found")
-        self.builder_type = builder_entry_dictionary['builder']
+    def __init__(self, builder_name, builder_entry_dictionary, build_context):
+        self.builder_type = builder_name
+
         if 'name' not in builder_entry_dictionary:
             raise RuntimeError("Error entry without 'name' field found")
         self.name = builder_entry_dictionary['name']
+
+        if 'output_dir' not in builder_entry_dictionary:
+            raise RuntimeError("Error entry without 'output_dir' field found")
+        self.output_dir = builder_entry_dictionary['output_dir']
+
         self.builder_entry_dictionary = builder_entry_dictionary
-        self.output_dir = output_dir
         self.build_context = build_context
 
     def build(self, *, doc_build_folder, output_staging_directory):

@@ -280,10 +280,10 @@ class SphinxBuilder(Builder):
       - directory containing the Sphinx project, i.e. the `conf.py`, the setting
         you would pass to sphinx-build as SOURCEDIR. Defaults to `doc`.
     """
-    def __init__(self, builder_entry_dictionary, output_dir, build_context):
+    def __init__(self, builder_name, builder_entry_dictionary, build_context):
         super(SphinxBuilder, self).__init__(
+            builder_name,
             builder_entry_dictionary,
-            output_dir,
             build_context)
 
         assert self.builder_type == 'sphinx'
@@ -299,7 +299,7 @@ class SphinxBuilder(Builder):
 
         # Process keys.
         for key, value in builder_entry_dictionary.items():
-            if key in ['name', 'builder']:
+            if key in ['name', 'output_dir']:
                 continue
             if key == 'sphinx_sourcedir':
                 sphinx_sourcedir = os.path.join(configuration_file_dir, value)
