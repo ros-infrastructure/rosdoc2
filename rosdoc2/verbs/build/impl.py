@@ -152,7 +152,7 @@ def main_impl(options):
     os.makedirs(output_staging_directory)
 
     # Generate the package header content.
-    pass     
+    pass
 
     # Run each builder.
     for builder in builders:
@@ -183,7 +183,7 @@ def main_impl(options):
 
     # If enabled, create package index.
     if tool_settings.get('generate_package_index', True):
-        pass     
+        pass
 
     # Move staged files to user provided output directory.
     package_output_directory = os.path.join(options.output_directory, package.name)

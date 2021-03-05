@@ -68,6 +68,7 @@ def parse_rosdoc2_yaml(yaml_string, build_context):
             f"Error parsing file '{file_name}', in the second section, value 'builders', "
             f"expected a dict{{output_dir: build_settings, ...}}, "
             f"got a '{type(builders_dict)}' instead")
+
     builders = []
     for output_directory, entry in builders_dict.items():
         builders.append(parse_builder_entry(output_directory, entry, build_context))
