@@ -320,11 +320,11 @@ class SphinxBuilder(Builder):
         # Prepare the template variables for formatting strings.
         self.template_variables = create_format_map_from_package(build_context.package)
 
-    def build(self, *, doc_build_folder, output_stagging_directory):
-        # Check that doxygen_xml_directory exists relative to output stagging, if specified.
+    def build(self, *, doc_build_folder, output_staging_directory):
+        # Check that doxygen_xml_directory exists relative to output staging, if specified.
         if self.doxygen_xml_directory is not None:
             self.doxygen_xml_directory = \
-                os.path.join(output_stagging_directory, self.doxygen_xml_directory)
+                os.path.join(output_staging_directory, self.doxygen_xml_directory)
             self.doxygen_xml_directory = os.path.abspath(self.doxygen_xml_directory)
             if not os.path.isdir(self.doxygen_xml_directory):
                 raise RuntimeError(

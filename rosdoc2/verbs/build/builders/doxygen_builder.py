@@ -148,7 +148,7 @@ class DoxygenBuilder(Builder):
         else:
             logger.info(f"Using user specified Doxyfile at '{self.doxyfile}'.")
 
-    def build(self, *, doc_build_folder, output_stagging_directory):
+    def build(self, *, doc_build_folder, output_staging_directory):
         # If both doxyfile and doxyfile_content are None, that means there is
         # no reason to run doxygen.
         if self.doxyfile is None and self.doxyfile_content is None:
