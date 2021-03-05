@@ -1,5 +1,3 @@
-!! This tool is still being finished, I will remove this message when it's ready for consumption !!
-
 # rosdoc2
 
 Command-line tool for generating documentation for ROS 2 packages.
@@ -18,8 +16,7 @@ $ rosdoc2 build \
   --install-directory ./install \
   --cross-reference-directory ./cross_reference \
   --output-directory ./doc_output \
-  --ros-distro foxy \
-  ./src/path/to/my_package_name
+  --package-path ./src/path/to/my_package_name
 ```
 
 This command will inspect your package and run various documentation tools based on the configuration of your package.

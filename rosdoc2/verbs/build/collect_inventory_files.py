@@ -17,7 +17,7 @@ import os
 
 def collect_inventory_files(cross_reference_directory):
     """
-    Collect all inventory files if a given cross reference directory.
+    Collect all inventory files of a given cross reference directory.
 
     :return: dictionary of inventory files, where the package name is the key
     """
