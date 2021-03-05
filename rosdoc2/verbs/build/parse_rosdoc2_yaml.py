@@ -61,8 +61,23 @@ def parse_rosdoc2_yaml(yaml_string, build_context):
             f"Error parsing file '{file_name}', in the second section, "
             f"expected something like dict{{settings: <tool settings>, builders: <builders>}}, "
             f"got a '{type(config)}' instead")
-    settings_dict = config.get('settings', {})
-    builders_dict = config.get('builders', {})
+
+    if 'settings' not in config:
+        raise ValueError(
+            f"Error parsing file '{file_name}', in the second section, "
+            f"expected a 'settings' key")
+    settings_dict = config['settings']
+    if not isinstance(settings_dict, dict):
+        raise ValueError(
+            f"Error parsing file '{file_name}', in the second section, value 'settings', "
+            f"expected a dict{{output_dir: build_settings, ...}}, "
+            f"got a '{type(builders_dict)}' instead")
+
+    if 'builders' not in config:
+        raise ValueError(
+            f"Error parsing file '{file_name}', in the second section, "
+            f"expected a 'builders' key")
+    builders_dict = config['builders']
     if not isinstance(builders_dict, dict):
         raise ValueError(
             f"Error parsing file '{file_name}', in the second section, value 'builders', "
