@@ -21,7 +21,7 @@ __all__ = [
 
 entry_point_data = dict(
     verb='build',
-    description='Builds the documentation of ROS package',
+    description='Build the documentation of a ROS package',
     # Called for execution, given parsed arguments object
     main=main,
     # Called first to setup argparse, given argparse parser
