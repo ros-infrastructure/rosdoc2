@@ -87,9 +87,6 @@ if rosdoc2_settings.get('enable_exhale', True):
 if rosdoc2_settings.get('override_theme', True):
     html_theme = 'classic'
     print(f"[rosdoc2] overriding theme to be '{{html_theme}}'", file=sys.stderr)
-
-# print(globals(), file=sys.stderr)
-
 """
 
 default_conf_py_template = """\
