@@ -54,16 +54,16 @@ builders:
     ##  * 'output_dir' - determines the output subdirectory for that builder instance relative to --output-directory
     ##  * 'name' - used when referencing the built docs from the index.
 
-    - doxygen: {
+    - doxygen: {{
         name: '{package_name} Public C/C++ API',
         output_dir: 'generated/doxygen'
-    }
-    - sphinx: {
+    }}
+    - sphinx: {{
         name: '{package_name}',
         ## This path is relative to output staging.
         doxygen_xml_directory: 'generated/doxygen/xml',
         output_dir: ''
-    }
+    }}
 """
 
 
