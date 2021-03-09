@@ -88,8 +88,9 @@ if rosdoc2_settings.get('enable_exhale', True):
     }})
 
 if rosdoc2_settings.get('override_theme', True):
+    extensions.append('sphinx_rtd_theme')
+    html_theme = 'sphinx_rtd_theme'
     print(f"[rosdoc2] overriding theme to be '{{html_theme}}'", file=sys.stderr)
-    html_theme = 'classic'
 
 if rosdoc2_settings.get('automatically_extend_intersphinx_mapping', True):
     print(f"[rosdoc2] extending intersphinx mapping", file=sys.stderr)
@@ -171,7 +172,7 @@ master_doc = 'main'
 #
 ## rosdoc2 will override the theme, but you may set one here for running Sphinx
 ## without the rosdoc2 tool.
-html_theme = 'alabaster'
+html_theme = 'sphinx_rtd_theme'
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
