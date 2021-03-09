@@ -28,7 +28,9 @@ from rosdoc2.slugify import slugify
 logging.basicConfig(format='[%(name)s] [%(levelname)s] %(message)s', level=logging.INFO)
 logger = logging.getLogger('rosdoc2')
 
-DEFAULT_BUILD_OUTPUT_DIR = 'docs_build'
+DEFAULT_BUILD_DIR = 'docs_build'
+DEFAULT_OUTPUT_DIR = 'docs_output'
+DEFAULT_CROSS_REFERENCE_DIR = 'cross_reference'
 
 
 def get_package(path):
@@ -59,19 +61,17 @@ def prepare_arguments(parser):
     parser.add_argument(
         '--build-directory',
         '-b',
-        required=True,
         help='build directory of the package',
     )
     parser.add_argument(
         '--install-directory',
         '-i',
-        required=True,
         help='install directory of the package',
     )
     parser.add_argument(
         '--cross-reference-directory',
         '-c',
-        required=True,
+        default=DEFAULT_CROSS_REFERENCE_DIR,
         help='directory containing cross reference files, like tag files and inventory files',
     )
     parser.add_argument(
@@ -83,13 +83,13 @@ def prepare_arguments(parser):
     parser.add_argument(
         '--output-directory',
         '-o',
-        required=True,
+        default=DEFAULT_OUTPUT_DIR,
         help='directory to output the documenation artifacts into',
     )
     parser.add_argument(
         '--doc-build-directory',
         '-d',
-        default=DEFAULT_BUILD_OUTPUT_DIR,
+        default=DEFAULT_BUILD_DIR,
         help='directory to setup build prefix'
     )
     parser.add_argument(
@@ -118,13 +118,15 @@ def main_impl(options):
     except Exception as e:
         sys.exit(f'Error: {e}')
 
-    # Check that the build directory exists.
-    if not os.path.exists(options.build_directory):
-        sys.exit(f"Error: given build directory '{options.build_directory}' does not exist")
+    if options.build_directory is not None:
+        # Check that the build directory exists.
+        if not os.path.exists(options.build_directory):
+            sys.exit(f"Error: given build directory '{options.build_directory}' does not exist")
 
-    # Check that the install directory exists.
-    if not os.path.exists(options.install_directory):
-        sys.exit(f"Error: given install directory '{options.install_directory}' does not exist")
+    if options.install_directory is not None:
+        # Check that the install directory exists.
+        if not os.path.exists(options.install_directory):
+            sys.exit(f"Error: given install directory '{options.install_directory}' does not exist")
 
     # Inspect package for additional settings, using defaults if none found.
     tool_settings, builders = inspect_package_for_settings(
