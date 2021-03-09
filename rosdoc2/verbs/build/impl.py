@@ -58,18 +58,6 @@ def prepare_arguments(parser):
         help='path to the ROS package',
     )
     parser.add_argument(
-        '--build-directory',
-        '-b',
-        required=True,
-        help='build directory of the package',
-    )
-    parser.add_argument(
-        '--install-directory',
-        '-i',
-        required=True,
-        help='install directory of the package',
-    )
-    parser.add_argument(
         '--cross-reference-directory',
         '-c',
         required=True,
@@ -118,14 +106,6 @@ def main_impl(options):
         package = get_package(options.package_path)
     except Exception as e:
         sys.exit(f'Error: {e}')
-
-    # Check that the build directory exists.
-    if not os.path.exists(options.build_directory):
-        sys.exit(f"Error: given build directory '{options.build_directory}' does not exist")
-
-    # Check that the install directory exists.
-    if not os.path.exists(options.install_directory):
-        sys.exit(f"Error: given install directory '{options.install_directory}' does not exist")
 
     # Inspect package for additional settings, using defaults if none found.
     tool_settings, builders = inspect_package_for_settings(
