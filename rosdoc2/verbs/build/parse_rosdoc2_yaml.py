@@ -73,7 +73,7 @@ def parse_rosdoc2_yaml(yaml_string, build_context):
         if len(builder) != 1:
             raise ValueError(
                 f"Error parsing file '{file_name}', in the second section, each builder "
-                f"must have a 'type'")
+                f"must have exactly one key (which is the type of builder to use)")
         builder_name = next(iter(builder))
         builders.append(create_builder_by_name(builder_name, builder_dict=builder[builder_name], build_context=build_context))
 
