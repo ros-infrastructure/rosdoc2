@@ -69,10 +69,10 @@ class DoxygenBuilder(Builder):
     - extra_doxyfile_statements (list[str]) (optional)
       - extra doxyfile statements which would be added after the default, or user, doxyfile
     """
-    def __init__(self, builder_entry_dictionary, output_dir, build_context):
+    def __init__(self, builder_name, builder_entry_dictionary, build_context):
         super(DoxygenBuilder, self).__init__(
+            builder_name,
             builder_entry_dictionary,
-            output_dir,
             build_context)
 
         assert self.builder_type == 'doxygen'
@@ -84,7 +84,7 @@ class DoxygenBuilder(Builder):
 
         # Process keys.
         for key, value in builder_entry_dictionary.items():
-            if key in ['name', 'builder']:
+            if key in ['name', 'output_dir']:
                 continue
             if key == 'doxyfile':
                 config_file_dir = os.path.dirname(configuration_file_path)

@@ -17,22 +17,6 @@ import yaml
 from .builders import create_builder_by_name
 
 
-def parse_builder_entry(output_directory, builder_dict, build_context):
-    """
-    Parse a single builder dictionary entry.
-    """
-    if 'builder' not in builder_dict:
-        keys = ', '.join(list(builder_dict.keys()))
-        raise ValueError(
-            f"Error parsing file '{build_context.configuration_file_path}', "
-            f"expected to find a 'builder' key but found only '[{keys}]'")
-    return create_builder_by_name(
-        builder_dict['builder'],
-        builder_dict=builder_dict,
-        output_dir=output_directory,
-        build_context=build_context)
-
-
 def parse_rosdoc2_yaml(yaml_string, build_context):
     """
     Parse a rosdoc2.yaml configuration string, returning it as a tuple of settings and builders.
@@ -77,14 +61,20 @@ def parse_rosdoc2_yaml(yaml_string, build_context):
         raise ValueError(
             f"Error parsing file '{file_name}', in the second section, "
             f"expected a 'builders' key")
-    builders_dict = config['builders']
-    if not isinstance(builders_dict, dict):
+    builders_list = config['builders']
+    if not isinstance(builders_list, list):
         raise ValueError(
             f"Error parsing file '{file_name}', in the second section, value 'builders', "
-            f"expected a dict{{output_dir: build_settings, ...}}, "
-            f"got a '{type(builders_dict)}' instead")
+            f"expected a list of builders, "
+            f"got a '{type(builders_list)}' instead")
 
     builders = []
-    for output_directory, entry in builders_dict.items():
-        builders.append(parse_builder_entry(output_directory, entry, build_context))
+    for builder in builders_list:
+        if len(builder) != 1:
+            raise ValueError(
+                f"Error parsing file '{file_name}', in the second section, each builder "
+                f"must have exactly one key (which is the type of builder to use)")
+        builder_name = next(iter(builder))
+        builders.append(create_builder_by_name(builder_name, builder_dict=builder[builder_name], build_context=build_context))
+
     return (settings_dict, builders)

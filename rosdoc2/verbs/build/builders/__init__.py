@@ -22,7 +22,7 @@ __all__ = [
 ]
 
 
-def create_builder_by_name(builder_name, *, builder_dict, output_dir, build_context):
+def create_builder_by_name(builder_name, *, builder_dict, build_context):
     # TODO(wjwwood): make this an extension point
     builders = {
         'doxygen': DoxygenBuilder,
@@ -33,4 +33,4 @@ def create_builder_by_name(builder_name, *, builder_dict, output_dir, build_cont
         builder_names = ', '.join(list(builders.keys()))
         raise RuntimeError(
             f"Error unknown builder '{builder_name}', supported builders: [{builder_names}]")
-    return builder_class(builder_dict, output_dir, build_context)
+    return builder_class(builder_name, builder_dict, build_context)

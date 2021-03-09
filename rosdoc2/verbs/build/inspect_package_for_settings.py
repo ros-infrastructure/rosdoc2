@@ -46,21 +46,24 @@ settings:
     generate_package_index: true
 builders:
     ## Each stanza represents a separate build step, performed by a specific 'builder'.
-    ## The key of each stanza the output subdirectory for that builder instance,
-    ## and is relative to the '--output-directory' specified to the tool.
+    ## The key of each stanza is the builder to use; this must be one of the
+    ## available builders.
     ## The value of each stanza is a dictionary of settings for the builder that
     ## outputs to that directory.
-    ## Required keys in the settings dictionary are 'builder' which determines the
-    ## builder executed there, and 'name' which is used when referencing the built
-    ## docs from the index.
-    'generated/doxygen':
-        builder: doxygen
-        name: '{package_name} Public C/C++ API'
-    '':
-        builder: sphinx
-        name: '{package_name}'
+    ## Required keys in the settings dictionary are:
+    ##  * 'output_dir' - determines the output subdirectory for that builder instance relative to --output-directory
+    ##  * 'name' - used when referencing the built docs from the index.
+
+    - doxygen: {{
+        name: '{package_name} Public C/C++ API',
+        output_dir: 'generated/doxygen'
+    }}
+    - sphinx: {{
+        name: '{package_name}',
         ## This path is relative to output staging.
-        doxygen_xml_directory: 'generated/doxygen/xml'
+        doxygen_xml_directory: 'generated/doxygen/xml',
+        output_dir: ''
+    }}
 """
 
 
