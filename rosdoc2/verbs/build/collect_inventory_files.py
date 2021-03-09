@@ -12,7 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import json
+import logging
 import os
+
+logger = logging.getLogger('rosdoc2')
 
 
 def collect_inventory_files(cross_reference_directory):
@@ -31,5 +35,18 @@ def collect_inventory_files(cross_reference_directory):
                     raise RuntimeError(
                         f"unexpectedly got duplicate tag file for package '{package_name}'"
                     )
-                inventory_files[package_name] = os.path.join(root, filename)
+                inventory_file_path = os.path.join(root, filename)
+                location_json_path = inventory_file_path + '.location.json'
+                if not os.path.exists(location_json_path):
+                    logger.warn(
+                        f"Ignoring tag file '{inventory_file_path}' because it lacks "
+                        f"a '.location.json' file.")
+                    continue
+                location_data = None
+                with open(location_json_path, 'r+') as f:
+                    location_data = json.loads(f.read())
+                inventory_files[package_name] = {
+                    'inventory_file': inventory_file_path,
+                    'location_data': location_data,
+                }
     return inventory_files

@@ -12,11 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import json
 import logging
 import os
+import shutil
 import subprocess
 
 from ..builder import Builder
+from ..collect_inventory_files import collect_inventory_files
 from ..create_format_map_from_package import create_format_map_from_package
 
 logger = logging.getLogger('rosdoc2')
@@ -85,8 +88,18 @@ if rosdoc2_settings.get('enable_exhale', True):
     }})
 
 if rosdoc2_settings.get('override_theme', True):
-    html_theme = 'classic'
     print(f"[rosdoc2] overriding theme to be '{{html_theme}}'", file=sys.stderr)
+    html_theme = 'classic'
+
+if rosdoc2_settings.get('automatically_extend_intersphinx_mapping', True):
+    print(f"[rosdoc2] extending intersphinx mapping", file=sys.stderr)
+    if 'sphinx.ext.intersphinx' not in extensions:
+        raise RuntimeError(
+            "Cannot extend intersphinx mapping if 'sphinx.ext.intersphinx' "
+            "has not been added to the extensions")
+    ensure_global('intersphinx_mapping', {{
+        {intersphinx_mapping_extensions}
+    }})
 """
 
 default_conf_py_template = """\
@@ -187,6 +200,13 @@ rosdoc2_settings = {{
     ## This setting, if True, will have the 'html_theme' overridden to provide
     ## a consistent style across all of the ROS documentation.
     # 'override_theme': True,
+
+    ## This setting, if True, will automatically extend the intersphinx mapping
+    ## using inventory files found in the cross-reference directory.
+    ## If false, the `found_intersphinx_mappings` variable will be in the global
+    ## scope when run with rosdoc2, and could be conditionally used in your own
+    ## Sphinx conf.py file.
+    # 'automatically_extend_intersphinx_mapping': True,
 }}
 """
 
@@ -298,8 +318,24 @@ class SphinxBuilder(Builder):
                 sourcedir = os.path.join(doc_build_folder, 'default_sphinx_project')
                 self.generate_default_project_into_directory(sourcedir)
 
+        # Collect intersphinx mapping extensions from discovered inventory files.
+        inventory_files = \
+            collect_inventory_files(self.build_context.tool_options.cross_reference_directory)
+        base_url = self.build_context.tool_options.base_url
+        intersphinx_mapping_extensions = [
+            f"'{package_name}': "
+            f"('{base_url}/{package_name}/{inventory_dict['location_data']['relative_root']}', "
+            f"'{os.path.abspath(inventory_dict['inventory_file'])}'),"
+            for package_name, inventory_dict in inventory_files.items()
+            # Exclude ourselves.
+            if package_name != self.build_context.package.name
+        ]
+
         # Setup rosdoc2 Sphinx file which will include and extend the one in `sourcedir`.
-        self.generate_wrapping_rosdoc2_sphinx_project_into_directory(doc_build_folder, sourcedir)
+        self.generate_wrapping_rosdoc2_sphinx_project_into_directory(
+            doc_build_folder,
+            sourcedir,
+            intersphinx_mapping_extensions)
 
         # Invoke Sphinx-build.
         working_directory = doc_build_folder
@@ -319,6 +355,32 @@ class SphinxBuilder(Builder):
             logger.info(msg)
         else:
             raise RuntimeError(msg)
+
+        # Copy the inventory file into the cross-reference directory, but also leave the output.
+        inventory_file_name = os.path.join(sphinx_output_dir, 'objects.inv')
+        destination = os.path.join(
+            self.build_context.tool_options.cross_reference_directory,
+            self.build_context.package.name,
+            os.path.basename(inventory_file_name))
+        logger.info(
+            f"Moving inventory file '{inventory_file_name}' into "
+            f"cross-reference directory '{destination}'")
+        os.makedirs(os.path.dirname(destination), exist_ok=True)
+        shutil.copy(
+            os.path.abspath(inventory_file_name),
+            os.path.abspath(destination)
+        )
+
+        # Create a .location.json file as well, so we can know the relative path to the root
+        # of the sphinx content from the package's documentation root.
+        data = {
+            'relative_root': os.path.join(self.output_dir, 'html'),
+        }
+        with open(os.path.abspath(destination) + '.location.json', 'w+') as f:
+            f.write(json.dumps(data))
+        # Put it with the Sphinx generated content as well.
+        with open(os.path.abspath(inventory_file_name) + '.location.json', 'w+') as f:
+            f.write(json.dumps(data))
 
         # Return the directory into which Sphinx generated.
         return sphinx_output_dir
@@ -367,6 +429,7 @@ class SphinxBuilder(Builder):
         self,
         directory,
         user_sourcedir,
+        intersphinx_mapping_extensions,
     ):
         os.makedirs(directory, exist_ok=True)
 
@@ -379,6 +442,7 @@ class SphinxBuilder(Builder):
             'user_sourcedir': os.path.abspath(user_sourcedir),
             'user_conf_py_filename': os.path.abspath(os.path.join(user_sourcedir, 'conf.py')),
             'breathe_projects': ',\n'.join(breathe_projects) + '\n    ',
+            'intersphinx_mapping_extensions': ',\n        '.join(intersphinx_mapping_extensions)
         }
 
         print(os.path.abspath(os.path.join(directory, 'conf.py')))
