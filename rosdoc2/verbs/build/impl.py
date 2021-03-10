@@ -22,7 +22,6 @@ from catkin_pkg.package import InvalidPackage
 from catkin_pkg.package import package_exists_at
 from catkin_pkg.package import parse_package
 
-from .collect_inventory_files import collect_inventory_files
 from .inspect_package_for_settings import inspect_package_for_settings
 from rosdoc2.slugify import slugify
 
@@ -135,9 +134,6 @@ def main_impl(options):
 
     # Create the cross reference directory if it doesn't exist.
     os.makedirs(os.path.join(options.cross_reference_directory, package.name), exist_ok=True)
-
-    # Collect Sphinx inventory files.
-    inventory_files = collect_inventory_files(options.cross_reference_directory)
 
     # Generate the doc build directory.
     package_doc_build_directory = os.path.join(options.doc_build_directory, package.name)

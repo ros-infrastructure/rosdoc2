@@ -230,6 +230,7 @@ class DoxygenBuilder(Builder):
             os.path.abspath(tag_file_name),
             os.path.abspath(destination)
         )
+
         # Create a tag.location.json file as well, so we can know the relative path to the root
         # of the doxygen content from the package's documentation root.
         data = {
