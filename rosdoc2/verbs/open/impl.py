@@ -16,14 +16,14 @@ import os
 import sys
 import webbrowser
 
-from ..build.impl import DEFAULT_BUILD_OUTPUT_DIR
+from ..build.impl import DEFAULT_OUTPUT_DIR
 
 
 def prepare_arguments(parser):
     parser.add_argument(
         'package_output_directory',
         nargs='?',
-        default=DEFAULT_BUILD_OUTPUT_DIR,
+        default=DEFAULT_OUTPUT_DIR,
         help='path where the built documentation for the package was output into',
     )
     return parser

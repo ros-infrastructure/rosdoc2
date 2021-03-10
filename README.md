@@ -12,10 +12,6 @@ To generate the documentation for almost any ROS 2 package, first build the pack
 
 ```
 $ rosdoc2 build \
-  --build-directory ./build/my_package_name \
-  --install-directory ./install \
-  --cross-reference-directory ./cross_reference \
-  --output-directory ./doc_output \
   --package-path ./src/path/to/my_package_name
 ```
 
