@@ -374,7 +374,7 @@ class SphinxBuilder(Builder):
         # Create a .location.json file as well, so we can know the relative path to the root
         # of the sphinx content from the package's documentation root.
         data = {
-            'relative_root': os.path.join(self.output_dir, 'html'),
+            'relative_root': self.output_dir,
         }
         with open(os.path.abspath(destination) + '.location.json', 'w+') as f:
             f.write(json.dumps(data))
