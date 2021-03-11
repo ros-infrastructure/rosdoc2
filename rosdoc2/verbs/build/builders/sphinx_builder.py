@@ -158,12 +158,7 @@ templates_path = ['_templates']
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = []
 
-## rosdoc2 will provide an index for all packages, so to avoid colliding with
-## that, we choose the 'main' file as the master doc.
-## If you would prefer to have your own 'index' file as the master doc, you can
-## include what would have been in the generated 'index' file into your index.
-## TODO(wjwwood): make an example of this
-master_doc = 'main'
+master_doc = 'index'
 
 
 # -- Options for HTML output -------------------------------------------------
@@ -212,7 +207,7 @@ rosdoc2_settings = {{
 }}
 """
 
-main_rst_template = """\
+index_rst_template = """\
 {package.name}
 {package_underline}
 
@@ -424,8 +419,8 @@ class SphinxBuilder(Builder):
         with open(os.path.join(directory, 'conf.py'), 'w+') as f:
             f.write(default_conf_py_template.format_map(template_variables))
 
-        with open(os.path.join(directory, 'main.rst'), 'w+') as f:
-            f.write(main_rst_template.format_map(template_variables))
+        with open(os.path.join(directory, 'index.rst'), 'w+') as f:
+            f.write(index_rst_template.format_map(template_variables))
 
     def generate_wrapping_rosdoc2_sphinx_project_into_directory(
         self,
