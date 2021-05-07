@@ -322,7 +322,7 @@ class SphinxBuilder(Builder):
         intersphinx_mapping_extensions = [
             f"'{package_name}': "
             f"('{base_url}/{package_name}/{inventory_dict['location_data']['relative_root']}', "
-            f"'{os.path.abspath(inventory_dict['inventory_file'])}'),"
+            f"'{os.path.abspath(inventory_dict['inventory_file'])}')"
             for package_name, inventory_dict in inventory_files.items()
             # Exclude ourselves.
             if package_name != self.build_context.package.name
