@@ -45,7 +45,7 @@ def ensure_global(name, default):
 ensure_global('rosdoc2_settings', {{}})
 ensure_global('extensions', [])
 
-if rosdoc2_settings.get('enable_autdooc', True):
+if rosdoc2_settings.get('enable_autodoc', True):
     print('[rosdoc2] enabling autodoc', file=sys.stderr)
     extensions.append('sphinx.ext.autodoc')
 
