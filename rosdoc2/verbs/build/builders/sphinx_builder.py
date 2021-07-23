@@ -228,7 +228,6 @@ C++ API
 .. toctree::
    :maxdepth: 2
 
-   README <api/program_listing_file_README.md.rst>
    api/library_root
    Full API <api/unabridged_api>
    File structure <api/unabridged_orphan>
