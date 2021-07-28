@@ -74,6 +74,8 @@ if rosdoc2_settings.get('enable_exhale', True):
     print('[rosdoc2] enabling exhale', file=sys.stderr)
     extensions.append('exhale')
     ensure_global('exhale_args', {{}})
+    
+    from exhale import utils
     exhale_args.update({{
         # These arguments are required.
         "containmentFolder": "{user_sourcedir}/api",
