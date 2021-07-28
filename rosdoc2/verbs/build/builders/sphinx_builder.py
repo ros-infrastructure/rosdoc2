@@ -87,9 +87,9 @@ if rosdoc2_settings.get('enable_exhale', True):
         "exhaleExecutesDoxygen": False,
         # Maps markdown files to the "md" lexer, and not the "markdown" lexer
         # Pygments registers "md" as a valid markdown lexer, and not "markdown"
-        "lexerMapping": {{r".*\.md": "md",}},
+        "lexerMapping": {{r".*\.(md|markdown)$": "md",}},
         # This mapping will work when `exhale` supports `:doxygenpage:` directives
-        # Check `svenevs/exhale#111`
+        # Check https://github.com/svenevs/exhale/issues/111
         "customSpecificationsMapping": utils.makeCustomSpecificationsMapping(
         lambda kind: [":project:", ":path:", ":content-only:"] if kind == "page" else []),
     }})
@@ -178,6 +178,7 @@ master_doc = 'index'
 source_suffix = {{
     '.rst': 'restructuredtext',
     '.md': 'markdown',
+    '.markdown': 'markdown',
 }}
 
 # -- Options for HTML output -------------------------------------------------
