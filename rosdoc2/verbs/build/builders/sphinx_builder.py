@@ -74,6 +74,8 @@ if rosdoc2_settings.get('enable_exhale', True):
     print('[rosdoc2] enabling exhale', file=sys.stderr)
     extensions.append('exhale')
     ensure_global('exhale_args', {{}})
+
+    from exhale import utils
     exhale_args.update({{
         # These arguments are required.
         "containmentFolder": "{user_sourcedir}/api",
@@ -85,6 +87,14 @@ if rosdoc2_settings.get('enable_exhale', True):
         # TIP: if using the sphinx-bootstrap-theme, you need
         # "treeViewIsBootstrap": True,
         "exhaleExecutesDoxygen": False,
+        # Maps markdown files to the "md" lexer, and not the "markdown" lexer
+        # Pygments registers "md" as a valid markdown lexer, and not "markdown"
+        "lexerMapping": {{r".*\.(md|markdown)$": "md",}},
+        # This mapping will work when `exhale` supports `:doxygenpage:` directives
+        # Check https://github.com/svenevs/exhale/issues/111
+        # TODO(aprotyas): Uncomment the mapping below once the above issue is resolved.
+        # "customSpecificationsMapping": utils.makeCustomSpecificationsMapping(
+        #     lambda kind: [":project:", ":path:", ":content-only:"] if kind == "page" else []),
     }})
 
 if rosdoc2_settings.get('override_theme', True):
@@ -101,6 +111,14 @@ if rosdoc2_settings.get('automatically_extend_intersphinx_mapping', True):
     ensure_global('intersphinx_mapping', {{
         {intersphinx_mapping_extensions}
     }})
+
+if rosdoc2_settings.get('support_markdown', True):
+    print(f"[rosdoc2] adding markdown parser", file=sys.stderr)
+    # The `myst_parser` is used specifically if there are markdown files
+    # in the sphinx project
+    # TODO(aprotyas): Migrate files under the `include` tag in the project's Doxygen
+    # configuration into the Sphinx project tree used to run the Sphinx builder in.
+    extensions.append('myst_parser')
 """
 
 default_conf_py_template = """\
@@ -160,6 +178,11 @@ exclude_patterns = []
 
 master_doc = 'index'
 
+source_suffix = {{
+    '.rst': 'restructuredtext',
+    '.md': 'markdown',
+    '.markdown': 'markdown',
+}}
 
 # -- Options for HTML output -------------------------------------------------
 
@@ -213,6 +236,9 @@ rosdoc2_settings = {{
     ## scope when run with rosdoc2, and could be conditionally used in your own
     ## Sphinx conf.py file.
     # 'automatically_extend_intersphinx_mapping': True,
+
+    ## Support markdown
+    # 'support_markdown': True,
 }}
 """
 
