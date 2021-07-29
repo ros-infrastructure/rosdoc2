@@ -93,8 +93,8 @@ if rosdoc2_settings.get('enable_exhale', True):
         # This mapping will work when `exhale` supports `:doxygenpage:` directives
         # Check https://github.com/svenevs/exhale/issues/111
         # TODO(aprotyas): Uncomment the mapping below once the above issue is resolved.
-        #"customSpecificationsMapping": utils.makeCustomSpecificationsMapping(
-        #    lambda kind: [":project:", ":path:", ":content-only:"] if kind == "page" else []),
+        # "customSpecificationsMapping": utils.makeCustomSpecificationsMapping(
+        #     lambda kind: [":project:", ":path:", ":content-only:"] if kind == "page" else []),
     }})
 
 if rosdoc2_settings.get('override_theme', True):
