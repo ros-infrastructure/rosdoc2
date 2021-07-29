@@ -248,8 +248,8 @@ index_rst_template = """\
 
 {package.description}
 
-C++ API
-=======
+Package API
+===========
 
 .. toctree::
    :maxdepth: 2
