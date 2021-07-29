@@ -170,6 +170,15 @@ master_doc = 'index'
 ## without the rosdoc2 tool.
 html_theme = 'sphinx_rtd_theme'
 
+html_theme_options = {{
+    # Toc options
+    'collapse_navigation': False,
+    'sticky_navigation': True,
+    'navigation_depth': -1,
+    'includehidden': True,
+    'titles_only': False,
+}}
+
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
@@ -216,9 +225,12 @@ index_rst_template = """\
 C++ API
 =======
 
-:doc:`api/library_root`
+.. toctree::
+   :maxdepth: 2
 
-.. doxygenindex::
+   api/library_root
+   Full API <api/unabridged_api>
+   File structure <api/unabridged_orphan>
 
 Indices and Search
 ==================
