@@ -80,7 +80,7 @@ if rosdoc2_settings.get('enable_exhale', True):
         # These arguments are required.
         "containmentFolder": "{user_sourcedir}/api",
         "rootFileName": "library_root.rst",
-        "rootFileTitle": "Library API",
+        "rootFileTitle": "{package_name} API",
         "doxygenStripFromPath": "..",
         # Suggested optional arguments.
         "createTreeView": True,
@@ -248,8 +248,8 @@ index_rst_template = """\
 
 {package.description}
 
-C++ API
-=======
+Package API
+===========
 
 .. toctree::
    :maxdepth: 2
@@ -474,6 +474,7 @@ class SphinxBuilder(Builder):
             breathe_projects.append(
                 f'        "{package.name} Doxygen Project": "{self.doxygen_xml_directory}"')
         template_variables = {
+            'package_name': package.name,
             'user_sourcedir': os.path.abspath(user_sourcedir),
             'user_conf_py_filename': os.path.abspath(os.path.join(user_sourcedir, 'conf.py')),
             'breathe_projects': ',\n'.join(breathe_projects) + '\n    ',
