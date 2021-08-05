@@ -109,18 +109,20 @@ if rosdoc2_settings.get('support_markdown', True):
     # The `myst_parser` is used specifically if there are markdown files
     # in the sphinx project
     extensions.append('myst_parser')
+
     # If markdown support is enabled, the appropriate Pygments lexer must
     # be registered for `.md`/`.markdown` file suffixes
-    exhale_args.update({{
-        # Maps markdown files to the "md" lexer, and not the "markdown" lexer
-        # Pygments registers "md" as a valid markdown lexer, and not "markdown"
-        "lexerMapping": {{r".*\.(md|markdown)$": "md",}},
-        # This mapping will work when `exhale` supports `:doxygenpage:` directives
-        # Check https://github.com/svenevs/exhale/issues/111
-        # TODO(aprotyas): Uncomment the mapping below once the above issue is resolved.
-        # "customSpecificationsMapping": utils.makeCustomSpecificationsMapping(
-        #     lambda kind: [":project:", ":path:", ":content-only:"] if kind == "page" else []),
-    }})
+    if rosdoc2_settings.get('enable_exhale'):
+        exhale_args.update({{
+            # Maps markdown files to the "md" lexer, and not the "markdown" lexer
+            # Pygments registers "md" as a valid markdown lexer, and not "markdown"
+            "lexerMapping": {{r".*\.(md|markdown)$": "md",}},
+            # This mapping will work when `exhale` supports `:doxygenpage:` directives
+            # Check https://github.com/svenevs/exhale/issues/111
+            # TODO(aprotyas): Uncomment the mapping below once the above issue is resolved.
+            # "customSpecificationsMapping": utils.makeCustomSpecificationsMapping(
+            #     lambda kind: [":project:", ":path:", ":content-only:"] if kind == "page" else []),
+        }})
 """
 
 default_conf_py_template = """\
