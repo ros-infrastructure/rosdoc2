@@ -120,8 +120,8 @@ if rosdoc2_settings.get('support_markdown', True):
     # configuration into the Sphinx project tree used to run the Sphinx builder in.
     extensions.append('myst_parser')
 
-# if no `primary_domain` option provided, defaults to 'cpp'
-if rosdoc2_settings.get('primary_domain', 'cpp'):
+# if no `primary_domain` option provided, defaults to None
+if rosdoc2_settings.get('primary_domain'):
     print(f"[rosdoc2] setting primary domain to '{{rosdoc2_settings.get('primary_domain')}}'",
         file=sys.stderr)
     # Tell sphinx what the primary language being documented is.
@@ -254,8 +254,8 @@ rosdoc2_settings = {{
     ## `primary_domain` and `highlight_language` equal to this setting. These
     ## options allow `sphinx` to choose reasonable defaults for source
     ## code highlighting, among other things.
-    ## Possible values (without extensions): 'c', 'cpp', 'js', 'py'
-    # 'primary_domain': 'cpp',
+    ## Possible values (without extensions): 'c', 'cpp', 'js', 'py', None
+    # 'primary_domain': None,
 }}
 """
 
