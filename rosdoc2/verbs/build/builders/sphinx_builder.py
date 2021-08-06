@@ -313,7 +313,7 @@ class SphinxBuilder(Builder):
                 self.doxygen_xml_directory = value
                 # Must check for the existence of this later, as it may not have been made yet.
             else:
-                raise RuntimeError(f"Error the Doxygen builder does not support key '{key}'")
+                raise RuntimeError(f"Error the Sphinx builder does not support key '{key}'")
 
         # Prepare the template variables for formatting strings.
         self.template_variables = create_format_map_from_package(build_context.package)
