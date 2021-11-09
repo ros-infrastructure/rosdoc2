@@ -93,7 +93,7 @@ if rosdoc2_settings.get('enable_exhale', True):
         # Pygments registers "md" as a valid markdown lexer, and not "markdown"
         "lexerMapping": {{r".*\.(md|markdown)$": "md",}},
         "customSpecificationsMapping": utils.makeCustomSpecificationsMapping(
-            lambda kind: [":content-only:", ":no-link:"] if kind == "page" else []),
+            lambda kind: [":content-only:"] if kind == "page" else []),
     }})
 
 if rosdoc2_settings.get('override_theme', True):
