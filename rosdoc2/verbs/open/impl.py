@@ -20,6 +20,7 @@ from ..build.impl import DEFAULT_OUTPUT_DIR
 
 
 def prepare_arguments(parser):
+    """Add command-line arguments to the argparse object."""
     parser.add_argument(
         'package_output_directory',
         nargs='?',
@@ -30,6 +31,7 @@ def prepare_arguments(parser):
 
 
 def main(options):
+    """Execute the program."""
     # Locate the entry point for the built documentation.
     if not os.path.exists(options.package_output_directory):
         sys.exit(f"given output directory '{options.package_output_directory}' does not exist")

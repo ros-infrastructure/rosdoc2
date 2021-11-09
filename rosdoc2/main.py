@@ -61,7 +61,7 @@ def main(sysargs=None):
     # Error on no verb provided
     if verb is None:
         print(parser.format_usage())
-        sys.exit("Error: No verb provided.")
+        sys.exit('Error: No verb provided.')
     # Error on unknown verb provided
     if verb not in verbs:
         print(parser.format_usage())

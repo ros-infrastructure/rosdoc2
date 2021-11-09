@@ -51,7 +51,8 @@ builders:
     ## The value of each stanza is a dictionary of settings for the builder that
     ## outputs to that directory.
     ## Required keys in the settings dictionary are:
-    ##  * 'output_dir' - determines the output subdirectory for that builder instance relative to --output-directory
+    ##  * 'output_dir' - determines output subdirectory for builder instance
+    ##                   relative to --output-directory
     ##  * 'name' - used when referencing the built docs from the index.
 
     - doxygen: {{
@@ -68,7 +69,7 @@ builders:
 
 
 def inspect_package_for_settings(package, tool_options):
-    f"""
+    """
     Inspect the given package for additional documentation build settings.
 
     Uses default settings if not otherwise specified by the package.

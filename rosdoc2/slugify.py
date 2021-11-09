@@ -23,7 +23,7 @@ def slugify(
     whitespace_replacement='-',
 ):
     """
-    Converts the given string into a "slug" which can be safely used in a directory name.
+    Convert the given string into a "slug" which can be safely used in a directory name.
 
     This function is naive, and doesn't handle unicode or anything special.
     If we need that in the future, consider something like python-slugify.
@@ -31,7 +31,7 @@ def slugify(
     slug = string
     if lowercase:
         slug = slug.lower()
-    slug = re.sub(r"[^\w\s]", '', slug)
+    slug = re.sub(r'[^\w\s]', '', slug)
     if not whitespace:
-        slug = re.sub(r"\s+", whitespace_replacement, slug)
+        slug = re.sub(r'\s+', whitespace_replacement, slug)
     return slug

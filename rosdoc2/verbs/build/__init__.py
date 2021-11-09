@@ -19,11 +19,11 @@ __all__ = [
     'entry_point_data',
 ]
 
-entry_point_data = dict(
-    verb='build',
-    description='Build the documentation of a ROS package',
+entry_point_data = {
+    'verb': 'build',
+    'description': 'Build the documentation of a ROS package',
     # Called for execution, given parsed arguments object
-    main=main,
+    'main': main,
     # Called first to setup argparse, given argparse parser
-    prepare_arguments=prepare_arguments,
-)
+    'prepare_arguments': prepare_arguments,
+}
