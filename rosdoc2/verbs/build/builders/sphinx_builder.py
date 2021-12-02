@@ -425,28 +425,36 @@ class SphinxBuilder(Builder):
             if package_name != self.build_context.package.name
         ]
 
+        package_xml_directory = os.path.dirname(self.build_context.package.filename)
+        # If 'python_source' is specified, construct 'package_src_directory' from it
+        if self.build_context.python_source is not None:
+            package_src_directory = \
+                os.path.join(
+                    package_xml_directory,
+                    self.build_context.python_source)
+        # If not provided, try to find the package source direcotry
+        else:
+            package_list = setuptools.find_packages(where=package_xml_directory)
+            if self.build_context.package.name in package_list:
+                package_src_directory = os.path.join(
+                    package_xml_directory,
+                    self.build_context.package.name)
+            else:
+                package_src_directory = None
+
+        # Setup rosdoc2 Sphinx file which will include and extend the one in `sourcedir`.
+        self.generate_wrapping_rosdoc2_sphinx_project_into_directory(
+            doc_build_folder,
+            sourcedir,
+            os.path.abspath(package_src_directory),
+            intersphinx_mapping_extensions)
+
         # If the package has build type `ament_python`, or if the user configured
         # to run `sphinx-apidoc`, then invoke `sphinx-apidoc` before building
         if (
             self.build_context.build_type == 'ament_python' or
             self.build_context.always_run_sphinx_apidoc
         ):
-            package_xml_directory = os.path.dirname(self.build_context.package.filename)
-            # If 'python_source' is specified, construct 'package_src_directory' from it
-            if self.build_context.python_source is not None:
-                package_src_directory = \
-                    os.path.join(
-                        package_xml_directory,
-                        self.build_context.python_source)
-            # If not provided, try to find the package source direcotry
-            else:
-                package_list = setuptools.find_packages(where=package_xml_directory)
-                if self.build_context.package.name in package_list:
-                    package_src_directory = os.path.join(
-                        package_xml_directory,
-                        self.build_context.package.name)
-                else:
-                    package_src_directory = None
 
             if not package_src_directory or not os.path.isdir(package_src_directory):
                 raise RuntimeError(
@@ -468,13 +476,6 @@ class SphinxBuilder(Builder):
                 logger.info(msg)
             else:
                 raise RuntimeError(msg)
-
-        # Setup rosdoc2 Sphinx file which will include and extend the one in `sourcedir`.
-        self.generate_wrapping_rosdoc2_sphinx_project_into_directory(
-            doc_build_folder,
-            sourcedir,
-            package_src_directory,
-            intersphinx_mapping_extensions)
 
         # Invoke Sphinx-build.
         working_directory = doc_build_folder
