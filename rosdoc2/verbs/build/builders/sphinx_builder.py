@@ -451,7 +451,7 @@ class SphinxBuilder(Builder):
         with open(os.path.join(directory, 'conf.py'), 'w+') as f:
             f.write(default_conf_py_template.format_map(template_variables))
 
-        root_title = f'Welcome to {package.name} documentation'
+        root_title = f'Welcome to the documentation for {package.name}'
         template_variables.update({
             'root_title': root_title,
             'root_title_underline': '=' * len(root_title)
