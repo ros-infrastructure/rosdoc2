@@ -75,6 +75,16 @@ if rosdoc2_settings.get('enable_exhale', True):
     extensions.append('exhale')
     ensure_global('exhale_args', {{}})
 
+    default_exhale_specs_mapping = {{
+        'page': [':content:'],
+        **dict.fromkeys(
+            ['class', 'struct'],
+            [':members:', ':protected-members:', ':undoc-members:']),
+    }}
+
+    exhale_specs_mapping = rosdoc2_settings.get(
+        'exhale_specs_mapping', default_exhale_specs_mapping)
+
     from exhale import utils
     exhale_args.update({{
         # These arguments are required.
@@ -93,7 +103,7 @@ if rosdoc2_settings.get('enable_exhale', True):
         # Pygments registers "md" as a valid markdown lexer, and not "markdown"
         "lexerMapping": {{r".*\.(md|markdown)$": "md",}},
         "customSpecificationsMapping": utils.makeCustomSpecificationsMapping(
-            lambda kind: [":content-only:"] if kind == "page" else []),
+            lambda kind: exhale_specs_mapping.get(kind, [])),
     }})
 
 if rosdoc2_settings.get('override_theme', True):
@@ -224,6 +234,11 @@ rosdoc2_settings = {{
     ## and will set all of the exhale configurations, if not set, and override
     ## settings as needed if they are set by this configuration.
     # 'enable_exhale': True,
+
+    ## This setting, if provided, allows option specification for breathe
+    ## directives through exhale. If not set, exhale defaults will be used.
+    ## If an empty dictionary is provided, breathe defaults will be used.
+    # 'exhale_specs_mapping': {{}},
 
     ## This setting, if True, will ensure intersphinx is part of the 'extensions'.
     # 'enable_intersphinx': True,
