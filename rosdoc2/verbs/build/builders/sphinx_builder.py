@@ -75,26 +75,35 @@ if rosdoc2_settings.get('enable_exhale', True):
     extensions.append('exhale')
     ensure_global('exhale_args', {{}})
 
+    default_exhale_specs_mapping = {{
+        'page': [':content:'],
+        **dict.fromkeys(
+            ['class', 'struct'],
+            [':members:', ':protected-members:', ':undoc-members:']),
+    }}
+
+    exhale_specs_mapping = rosdoc2_settings.get(
+        'exhale_specs_mapping', default_exhale_specs_mapping)
+
     from exhale import utils
     exhale_args.update({{
         # These arguments are required.
-        "containmentFolder": "{user_sourcedir}/api",
-        "rootFileName": "library_root.rst",
-        "rootFileTitle": "{package_name} API",
+        "containmentFolder": "{user_sourcedir}/generated",
+        "rootFileName": "index.rst",
         "doxygenStripFromPath": "..",
         # Suggested optional arguments.
         "createTreeView": True,
+        "fullToctreeMaxDepth": 1,
+        "unabridgedOrphanKinds": [],
+        "fullApiSubSectionTitle": "Reference",
         # TIP: if using the sphinx-bootstrap-theme, you need
         # "treeViewIsBootstrap": True,
         "exhaleExecutesDoxygen": False,
         # Maps markdown files to the "md" lexer, and not the "markdown" lexer
         # Pygments registers "md" as a valid markdown lexer, and not "markdown"
         "lexerMapping": {{r".*\.(md|markdown)$": "md",}},
-        # This mapping will work when `exhale` supports `:doxygenpage:` directives
-        # Check https://github.com/svenevs/exhale/issues/111
-        # TODO(aprotyas): Uncomment the mapping below once the above issue is resolved.
-        # "customSpecificationsMapping": utils.makeCustomSpecificationsMapping(
-        #     lambda kind: [":project:", ":path:", ":content-only:"] if kind == "page" else []),
+        "customSpecificationsMapping": utils.makeCustomSpecificationsMapping(
+            lambda kind: exhale_specs_mapping.get(kind, [])),
     }})
 
 if rosdoc2_settings.get('override_theme', True):
@@ -226,6 +235,11 @@ rosdoc2_settings = {{
     ## settings as needed if they are set by this configuration.
     # 'enable_exhale': True,
 
+    ## This setting, if provided, allows option specification for breathe
+    ## directives through exhale. If not set, exhale defaults will be used.
+    ## If an empty dictionary is provided, breathe defaults will be used.
+    # 'exhale_specs_mapping': {{}},
+
     ## This setting, if True, will ensure intersphinx is part of the 'extensions'.
     # 'enable_intersphinx': True,
 
@@ -246,20 +260,13 @@ rosdoc2_settings = {{
 """
 
 index_rst_template = """\
-{package.name}
-{package_underline}
-
-{package.description}
-
-Package API
-===========
+{root_title}
+{root_title_underline}
 
 .. toctree::
    :maxdepth: 2
 
-   api/library_root
-   Full API <api/unabridged_api>
-   File structure <api/unabridged_orphan>
+   {package.name} <generated/index>
 
 Indices and Search
 ==================
@@ -454,11 +461,16 @@ class SphinxBuilder(Builder):
             'package_authors': ', '.join(set(
                 [a.name for a in package.authors] + [m.name for m in package.maintainers]
             )),
-            'package_underline': '=' * len(package.name),
         }
 
         with open(os.path.join(directory, 'conf.py'), 'w+') as f:
             f.write(default_conf_py_template.format_map(template_variables))
+
+        root_title = f'Welcome to the documentation for {package.name}'
+        template_variables.update({
+            'root_title': root_title,
+            'root_title_underline': '=' * len(root_title)
+        })
 
         with open(os.path.join(directory, 'index.rst'), 'w+') as f:
             f.write(index_rst_template.format_map(template_variables))
