@@ -37,13 +37,12 @@ Additionally, if you have a Python API then you will want to provide a Sphinx `c
 
 ## Installation
 
-`rosdoc2` is published on PyPI and can be installed from there:
+`rosdoc2` can be installed locally from the git repository.
+Clone the repository, change into the directory, and then run:
 
 ```
-$ pip install -U rosdoc2
+$ pip install --user --upgrade .
 ```
-
-If you wish to install `rosdoc2` for development purposes, refer to the [Contributing](#Contributing) section.
 
 ## Documentation
 
