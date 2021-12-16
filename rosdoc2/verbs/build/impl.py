@@ -169,7 +169,7 @@ def main_impl(options):
             # This builder did not generate any output.
             logger.info(
                 f"Note: the builder '{builder.name} ({builder.builder_type})' "
-                f'did not generate any output to be copied into the destination.')
+                'did not generate any output to be copied into the destination.')
             continue
         assert os.path.exists(doc_output_directory), \
             f'builder gave invalid doc_output_directory: {doc_output_directory}'

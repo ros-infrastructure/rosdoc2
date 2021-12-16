@@ -126,7 +126,7 @@ class DoxygenBuilder(Builder):
                 # explicitly specified in the configuration.
                 self.doxyfile = package_doxyfile
                 logger.info(
-                    f'No Doxyfile specified by user, but a Doxyfile was found in '
+                    'No Doxyfile specified by user, but a Doxyfile was found in '
                     f"the package at '{package_doxyfile}' and will be used.")
             elif os.path.isdir(package_include_directory):
                 # If neither the doxyfile setting is set,
@@ -134,19 +134,19 @@ class DoxygenBuilder(Builder):
                 # but there is a standard 'include' directory, then generatate a default.
                 self.doxyfile_content = DEFAULT_DOXYFILE.format_map(self.template_variables)
                 logger.info(
-                    f'No Doxyfile specified by user, and no Doxyfile found in '
+                    'No Doxyfile specified by user, and no Doxyfile found in '
                     f"the package at '{package_doxyfile}', but a standard include "
                     f"directory was found at '{package_include_directory}', "
-                    f'therefore a default Doxyfile will be generated and used.')
+                    'therefore a default Doxyfile will be generated and used.')
             else:
                 # If neither the doxyfile setting is set,
                 # nor is there a Doxyfile in the package root,
                 # and there is no standard 'include' directory, then do nothing.
                 logger.info(
-                    f'No Doxyfile specified by user, no Doxyfile found in '
+                    'No Doxyfile specified by user, no Doxyfile found in '
                     f"the package at '{package_doxyfile}', and no standard include "
                     f"directory found at '{package_include_directory}', "
-                    f'therefore doxygen will not be run.')
+                    'therefore doxygen will not be run.')
         else:
             logger.info(f"Using user specified Doxyfile at '{self.doxyfile}'.")
 

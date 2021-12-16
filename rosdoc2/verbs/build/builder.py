@@ -62,8 +62,8 @@ class Builder:
             raise RuntimeError(
                 f"Error integrating output from builder '{self.name} ({self.builder_type})': "
                 f"file '{common_suffix}' already exists in destination '{destination}'. "
-                f'This usually occurs when two builders generate the same file in '
-                f'the output directory.')
+                'This usually occurs when two builders generate the same file in '
+                'the output directory.')
         if move:
             os.makedirs(os.path.dirname(destination), exist_ok=True)
             shutil.move(os.path.abspath(source), os.path.abspath(destination))
