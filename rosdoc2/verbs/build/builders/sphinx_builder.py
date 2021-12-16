@@ -436,9 +436,9 @@ class SphinxBuilder(Builder):
         else:
             package_list = setuptools.find_packages(where=package_xml_directory)
             if self.build_context.package.name in package_list:
-                package_src_directory = os.path.join(
+                package_src_directory = os.path.abspath(os.path.join(
                     package_xml_directory,
-                    self.build_context.package.name)
+                    self.build_context.package.name))
             else:
                 package_src_directory = None
 
@@ -446,7 +446,7 @@ class SphinxBuilder(Builder):
         self.generate_wrapping_rosdoc2_sphinx_project_into_directory(
             doc_build_folder,
             sourcedir,
-            os.path.abspath(package_src_directory),
+            package_src_directory,
             intersphinx_mapping_extensions)
 
         # If the package has build type `ament_python`, or if the user configured
