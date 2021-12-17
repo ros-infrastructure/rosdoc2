@@ -23,6 +23,7 @@ __all__ = [
 
 
 def create_builder_by_name(builder_name, *, builder_dict, build_context):
+    """Instantiate a new builder with the given builder_name."""
     # TODO(wjwwood): make this an extension point
     builders = {
         'doxygen': DoxygenBuilder,

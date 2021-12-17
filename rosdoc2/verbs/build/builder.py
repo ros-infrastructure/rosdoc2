@@ -18,11 +18,14 @@ import shutil
 
 logger = logging.getLogger('rosdoc2')
 
-class Builder(object):
+
+class Builder:
     """
     Base class for all builders, which just takes care of some boilerplate logic.
     """
+
     def __init__(self, builder_name, builder_entry_dictionary, build_context):
+        """Construct a new Builder."""
         self.builder_type = builder_name
 
         if 'name' not in builder_entry_dictionary:
@@ -38,7 +41,7 @@ class Builder(object):
 
     def build(self, *, doc_build_folder, output_staging_directory):
         """
-        Method called on builders to have them actually do the build.
+        Abstract method to actually do the build.
 
         The output_staging_directory parameter may be useful to refer to
         other builder outputs within this builder.
@@ -47,11 +50,11 @@ class Builder(object):
         :return: the directory where the documentation was built into, should be
             inside the doc_build_folder. Or None if no artifacts were generated.
         """
-        raise NotImplementedError("Should be implemented by subclasses of Builder.")
+        raise NotImplementedError('Should be implemented by subclasses of Builder.')
 
     def move_file(self, *, source, destination, common_suffix, move=True):
         """
-        Method called on each file as it is moved into the staging directory.
+        Move a file into the staging directory.
 
         May be overridden by downstream builders to selectively skip or rename files.
         """
@@ -59,15 +62,15 @@ class Builder(object):
             raise RuntimeError(
                 f"Error integrating output from builder '{self.name} ({self.builder_type})': "
                 f"file '{common_suffix}' already exists in destination '{destination}'. "
-                f"This usually occurs when two builders generate the same file in "
-                f"the output directory.")
+                'This usually occurs when two builders generate the same file in '
+                'the output directory.')
         if move:
             os.makedirs(os.path.dirname(destination), exist_ok=True)
             shutil.move(os.path.abspath(source), os.path.abspath(destination))
 
     def move_files(self, *, source, destination):
         """
-        Method called on builders to move their files into the output staging directory.
+        Move a directory of files into the output staging directory.
 
         May be overridden by downstream builders to selectively skip or rename files.
         """
@@ -83,6 +86,6 @@ class Builder(object):
                     destination=os.path.join(destination, file_to_copy),
                     common_suffix=file_to_copy)
                 number_of_files_moved += 1
-        logger.info(f"Moved {number_of_files_moved} files.")
+        logger.info(f'Moved {number_of_files_moved} files.')
         # Remove temporary output.
         shutil.rmtree(source)

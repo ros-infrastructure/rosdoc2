@@ -19,11 +19,11 @@ __all__ = [
     'entry_point_data',
 ]
 
-entry_point_data = dict(
-    verb='open',
-    description='Open the documentation that was built in a web browser',
+entry_point_data = {
+    'verb': 'open',
+    'description': 'Open the documentation that was built in a web browser',
     # Called for execution, given parsed arguments object
-    main=main,
+    'main': main,
     # Called first to setup argparse, given argparse parser
-    prepare_arguments=prepare_arguments,
-)
+    'prepare_arguments': prepare_arguments,
+}

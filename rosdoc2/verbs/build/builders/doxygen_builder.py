@@ -19,8 +19,8 @@ import shutil
 import subprocess
 
 from ..builder import Builder
-from ..create_format_map_from_package import create_format_map_from_package
 from ..collect_tag_files import collect_tag_files
+from ..create_format_map_from_package import create_format_map_from_package
 
 logger = logging.getLogger('rosdoc2')
 
@@ -69,7 +69,9 @@ class DoxygenBuilder(Builder):
     - extra_doxyfile_statements (list[str]) (optional)
       - extra doxyfile statements which would be added after the default, or user, doxyfile
     """
+
     def __init__(self, builder_name, builder_entry_dictionary, build_context):
+        """Construct a new DoxygenBuilder."""
         super(DoxygenBuilder, self).__init__(
             builder_name,
             builder_entry_dictionary,
@@ -124,7 +126,7 @@ class DoxygenBuilder(Builder):
                 # explicitly specified in the configuration.
                 self.doxyfile = package_doxyfile
                 logger.info(
-                    f"No Doxyfile specified by user, but a Doxyfile was found in "
+                    'No Doxyfile specified by user, but a Doxyfile was found in '
                     f"the package at '{package_doxyfile}' and will be used.")
             elif os.path.isdir(package_include_directory):
                 # If neither the doxyfile setting is set,
@@ -132,29 +134,30 @@ class DoxygenBuilder(Builder):
                 # but there is a standard 'include' directory, then generatate a default.
                 self.doxyfile_content = DEFAULT_DOXYFILE.format_map(self.template_variables)
                 logger.info(
-                    f"No Doxyfile specified by user, and no Doxyfile found in "
+                    'No Doxyfile specified by user, and no Doxyfile found in '
                     f"the package at '{package_doxyfile}', but a standard include "
                     f"directory was found at '{package_include_directory}', "
-                    f"therefore a default Doxyfile will be generated and used.")
+                    'therefore a default Doxyfile will be generated and used.')
             else:
                 # If neither the doxyfile setting is set,
                 # nor is there a Doxyfile in the package root,
                 # and there is no standard 'include' directory, then do nothing.
                 logger.info(
-                    f"No Doxyfile specified by user, no Doxyfile found in "
+                    'No Doxyfile specified by user, no Doxyfile found in '
                     f"the package at '{package_doxyfile}', and no standard include "
                     f"directory found at '{package_include_directory}', "
-                    f"therefore doxygen will not be run.")
+                    'therefore doxygen will not be run.')
         else:
             logger.info(f"Using user specified Doxyfile at '{self.doxyfile}'.")
 
     def build(self, *, doc_build_folder, output_staging_directory):
+        """Actually do the build."""
         # If both doxyfile and doxyfile_content are None, that means there is
         # no reason to run doxygen.
         if self.doxyfile is None and self.doxyfile_content is None:
             logger.info(
-                "Skipping doxygen generation due to lack of configuration and "
-                "failure to find code to automatically document.")
+                'Skipping doxygen generation due to lack of configuration and '
+                'failure to find code to automatically document.')
             return None  # Explicitly generated no documentation.
 
         # Create a temporary output directory for doxygen.
@@ -162,14 +165,14 @@ class DoxygenBuilder(Builder):
         os.makedirs(doxygen_output_dir, exist_ok=True)
 
         # Add the output dir statement to the rosdoc2_doxyfile_statements.
-        self.rosdoc2_doxyfile_statements.append(f"OUTPUT_DIRECTORY = {doxygen_output_dir}")
+        self.rosdoc2_doxyfile_statements.append(f'OUTPUT_DIRECTORY = {doxygen_output_dir}')
 
         # Turn on XML generation, so it can be used with Breathe.
-        self.rosdoc2_doxyfile_statements.append("GENERATE_XML = YES")
+        self.rosdoc2_doxyfile_statements.append('GENERATE_XML = YES')
 
         # Turn on tag file generation and put it into the output directory.
         tag_file_name = os.path.join(doxygen_output_dir, f'{self.build_context.package.name}.tag')
-        self.rosdoc2_doxyfile_statements.append(f"GENERATE_TAGFILE = {tag_file_name}")
+        self.rosdoc2_doxyfile_statements.append(f'GENERATE_TAGFILE = {tag_file_name}')
 
         # Add entries for tag files found in the cross-reference directory.
         tag_files = collect_tag_files(self.build_context.tool_options.cross_reference_directory)

@@ -21,9 +21,9 @@ from catkin_pkg.package import has_ros_schema_reference
 from catkin_pkg.package import InvalidPackage
 from catkin_pkg.package import package_exists_at
 from catkin_pkg.package import parse_package
+from rosdoc2.slugify import slugify
 
 from .inspect_package_for_settings import inspect_package_for_settings
-from rosdoc2.slugify import slugify
 
 logging.basicConfig(format='[%(name)s] [%(levelname)s] %(message)s', level=logging.INFO)
 logger = logging.getLogger('rosdoc2')
@@ -52,6 +52,7 @@ def get_package(path):
 
 
 def prepare_arguments(parser):
+    """Add command-line arguments to the argparse object."""
     parser.add_argument(
         '--package-path',
         '-p',
@@ -102,9 +103,10 @@ def prepare_arguments(parser):
 
 
 def main(options):
+    """Execute the program, catching errors."""
     try:
         return main_impl(options)
-    except Exception as e:
+    except Exception as e:  # noqa: B902
         if options.debug:
             raise
         else:
@@ -112,11 +114,9 @@ def main(options):
 
 
 def main_impl(options):
+    """Execute the program."""
     # Locate and parse the package's package.xml.
-    try:
-        package = get_package(options.package_path)
-    except Exception as e:
-        sys.exit(f'Error: {e}')
+    package = get_package(options.package_path)
 
     if options.build_directory is not None:
         # Check that the build directory exists.
@@ -126,7 +126,8 @@ def main_impl(options):
     if options.install_directory is not None:
         # Check that the install directory exists.
         if not os.path.exists(options.install_directory):
-            sys.exit(f"Error: given install directory '{options.install_directory}' does not exist")
+            sys.exit(
+                f"Error: given install directory '{options.install_directory}' does not exist")
 
     # Inspect package for additional settings, using defaults if none found.
     tool_settings, builders = inspect_package_for_settings(
@@ -168,10 +169,10 @@ def main_impl(options):
             # This builder did not generate any output.
             logger.info(
                 f"Note: the builder '{builder.name} ({builder.builder_type})' "
-                f"did not generate any output to be copied into the destination.")
+                'did not generate any output to be copied into the destination.')
             continue
         assert os.path.exists(doc_output_directory), \
-            f"builder gave invalid doc_output_directory: {doc_output_directory}"
+            f'builder gave invalid doc_output_directory: {doc_output_directory}'
         # Move documentation artifacts from the builder into the output staging.
         # This is additionally in a subdirectory dictated by the output directory part of the
         # builder configuration.

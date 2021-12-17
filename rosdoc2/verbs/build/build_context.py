@@ -15,12 +15,14 @@
 
 class BuildContext:
     """
-    Class which encapsulates the context of the build, and is used to calculate
-    default settings for builders based on things like the package directory,
-    when necessary.
+    Class which encapsulates the context of the build.
+
+    Used to calculate default settings for builders based on things like the
+    package directory, when necessary.
     """
+
     def __init__(self, *, configuration_file_path, package_object, tool_options):
-        super(BuildContext, self).__init__()
+        """Construct a new BuildContext."""
         self.configuration_file_path = configuration_file_path
         self.package = package_object
         self.tool_options = tool_options
