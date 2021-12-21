@@ -76,7 +76,7 @@ if rosdoc2_settings.get('enable_exhale', True):
     ensure_global('exhale_args', {{}})
 
     default_exhale_specs_mapping = {{
-        'page': [':content:'],
+        'page': [':content-only:'],
         **dict.fromkeys(
             ['class', 'struct'],
             [':members:', ':protected-members:', ':undoc-members:']),
