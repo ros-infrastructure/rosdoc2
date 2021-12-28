@@ -429,9 +429,9 @@ class SphinxBuilder(Builder):
         # If 'python_source' is specified, construct 'package_src_directory' from it
         if self.build_context.python_source is not None:
             package_src_directory = \
-                os.path.join(
+                os.path.abspath(os.path.join(
                     package_xml_directory,
-                    self.build_context.python_source)
+                    self.build_context.python_source))
         # If not provided, try to find the package source direcotry
         else:
             package_list = setuptools.find_packages(where=package_xml_directory)
