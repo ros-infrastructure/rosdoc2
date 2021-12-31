@@ -33,7 +33,7 @@ def generate_package_toc_entry(*, build_context) -> str:
     # The TOC entries have to be indented by three (or any N) spaces
     # inside the string to fall under the `:toctree:` directive
     toc_entry_py = f"""
-   {build_context.package.name} Python API <modules>"""
+   {build_context.package.name} Python API <generated/python/modules>"""
     toc_entry_cpp = """
    api/library_root
    Full C/C++ API <api/unabridged_api>
@@ -461,9 +461,10 @@ class SphinxBuilder(Builder):
                     "Could not locate source directory to invoke sphinx-apidoc in. "
                     "If this is package does not have a standard Python package layout, "
                     "please specify the Python source in 'rosdoc2.yaml'.")
+            output_directory = os.path.join(sourcedir, 'generated/python')
             cmd = [
                 'sphinx-apidoc',
-                '-o', os.path.relpath(sourcedir, start=doc_build_folder),
+                '-o', os.path.relpath(output_directory, start=doc_build_folder),
                 '-e',  # Document each module in its own page.
                 os.path.abspath(package_src_directory),
             ]
