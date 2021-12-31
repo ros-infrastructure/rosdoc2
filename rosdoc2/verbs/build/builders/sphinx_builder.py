@@ -19,6 +19,7 @@ import setuptools
 import shutil
 import subprocess
 import sys
+from jinja2 import Template
 
 from ..builder import Builder
 from ..collect_inventory_files import collect_inventory_files
@@ -593,6 +594,7 @@ class SphinxBuilder(Builder):
             breathe_projects.append(
                 f'        "{package.name} Doxygen Project": "{self.doxygen_xml_directory}"')
         template_variables = {
+            'package': package,
             'package_name': package.name,
             'package_src_directory': package_src_directory,
             'exec_depends': [exec_depend.name for exec_depend in package.exec_depends],
@@ -600,15 +602,27 @@ class SphinxBuilder(Builder):
             'always_run_doxygen': self.build_context.always_run_doxygen,
             'user_sourcedir': os.path.abspath(user_sourcedir),
             'breathe_projects': ',\n'.join(breathe_projects) + '\n    ',
-            'intersphinx_mapping_extensions': ',\n        '.join(intersphinx_mapping_extensions)
+            'intersphinx_mapping_extensions': ',\n        '.join(intersphinx_mapping_extensions),
+            'package_version_short': '.'.join(package.version.split('.')[0:2]),
+            'package_licenses': ', '.join(package.licenses),
+            'package_authors': ', '.join(set(
+                [a.name for a in package.authors] + [m.name for m in package.maintainers]
+            )),
+            'package_underline': '=' * len(package.name),
+            'package_toc_entry': generate_package_toc_entry(build_context=self.build_context)
+
         }
 
         user_conf_py_filename = os.path.abspath(os.path.join(user_sourcedir, 'conf.py'))
 
+        # apply jinja to user's conf.py
+        j2_template = Template(open(user_conf_py_filename).read())
+        user_conf_py = j2_template.render(template_variables)
+
         # Execute existing conf.py and get values of variables
         conf_globals = {}
         conf_locals = {}
-        exec(open(user_conf_py_filename).read(), conf_globals, conf_locals)
+        exec(user_conf_py, conf_globals, conf_locals)
 
         # Convert any paths to absolute paths.
         conf_relpath = os.path.relpath(user_sourcedir)
