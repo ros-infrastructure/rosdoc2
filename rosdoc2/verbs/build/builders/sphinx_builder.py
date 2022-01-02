@@ -27,6 +27,39 @@ from ..create_format_map_from_package import create_format_map_from_package
 
 logger = logging.getLogger('rosdoc2')
 
+def generate_template_variables(
+      intersphinx_mapping_extensions,
+      breathe_projects,
+      build_context,
+      user_sourcedir,
+      package_src_directory
+    ):
+    """Generate the variables used by templates for conf.py and index.rst"""
+
+    package = build_context.package
+    template_variables = create_format_map_from_package(package)
+    root_title = f'Welcome to the documentation for {package.name}'
+
+    template_variables.update({
+        'always_run_doxygen': build_context.always_run_doxygen,
+        'breathe_projects': ',\n'.join(breathe_projects) + '\n    ',
+        'build_type': build_context.build_type,
+        'exec_depends': [exec_depend.name for exec_depend in package.exec_depends],
+        'intersphinx_mapping_extensions': ',\n        '.join(intersphinx_mapping_extensions),
+        'package': package,
+        'package_authors': ', '.join(set(
+            [a.name for a in package.authors] + [m.name for m in package.maintainers]
+        )),
+        'package_licenses': ', '.join(package.licenses),
+        'package_src_directory': package_src_directory,
+        'package_toc_entry': generate_package_toc_entry(build_context=build_context),
+        'package_underline': '=' * len(package.name),
+        'package_version_short': '.'.join(package.version.split('.')[0:2]),
+        'root_title': root_title,
+        'root_title_underline': '=' * len(root_title),
+        'user_sourcedir': os.path.abspath(user_sourcedir),
+    })
+
 def generate_package_toc_entry(*, build_context) -> str:
     build_type = build_context.build_type
     always_run_doxygen = build_context.always_run_doxygen
@@ -373,9 +406,6 @@ class SphinxBuilder(Builder):
             else:
                 raise RuntimeError(f"Error the Sphinx builder does not support key '{key}'")
 
-        # Prepare the template variables for formatting strings.
-        self.template_variables = create_format_map_from_package(build_context.package)
-
     def build(self, *, doc_build_folder, output_staging_directory):
         """Actually do the build."""
         # Check that doxygen_xml_directory exists relative to output staging, if specified.
@@ -444,6 +474,21 @@ class SphinxBuilder(Builder):
                     self.build_context.package.name))
             else:
                 package_src_directory = None
+
+        breathe_projects = []
+        if self.doxygen_xml_directory is not None:
+            breathe_projects.append(
+                f'        "{self.build_context.package.name} Doxygen Project": ' +
+                f'"{self.doxygen_xml_directory}"')
+
+        # Prepare the template variables for formatting strings.
+        self.template_variables = generate_template_variables(
+            intersphinx_mapping_extensions,
+            breathe_projects,
+            self.build_context,
+            sourcedir,
+            package_src_directory
+        )
 
         # Setup rosdoc2 Sphinx file which will include and extend the one in `sourcedir`.
         self.generate_wrapping_rosdoc2_sphinx_project_into_directory(
@@ -554,70 +599,25 @@ class SphinxBuilder(Builder):
         """Generate the default project configuration files."""
         os.makedirs(directory, exist_ok=True)
 
-        package = self.build_context.package
-        template_variables = {
-            'package': package,
-            'package_version_short': '.'.join(package.version.split('.')[0:2]),
-            'package_licenses': ', '.join(package.licenses),
-            'package_authors': ', '.join(set(
-                [a.name for a in package.authors] + [m.name for m in package.maintainers]
-            )),
-            'package_underline': '=' * len(package.name),
-            'package_toc_entry': generate_package_toc_entry(build_context=self.build_context)
-        }
-
         with open(os.path.join(directory, 'conf.py'), 'w+') as f:
-            f.write(default_conf_py_template.format_map(template_variables))
-
-        root_title = f'Welcome to the documentation for {package.name}'
-        template_variables.update({
-            'root_title': root_title,
-            'root_title_underline': '=' * len(root_title)
-        })
+            f.write(default_conf_py_template.format_map(self.template_variables))
 
         with open(os.path.join(directory, 'index.rst'), 'w+') as f:
-            f.write(index_rst_template.format_map(template_variables))
+            f.write(index_rst_template.format_map(self.template_variables))
 
     def generate_wrapping_rosdoc2_sphinx_project_into_directory(
         self,
         directory,
         user_sourcedir,
-        package_src_directory,
-        intersphinx_mapping_extensions,
     ):
         """Generate the rosdoc2 sphinx project configuration files."""
         os.makedirs(directory, exist_ok=True)
-
-        package = self.build_context.package
-        breathe_projects = []
-        if self.doxygen_xml_directory is not None:
-            breathe_projects.append(
-                f'        "{package.name} Doxygen Project": "{self.doxygen_xml_directory}"')
-        template_variables = {
-            'package': package,
-            'package_name': package.name,
-            'package_src_directory': package_src_directory,
-            'exec_depends': [exec_depend.name for exec_depend in package.exec_depends],
-            'build_type': self.build_context.build_type,
-            'always_run_doxygen': self.build_context.always_run_doxygen,
-            'user_sourcedir': os.path.abspath(user_sourcedir),
-            'breathe_projects': ',\n'.join(breathe_projects) + '\n    ',
-            'intersphinx_mapping_extensions': ',\n        '.join(intersphinx_mapping_extensions),
-            'package_version_short': '.'.join(package.version.split('.')[0:2]),
-            'package_licenses': ', '.join(package.licenses),
-            'package_authors': ', '.join(set(
-                [a.name for a in package.authors] + [m.name for m in package.maintainers]
-            )),
-            'package_underline': '=' * len(package.name),
-            'package_toc_entry': generate_package_toc_entry(build_context=self.build_context)
-
-        }
 
         user_conf_py_filename = os.path.abspath(os.path.join(user_sourcedir, 'conf.py'))
 
         # apply jinja to user's conf.py
         j2_template = Template(open(user_conf_py_filename).read())
-        user_conf_py = j2_template.render(template_variables)
+        user_conf_py = j2_template.render(self.template_variables)
 
         # Execute existing conf.py and get values of variables
         conf_globals = {}
@@ -644,6 +644,6 @@ class SphinxBuilder(Builder):
                 wrapped_conf_py += f'{key} = {value}\n'
             elif isinstance(value, str):
                 wrapped_conf_py += f'{key} = "{value}"\n'
-        wrapped_conf_py += rosdoc2_wrapping_conf_py_template.format_map(template_variables)
+        wrapped_conf_py += rosdoc2_wrapping_conf_py_template.format_map(self.template_variables)
         with open(os.path.join(directory, 'conf.py'), 'w+') as f:
             f.write(wrapped_conf_py)
