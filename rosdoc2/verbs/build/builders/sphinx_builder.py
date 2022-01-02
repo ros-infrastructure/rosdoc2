@@ -544,6 +544,13 @@ class SphinxBuilder(Builder):
         else:
             raise RuntimeError(msg)
 
+        # If we used a generated index file, rename it to 'index'
+        index_file_path = os.path.join(sphinx_output_dir, 'index.html')
+        if not os.path.exists(index_file_path):
+            index_generated_file_path = os.path.join(sphinx_output_dir, 'index_generated.html')
+            if os.path.exists(index_generated_file_path):
+                os.rename(index_generated_file_path, index_file_path)
+
         # Copy the inventory file into the cross-reference directory, but also leave the output.
         inventory_file_name = os.path.join(sphinx_output_dir, 'objects.inv')
         destination = os.path.join(
@@ -612,15 +619,19 @@ class SphinxBuilder(Builder):
         """Generate the rosdoc2 sphinx project configuration files."""
         os.makedirs(directory, exist_ok=True)
 
-        user_conf_template_path = os.path.abspath(os.path.join(user_sourcedir, 'conf.j2'))
         user_conf_py_path = os.path.abspath(os.path.join(user_sourcedir, 'conf.py'))
-        if os.path.exists(user_conf_template_path):
-            user_conf_template = Template(open(user_conf_template_path).read())
-            user_conf_py = user_conf_template.render(self.template_variables)
-            with open(os.path.join(user_sourcedir, 'conf.py'), 'w+') as f:
-                f.write(user_conf_py)
-        else:
+        # if a user conf.py exists, use it
+        if os.path.exists(user_conf_py_path):
             user_conf_py = open(user_conf_py_path).read()
+        else:
+            # if a template exists, generate conf.py
+            user_conf_template_path = os.path.abspath(os.path.join(user_sourcedir, 'conf.j2'))
+            if os.path.exists(user_conf_template_path):
+                user_conf_template = Template(open(user_conf_template_path).read())
+                user_conf_py = user_conf_template.render(self.template_variables)
+                # This file is not actually used, but created to show the user the template results
+                with open(os.path.join(user_sourcedir, 'conf_generated.py'), 'w+') as f:
+                    f.write(user_conf_py)
 
         # Execute existing conf.py and get values of variables
         conf_globals = {}
@@ -640,6 +651,27 @@ class SphinxBuilder(Builder):
                     abs_paths.append(os.path.abspath(os.path.join(conf_relpath, item)))
                 conf_locals[key] = abs_paths
 
+        # wrap root_doc to process any templates. Support both old master_doc as well as newer root_doc.
+        root_doc = 'index'
+        root_doc_name = 'root_doc'
+        if 'root_doc' in conf_locals:
+            root_doc = conf_locals['root_doc']
+        elif 'master_doc' in conf_locals:
+            root_doc = conf_locals['master_doc']
+            root_doc_name = 'master_doc'
+
+        # if the root_doc does not exist, generate from template
+        user_root_doc_path = os.path.abspath(os.path.join(user_sourcedir, root_doc + '.rst'))
+        if not os.path.exists(user_root_doc_path):
+            user_root_template_path = os.path.abspath(os.path.join(user_sourcedir, root_doc + '.j2'))
+            if os.path.exists(user_root_template_path):
+                user_j2_template = Template(open(user_root_template_path).read())
+                user_root_doc = user_j2_template.render(self.template_variables)
+                with open(os.path.join(user_sourcedir, 'index_generated.rst'), 'w+') as f:
+                    f.write(user_root_doc)
+                # tell conf.py that we are using index_generated
+                conf_locals[root_doc_name] = 'index_generated'
+
         # Setup rosdoc2 Sphinx file which will include and extend the one in `sourcedir`.
         wrapped_conf_py = rosdoc2_wrapping_conf_py_preamble
         for key, value in conf_locals.items():
@@ -650,18 +682,4 @@ class SphinxBuilder(Builder):
         wrapped_conf_py += rosdoc2_wrapping_conf_py_template.format_map(self.template_variables)
         with open(os.path.join(directory, 'conf.py'), 'w+') as f:
             f.write(wrapped_conf_py)
-
-        # wrap root_doc to process any templates
-        root_doc = 'index'
-        if 'root_doc' in conf_locals:
-            root_doc = conf_locals['root_doc']
-        elif 'master_doc' in conf_locals:
-            root_doc = conf_locals['master_doc']
-
-        user_root_template_path = os.path.abspath(os.path.join(user_sourcedir, root_doc + '.j2'))
-        if os.path.exists(user_root_template_path):
-            user_j2_template = Template(open(user_root_template_path).read())
-            user_root_doc = user_j2_template.render(self.template_variables)
-            with open(os.path.join(user_sourcedir, root_doc + '.rst'), 'w+') as f:
-                f.write(user_root_doc)
 
