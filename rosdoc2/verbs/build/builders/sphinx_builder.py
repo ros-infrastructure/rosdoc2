@@ -59,6 +59,7 @@ def generate_template_variables(
         'root_title_underline': '=' * len(root_title),
         'user_sourcedir': os.path.abspath(user_sourcedir),
     })
+    return template_variables
 
 def generate_package_toc_entry(*, build_context) -> str:
     build_type = build_context.build_type
@@ -493,9 +494,7 @@ class SphinxBuilder(Builder):
         # Setup rosdoc2 Sphinx file which will include and extend the one in `sourcedir`.
         self.generate_wrapping_rosdoc2_sphinx_project_into_directory(
             doc_build_folder,
-            sourcedir,
-            package_src_directory,
-            intersphinx_mapping_extensions)
+            sourcedir)
 
         # If the package has build type `ament_python`, or if the user configured
         # to run `sphinx-apidoc`, then invoke `sphinx-apidoc` before building
@@ -613,11 +612,15 @@ class SphinxBuilder(Builder):
         """Generate the rosdoc2 sphinx project configuration files."""
         os.makedirs(directory, exist_ok=True)
 
-        user_conf_py_filename = os.path.abspath(os.path.join(user_sourcedir, 'conf.py'))
-
-        # apply jinja to user's conf.py
-        j2_template = Template(open(user_conf_py_filename).read())
-        user_conf_py = j2_template.render(self.template_variables)
+        user_conf_template_path = os.path.abspath(os.path.join(user_sourcedir, 'conf.j2'))
+        user_conf_py_path = os.path.abspath(os.path.join(user_sourcedir, 'conf.py'))
+        if os.path.exists(user_conf_template_path):
+            user_conf_template = Template(open(user_conf_template_path).read())
+            user_conf_py = user_conf_template.render(self.template_variables)
+            with open(os.path.join(user_sourcedir, 'conf.py'), 'w+') as f:
+                f.write(user_conf_py)
+        else:
+            user_conf_py = open(user_conf_py_path).read()
 
         # Execute existing conf.py and get values of variables
         conf_globals = {}
@@ -647,3 +650,18 @@ class SphinxBuilder(Builder):
         wrapped_conf_py += rosdoc2_wrapping_conf_py_template.format_map(self.template_variables)
         with open(os.path.join(directory, 'conf.py'), 'w+') as f:
             f.write(wrapped_conf_py)
+
+        # wrap root_doc to process any templates
+        root_doc = 'index'
+        if 'root_doc' in conf_locals:
+            root_doc = conf_locals['root_doc']
+        elif 'master_doc' in conf_locals:
+            root_doc = conf_locals['master_doc']
+
+        user_root_template_path = os.path.abspath(os.path.join(user_sourcedir, root_doc + '.j2'))
+        if os.path.exists(user_root_template_path):
+            user_j2_template = Template(open(user_root_template_path).read())
+            user_root_doc = user_j2_template.render(self.template_variables)
+            with open(os.path.join(user_sourcedir, root_doc + '.rst'), 'w+') as f:
+                f.write(user_root_doc)
+
