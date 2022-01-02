@@ -37,8 +37,8 @@ def generate_package_toc_entry(*, build_context) -> str:
    {build_context.package.name} Python API <generated/python/modules>"""
     toc_entry_cpp = """
    api/library_root
-   Full C/C++ API <api/unabridged_api>
-   File structure <api/unabridged_orphan>"""
+   Full C/C++ API <generated/unabridged_api>
+   File structure <generated/unabridged_orphan>"""
     toc_entry = ''
 
     if build_type == 'ament_python' or always_run_sphinx_apidoc:
