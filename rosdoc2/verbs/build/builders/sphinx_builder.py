@@ -523,8 +523,6 @@ class SphinxBuilder(Builder):
         if os.path.exists(index_j2_path):
             index_j2_template = Template(open(index_j2_path).read())
             index_rst = index_j2_template.render(self.template_variables)
-            print(f'*** generated index.rst is ***:\n{index_rst}')
-            print(f'*** self.template_variables is ***:\n{self.template_variables}')
             index_rst_path = os.path.join(sourcedir, "index.rst")
             with open(os.path.join(index_rst_path), 'w+') as f:
                 f.write(index_rst)
