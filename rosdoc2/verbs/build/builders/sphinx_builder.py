@@ -41,6 +41,18 @@ def generate_template_variables(
     template_variables = create_format_map_from_package(package)
     root_title = f'Welcome to the documentation for {package.name}'
 
+    # standard urls in a package definition
+    url_repository = ''
+    url_website = ''
+    url_bugtracker = ''
+    for url in package.urls:
+        if url.type == 'repository':
+            url_repository = f'* `Repository <{url.url}>`_'
+        if url.type == 'website':
+            url_website = f'* `Website <{url.url}>`_'
+        if url.type == 'bugtracker':
+            url_bugtracker = f'* `Bugtracker <{url.url}>`_'
+
     template_variables.update({
         'always_run_doxygen': build_context.always_run_doxygen,
         'breathe_projects': ',\n'.join(breathe_projects) + '\n    ',
@@ -58,6 +70,9 @@ def generate_template_variables(
         'package_version_short': '.'.join(package.version.split('.')[0:2]),
         'root_title': root_title,
         'root_title_underline': '=' * len(root_title),
+        'url_bugtracker': url_bugtracker,
+        'url_repository': url_repository,
+        'url_website': url_website,
         'user_sourcedir': os.path.abspath(user_sourcedir),
     })
     return template_variables
@@ -96,7 +111,6 @@ import sys
 """
 
 rosdoc2_wrapping_conf_py_template = """
-
 ## Based on the rosdoc2 settings, do various things to the settings before
 ## letting Sphinx continue.
 
@@ -210,6 +224,17 @@ if rosdoc2_settings.get('support_markdown', True):
     # The `myst_parser` is used specifically if there are markdown files
     # in the sphinx project
     extensions.append('myst_parser')
+
+# Provide tags to conditionally include documentation
+if '{url_repository}':
+    tags.add('url_repository')
+    tags.add('url_any')
+if '{url_website}':
+    tags.add('url_website')
+    tags.add('url_any')
+if '{url_bugtracker}':
+    tags.add('url_bugtracker')
+    tags.add('url_any')
 """  # noqa: W605
 
 
