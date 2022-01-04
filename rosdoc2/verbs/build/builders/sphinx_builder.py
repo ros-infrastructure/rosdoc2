@@ -73,8 +73,17 @@ def generate_template_variables(
         'url_bugtracker': url_bugtracker,
         'url_repository': url_repository,
         'url_website': url_website,
+        'url_any': url_bugtracker or url_repository or url_website,
         'user_sourcedir': os.path.abspath(user_sourcedir),
     })
+
+    # Each True template key will be converted into a sphinx tag in conf.py
+    tags = []
+    for (key, value) in template_variables.items():
+        if bool(value):
+            tags.append(key)
+    template_variables.update({'tags': tags})
+
     return template_variables
 
 def generate_package_toc_entry(*, build_context) -> str:
@@ -226,15 +235,8 @@ if rosdoc2_settings.get('support_markdown', True):
     extensions.append('myst_parser')
 
 # Provide tags to conditionally include documentation
-if '{url_repository}':
-    tags.add('url_repository')
-    tags.add('url_any')
-if '{url_website}':
-    tags.add('url_website')
-    tags.add('url_any')
-if '{url_bugtracker}':
-    tags.add('url_bugtracker')
-    tags.add('url_any')
+for tag in {tags}:
+    tags.add(tag)
 """  # noqa: W605
 
 
