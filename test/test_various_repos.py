@@ -15,20 +15,23 @@ import os
 import subprocess
 import tempfile
 
-def package_smoke_test(package):
+# 'pytest_virtualenv' required, supplies virtualenv
+
+def package_smoke_test(package, virtualenv):
     (url, commit, package_relative_path) = package
 
     print(f'*** package url: {url} path: {package_relative_path}')
     fp_save = None
-    fp_save = tempfile.mkdtemp()
+    #fp_save = tempfile.mkdtemp()
     with tempfile.TemporaryDirectory() as fp_delete:
         fp = fp_save or fp_delete
         print(f'temp directory is {fp}')
 
-        subprocess.run(['git', '-C', f'{fp}', 'clone', f'{url}', 'repo'])
+        virtualenv.run(['git', '-C', f'{fp}', 'clone', f'{url}', 'repo'])
         repo_path = os.path.join(fp, 'repo')
         package_path = os.path.join(repo_path, package_relative_path)
-        subprocess.run(['git', '-C', f'{repo_path}', 'checkout', f'{commit}'])
+        # -q to suppress detached head message
+        virtualenv.run(['git', '-C', f'{repo_path}', 'checkout', '-q', f'{commit}'])
         (docs_cr, docs_output, docs_build) = ('docs_cr', 'docs_output', 'docs_build')
         args_str = f"["\
             + '"build"'\
@@ -41,11 +44,9 @@ def package_smoke_test(package):
             'python',
             '-c', f'from rosdoc2 import main; main.main({args_str})'
         ]
-        result = subprocess.run(runme, check=True, capture_output=True, text=True)
-        print('--- rosdoc2 stdout ---')
-        print(result.stdout)
-        print('--- rosdoc2 stderr ---')
-        print(result.stderr)
+        outs = virtualenv.run(runme, capture=True)
+        print('--- rosdoc2 output ---')
+        print(outs)
 
         # Confirm that the output index exists.
 
@@ -55,7 +56,8 @@ TEST_PACKAGES = [
     ('https://github.com/rosdabbler/fqdemo.git', 'HEAD', 'fqdemo_nodes'),
 ]
 
-def test_packages():
+def test_packages(virtualenv):
     """Confirm that rosdoc2 runs to completion in these packages"""
+    virtualenv.install_package(f'install {os.getcwd()}', installer='pip')
     for package in TEST_PACKAGES:
-        package_smoke_test(package)
+        package_smoke_test(package, virtualenv)
