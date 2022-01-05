@@ -57,6 +57,7 @@ def generate_template_variables(
         'always_run_doxygen': build_context.always_run_doxygen,
         'breathe_projects': ',\n'.join(breathe_projects) + '\n    ',
         'build_type': build_context.build_type,
+        'do_breathe': bool(breathe_projects),
         'exec_depends': [exec_depend.name for exec_depend in package.exec_depends],
         'intersphinx_mapping_extensions': ',\n        '.join(intersphinx_mapping_extensions),
         'package': package,
@@ -148,7 +149,7 @@ always_run_doxygen = {always_run_doxygen}
 # By default, the `exhale`/`breathe` extensions should be added if `doxygen` was invoked
 is_doxygen_invoked = build_type in ('ament_cmake', 'cmake') or always_run_doxygen
 
-if rosdoc2_settings.get('enable_breathe', is_doxygen_invoked):
+if rosdoc2_settings.get('enable_breathe', is_doxygen_invoked and {do_breathe}):
     # Configure Breathe.
     # Breathe ingests the XML output from Doxygen and makes it accessible from Sphinx.
     print('[rosdoc2] enabling breathe', file=sys.stderr)
@@ -165,7 +166,7 @@ if rosdoc2_settings.get('enable_breathe', is_doxygen_invoked):
         extensions.append('breathe')
         breathe_default_project = next(iter(breathe_projects.keys()))
 
-if rosdoc2_settings.get('enable_exhale', is_doxygen_invoked):
+if rosdoc2_settings.get('enable_exhale', is_doxygen_invoked and {do_breathe}):
     # Configure Exhale.
     # Exhale uses the output of Doxygen and Breathe to create easier to browse pages
     # for classes and functions documented with Doxygen.
@@ -301,9 +302,10 @@ class SphinxBuilder(Builder):
                 os.path.join(output_staging_directory, self.doxygen_xml_directory)
             self.doxygen_xml_directory = os.path.abspath(self.doxygen_xml_directory)
             if not os.path.isdir(self.doxygen_xml_directory):
-                raise RuntimeError(
-                    f"Error the 'doxygen_xml_directory' specified "
+                logger.warn(
+                    f"The 'doxygen_xml_directory' specified "
                     f"'{self.doxygen_xml_directory}' does not exist.")
+                self.doxygen_xml_directory = None
 
         # Check if the user provided a sourcedir.
         sourcedir = self.sphinx_sourcedir
