@@ -20,9 +20,7 @@ logger = logging.getLogger('rosdoc2')
 
 
 class Builder:
-    """
-    Base class for all builders, which just takes care of some boilerplate logic.
-    """
+    """Base class for all builders, which just takes care of some boilerplate logic."""
 
     def __init__(self, builder_name, builder_entry_dictionary, build_context):
         """Construct a new Builder."""
