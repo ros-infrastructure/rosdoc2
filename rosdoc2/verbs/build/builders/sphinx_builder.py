@@ -34,12 +34,8 @@ def generate_package_toc_entry(*, build_context) -> str:
     always_run_sphinx_apidoc = build_context.always_run_sphinx_apidoc
     # The TOC entries have to be indented by three (or any N) spaces
     # inside the string to fall under the `:toctree:` directive
-    toc_entry_py = f"""
-   {build_context.package.name} Python API <modules>"""
-    toc_entry_cpp = """
-   api/library_root
-   Full C/C++ API <api/unabridged_api>
-   File structure <api/unabridged_orphan>"""
+    toc_entry_cpp = f'{build_context.package.name} <generated/index>\n'
+    toc_entry_py = f'{build_context.package.name} <modules>\n'
     toc_entry = ''
 
     if build_type == 'ament_python' or always_run_sphinx_apidoc:
@@ -312,7 +308,7 @@ index_rst_template = """\
 .. toctree::
    :maxdepth: 2
 
-   {package.name} <generated/index>
+   {package_toc_entry}
 
 Indices and Search
 ==================
@@ -572,7 +568,8 @@ class SphinxBuilder(Builder):
         root_title = f'Welcome to the documentation for {package.name}'
         template_variables.update({
             'root_title': root_title,
-            'root_title_underline': '=' * len(root_title)
+            'root_title_underline': '=' * len(root_title),
+            'package_toc_entry': generate_package_toc_entry(build_context=self.build_context)
         })
 
         with open(os.path.join(directory, 'index.rst'), 'w+') as f:
