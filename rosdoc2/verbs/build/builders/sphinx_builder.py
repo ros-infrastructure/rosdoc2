@@ -475,7 +475,7 @@ class SphinxBuilder(Builder):
             completed_process = subprocess.run(cmd, cwd=doc_build_folder)
             msg = f"sphinx-apidoc exited with return code '{completed_process.returncode}'"
             if completed_process.returncode == 0:
-                logger.info(msg)
+                logger.debug(msg)
             else:
                 raise RuntimeError(msg)
 
