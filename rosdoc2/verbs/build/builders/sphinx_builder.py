@@ -93,8 +93,8 @@ if rosdoc2_settings.get('enable_breathe', is_doxygen_invoked):
     # First check that doxygen would have been run
     if not is_doxygen_invoked:
         raise RuntimeError(
-            "Cannot enable the 'breathe' extension if 'doxygen' is not invoked."
-            "Please enable 'always_run_doxygen' if the package is not an"
+            "Cannot enable the 'breathe' extension if 'doxygen' is not invoked. "
+            "Please enable 'always_run_doxygen' if the package is not an "
             "'ament_cmake' or 'cmake' package.")
     ensure_global('breathe_projects', {{}})
     breathe_projects.update({{{breathe_projects}}})
@@ -113,8 +113,8 @@ if rosdoc2_settings.get('enable_exhale', is_doxygen_invoked):
     # First check that doxygen would have been run
     if not is_doxygen_invoked:
         raise RuntimeError(
-            "Cannot enable the 'breathe' extension if 'doxygen' is not invoked."
-            "Please enable 'always_run_doxygen' if the package is not an"
+            "Cannot enable the 'breathe' extension if 'doxygen' is not invoked. "
+            "Please enable 'always_run_doxygen' if the package is not an "
             "'ament_cmake' or 'cmake' package.")
     extensions.append('exhale')
     ensure_global('exhale_args', {{}})
