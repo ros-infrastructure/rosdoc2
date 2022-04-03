@@ -75,7 +75,7 @@ if rosdoc2_settings.get('enable_autodoc', True):
     # Note: `autodoc` only mocks up those modules that it actually cannot locate in PATH
     autodoc_mock_imports = {exec_depends}
     # Add the package directory to PATH, so that `sphinx-autodoc` can import it
-    sys.path.insert(0, os.path.dirname('{package_src_directory}'))
+    sys.path.insert(0, os.path.dirname('{package_src_directory}/'))
 
 if rosdoc2_settings.get('enable_intersphinx', True):
     print('[rosdoc2] enabling intersphinx', file=sys.stderr)
