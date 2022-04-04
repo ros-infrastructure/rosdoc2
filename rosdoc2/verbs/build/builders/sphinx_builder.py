@@ -71,11 +71,15 @@ ensure_global('extensions', [])
 if rosdoc2_settings.get('enable_autodoc', True):
     print('[rosdoc2] enabling autodoc', file=sys.stderr)
     extensions.append('sphinx.ext.autodoc')
-    # Provide all runtime dependencies to be mocked up
-    # Note: `autodoc` only mocks up those modules that it actually cannot locate in PATH
-    autodoc_mock_imports = {exec_depends}
-    # Add the package directory to PATH, so that `sphinx-autodoc` can import it
-    sys.path.insert(0, os.path.dirname('{package_src_directory}/'))
+
+    pkgs_to_mock = []
+    import importlib
+    for exec_depend in {exec_depends}:
+        try:
+            importlib.import_module(exec_depend)
+        except:
+            pkgs_to_mock.append(exec_depend)
+    autodoc_mock_imports = pkgs_to_mock
 
 if rosdoc2_settings.get('enable_intersphinx', True):
     print('[rosdoc2] enabling intersphinx', file=sys.stderr)
