@@ -286,6 +286,9 @@ rosdoc2_settings = {{
     ## If an empty dictionary is provided, breathe defaults will be used.
     # 'exhale_specs_mapping': {{}},
 
+    ## This setting, if True, will ensure autodoc is part of the 'extensions'.
+    # 'enable_autodoc': True,
+
     ## This setting, if True, will ensure intersphinx is part of the 'extensions'.
     # 'enable_intersphinx': True,
 
