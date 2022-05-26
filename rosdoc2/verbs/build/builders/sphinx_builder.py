@@ -77,7 +77,7 @@ if rosdoc2_settings.get('enable_autodoc', True):
     for exec_depend in {exec_depends}:
         try:
             importlib.import_module(exec_depend)
-        except:
+        except ImportError:
             pkgs_to_mock.append(exec_depend)
     autodoc_mock_imports = pkgs_to_mock
 
