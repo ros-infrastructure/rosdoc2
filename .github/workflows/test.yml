@@ -38,5 +38,12 @@ jobs:
        python -m pip install --upgrade --upgrade-strategy eager -r requirements.txt
        python -m pip freeze
 
+    - name: Install apt dependencies
+      run: sudo apt update && sudo apt install -y doxygen graphviz
+
     - name: Run tests
+<<<<<<< HEAD
       run: py.test --verbose test
+=======
+      run: python -m pytest -s test
+>>>>>>> f19b269 (Add C++ test package)

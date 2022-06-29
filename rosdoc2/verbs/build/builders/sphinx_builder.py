@@ -430,7 +430,7 @@ class SphinxBuilder(Builder):
         intersphinx_mapping_extensions = [
             f"'{package_name}': "
             f"('{base_url}/{package_name}/{inventory_dict['location_data']['relative_root']}', "
-            f"'{os.path.abspath(inventory_dict['inventory_file'])}')"
+            f"'{esc_backslash(os.path.abspath(inventory_dict['inventory_file']))}')"
             for package_name, inventory_dict in inventory_files.items()
             # Exclude ourselves.
             if package_name != self.build_context.package.name
@@ -608,7 +608,8 @@ class SphinxBuilder(Builder):
         breathe_projects = []
         if self.doxygen_xml_directory is not None:
             breathe_projects.append(
-                f'        "{package.name} Doxygen Project": "{self.doxygen_xml_directory}"')
+                f'        "{package.name} Doxygen Project": '
+                f'"{esc_backslash(self.doxygen_xml_directory)}"')
         template_variables = {
             'package_name': package.name,
             'package_src_directory': package_src_directory,
