@@ -27,6 +27,11 @@ from ..create_format_map_from_package import create_format_map_from_package
 logger = logging.getLogger('rosdoc2')
 
 
+def esc_backslash(path):
+    """Escape backslashes to support Windows paths in strings."""
+    return path.replace('\\', '\\\\') if path else path
+
+
 def generate_package_toc_entry(*, build_context) -> str:
     """Construct a table of content (toc) entry for the package being processed."""
     build_type = build_context.build_type
@@ -149,7 +154,7 @@ if rosdoc2_settings.get('enable_exhale', is_doxygen_invoked):
         "exhaleExecutesDoxygen": False,
         # Maps markdown files to the "md" lexer, and not the "markdown" lexer
         # Pygments registers "md" as a valid markdown lexer, and not "markdown"
-        "lexerMapping": {{r".*\.(md|markdown)$": "md",}},
+        "lexerMapping": {{r".*\\.(md|markdown)$": "md",}},
         "customSpecificationsMapping": utils.makeCustomSpecificationsMapping(
             lambda kind: exhale_specs_mapping.get(kind, [])),
     }})
@@ -610,8 +615,9 @@ class SphinxBuilder(Builder):
             'exec_depends': [exec_depend.name for exec_depend in package.exec_depends],
             'build_type': self.build_context.build_type,
             'always_run_doxygen': self.build_context.always_run_doxygen,
-            'user_sourcedir': os.path.abspath(user_sourcedir),
-            'user_conf_py_filename': os.path.abspath(os.path.join(user_sourcedir, 'conf.py')),
+            'user_sourcedir': esc_backslash(os.path.abspath(user_sourcedir)),
+            'user_conf_py_filename': esc_backslash(
+                os.path.abspath(os.path.join(user_sourcedir, 'conf.py'))),
             'breathe_projects': ',\n'.join(breathe_projects) + '\n    ',
             'intersphinx_mapping_extensions': ',\n        '.join(intersphinx_mapping_extensions)
         }
