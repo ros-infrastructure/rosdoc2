@@ -197,9 +197,9 @@ default_conf_py_template = """\
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-# import os
-# import sys
-# sys.path.insert(0, os.path.abspath('.'))
+import os
+import sys
+sys.path.insert(0, os.path.abspath(os.path.join('{package_src_directory}', '..')))
 
 
 # -- Project information -----------------------------------------------------
@@ -399,6 +399,26 @@ class SphinxBuilder(Builder):
                     f"Error the 'doxygen_xml_directory' specified "
                     f"'{self.doxygen_xml_directory}' does not exist.")
 
+        package_xml_directory = os.path.dirname(self.build_context.package.filename)
+        # If 'python_source' is specified, construct 'package_src_directory' from it
+        if self.build_context.python_source is not None:
+            package_src_directory = \
+                os.path.abspath(
+                    os.path.join(
+                        package_xml_directory,
+                        self.build_context.python_source))
+        # If not provided, try to find the package source direcotry
+        else:
+            package_list = setuptools.find_packages(where=package_xml_directory)
+            if self.build_context.package.name in package_list:
+                package_src_directory = \
+                    os.path.abspath(
+                        os.path.join(
+                            package_xml_directory,
+                            self.build_context.package.name))
+            else:
+                package_src_directory = None
+
         # Check if the user provided a sourcedir.
         sourcedir = self.sphinx_sourcedir
         if sourcedir is not None:
@@ -421,7 +441,7 @@ class SphinxBuilder(Builder):
                     'Note: no sourcedir provided by the user and no Sphinx sourcedir was found '
                     'in the standard locations, therefore using a default Sphinx configuration.')
                 sourcedir = os.path.join(doc_build_folder, 'default_sphinx_project')
-                self.generate_default_project_into_directory(sourcedir)
+                self.generate_default_project_into_directory(sourcedir, package_src_directory)
 
         # Collect intersphinx mapping extensions from discovered inventory files.
         inventory_files = \
@@ -435,26 +455,6 @@ class SphinxBuilder(Builder):
             # Exclude ourselves.
             if package_name != self.build_context.package.name
         ]
-
-        package_xml_directory = os.path.dirname(self.build_context.package.filename)
-        # If 'python_source' is specified, construct 'package_src_directory' from it
-        if self.build_context.python_source is not None:
-            package_src_directory = \
-                os.path.abspath(
-                    os.path.join(
-                        package_xml_directory,
-                        self.build_context.python_source))
-        # If not provided, try to find the package source direcotry
-        else:
-            package_list = setuptools.find_packages(where=package_xml_directory)
-            if self.build_context.package.name in package_list:
-                package_src_directory = \
-                    os.path.abspath(
-                        os.path.join(
-                            package_xml_directory,
-                            self.build_context.package.name))
-            else:
-                package_src_directory = None
 
         # Setup rosdoc2 Sphinx file which will include and extend the one in `sourcedir`.
         self.generate_wrapping_rosdoc2_sphinx_project_into_directory(
@@ -560,13 +560,14 @@ class SphinxBuilder(Builder):
                 return option
         return None
 
-    def generate_default_project_into_directory(self, directory):
+    def generate_default_project_into_directory(self, directory, package_src_directory):
         """Generate the default project configuration files."""
         os.makedirs(directory, exist_ok=True)
 
         package = self.build_context.package
         template_variables = {
             'package': package,
+            'package_src_directory': esc_backslash(package_src_directory),
             'package_version_short': '.'.join(package.version.split('.')[0:2]),
             'package_licenses': ', '.join(package.licenses),
             'package_authors': ', '.join(set(
