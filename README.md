@@ -95,6 +95,13 @@ How to do that, and how to handle some other special cases will follow.
 
 #### Using a `rosdoc2.yaml` file to control how your package is documented
 
+To generate a default config file, run
+
+```
+$ rosdoc2 default_config \
+  --package-path ./src/path/to/my_package_name
+```
+
 TODO
 
 #### Packages with C/C++ API Documentation
