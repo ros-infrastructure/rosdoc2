@@ -81,9 +81,14 @@ if rosdoc2_settings.get('enable_autodoc', True):
     import importlib
     for exec_depend in {exec_depends}:
         try:
+            # Some python dependencies may be dist packages.
+            exec_depend = exec_depend.split("python3-")[-1]
             importlib.import_module(exec_depend)
         except ImportError:
             pkgs_to_mock.append(exec_depend)
+    # todo(YV): If users provide autodoc_mock_imports in their conf.py
+    # it will be overwritten by those in exec_depends.
+    # Consider appending to autodoc_mock_imports instead.
     autodoc_mock_imports = pkgs_to_mock
 
 if rosdoc2_settings.get('enable_intersphinx', True):
