@@ -619,7 +619,8 @@ class SphinxBuilder(Builder):
         template_variables = {
             'package_name': package.name,
             'package_src_directory': package_src_directory,
-            'exec_depends': [exec_depend.name for exec_depend in package.exec_depends],
+            'exec_depends': [exec_depend.name for exec_depend in package.exec_depends] +\
+                [doc_depend.name for doc_depend in package.doc_depends],
             'build_type': self.build_context.build_type,
             'always_run_doxygen': self.build_context.always_run_doxygen,
             'user_sourcedir': esc_backslash(os.path.abspath(user_sourcedir)),
