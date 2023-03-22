@@ -590,6 +590,13 @@ class SphinxBuilder(Builder):
         intersphinx_mapping_extensions,
     ):
         """Generate the rosdoc2 sphinx project configuration files."""
+        # Copy all user content, like images or documentation files, to the wrapping directory
+        if user_sourcedir:
+            shutil.copytree(
+                os.path.abspath(user_sourcedir),
+                os.path.abspath(directory),
+                dirs_exist_ok=True)
+
         os.makedirs(directory, exist_ok=True)
 
         package = self.build_context.package
