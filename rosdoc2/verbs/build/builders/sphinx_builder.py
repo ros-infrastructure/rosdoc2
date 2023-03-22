@@ -601,7 +601,8 @@ class SphinxBuilder(Builder):
         intersphinx_mapping_extensions,
     ):
         """Generate the rosdoc2 sphinx project configuration files."""
-        # Copy all user content, like images or documentation files, and source files to the wrapping directory
+        # Copy all user content, like images or documentation files, and
+        # source files to the wrapping directory
         if user_sourcedir:
             try:
                 shutil.copytree(
@@ -613,7 +614,7 @@ class SphinxBuilder(Builder):
                     os.path.abspath(directory),
                     dirs_exist_ok=True)
             except OSError as e:
-                print(f"Failed to copy user content: {e}")
+                print(f'Failed to copy user content: {e}')
 
         os.makedirs(directory, exist_ok=True)
 
@@ -626,8 +627,8 @@ class SphinxBuilder(Builder):
         template_variables = {
             'package_name': package.name,
             'package_src_directory': package_src_directory,
-            'exec_depends': [exec_depend.name for exec_depend in package.exec_depends] +\
-                [doc_depend.name for doc_depend in package.doc_depends],
+            'exec_depends': [exec_depend.name for exec_depend in package.exec_depends]
+            + [doc_depend.name for doc_depend in package.doc_depends],
             'build_type': self.build_context.build_type,
             'always_run_doxygen': self.build_context.always_run_doxygen,
             'user_sourcedir': esc_backslash(os.path.abspath(user_sourcedir)),
