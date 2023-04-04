@@ -61,6 +61,11 @@ settings:
     ## type. This is most useful if the user would like to generate Python API
     ## documentation for a package that is not of the `ament_python` build type.
     always_run_sphinx_apidoc: false
+
+    # This setting, if provided, will override the build_type of this package
+    # for documentation purposes only. If not provided, documentation will be
+    # generated assuming the build_type in package.xml.
+    # override_build_type: 'ament_python'
 builders:
     ## Each stanza represents a separate build step, performed by a specific 'builder'.
     ## The key of each stanza is the builder to use; this must be one of the

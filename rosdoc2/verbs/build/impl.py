@@ -193,7 +193,7 @@ def main_impl(options):
             destination = \
                 os.path.abspath(os.path.join(package_output_directory, item))
             if os.path.isdir(destination):
-                # shutil.move behaves in a way such that if the destintation exists
+                # shutil.move behaves in a way such that if the destination exists
                 # and is a directory, it would copy the source directory into it,
                 # rather than replacing its contents or appending to it.
                 # So deleting it first will prevent that.
