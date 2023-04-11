@@ -609,7 +609,7 @@ class SphinxBuilder(Builder):
                     os.path.abspath(user_sourcedir),
                     os.path.abspath(directory),
                     dirs_exist_ok=True)
-                if (self.build_context.build_type == 'ament_python'):
+                if self.build_context.build_type == 'ament_python':
                     # shutil.copy tree will recursively copy an entire
                     # directory rooted at the provided src directory.
                     # If we supply package_src_directory as src,
