@@ -412,7 +412,7 @@ class SphinxBuilder(Builder):
                     os.path.join(
                         package_xml_directory,
                         self.build_context.python_source))
-        # If not provided, try to find the package source direcotry
+        # If not provided, try to find the package source directory
         else:
             package_list = setuptools.find_packages(where=package_xml_directory)
             if self.build_context.package.name in package_list:
@@ -609,10 +609,18 @@ class SphinxBuilder(Builder):
                     os.path.abspath(user_sourcedir),
                     os.path.abspath(directory),
                     dirs_exist_ok=True)
-                shutil.copytree(
-                    os.path.abspath(package_src_directory),
-                    os.path.abspath(directory),
-                    dirs_exist_ok=True)
+                if (self.build_context.build_type == 'ament_python'):
+                    # shutil.copy tree will recursively copy an entire
+                    # directory rooted at the provided src directory.
+                    # If we supply package_src_directory as src,
+                    # it will copy the contents within package_src_directory.
+                    # However, we want to copy the package_src_directory itself
+                    # such that the python modules will reside within this folder
+                    # at the destination directory.
+                    shutil.copytree(
+                        os.path.abspath(os.path.join(package_src_directory, '..')),
+                        os.path.abspath(directory),
+                        dirs_exist_ok=True)
             except OSError as e:
                 print(f'Failed to copy user content: {e}')
 
