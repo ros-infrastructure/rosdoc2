@@ -72,6 +72,10 @@ def ensure_global(name, default):
 
 ensure_global('rosdoc2_settings', {{}})
 ensure_global('extensions', [])
+ensure_global('project', "{package_name}")
+ensure_global('author', "{package_authors}")
+ensure_global('release', "{package.version}")
+ensure_global('version', "{package_version_short}")
 
 if rosdoc2_settings.get('enable_autodoc', True):
     print('[rosdoc2] enabling autodoc', file=sys.stderr)
@@ -643,7 +647,12 @@ class SphinxBuilder(Builder):
             'user_conf_py_filename': esc_backslash(
                 os.path.abspath(os.path.join(user_sourcedir, 'conf.py'))),
             'breathe_projects': ',\n'.join(breathe_projects) + '\n    ',
-            'intersphinx_mapping_extensions': ',\n        '.join(intersphinx_mapping_extensions)
+            'intersphinx_mapping_extensions': ',\n        '.join(intersphinx_mapping_extensions),
+            'package': package,
+            'package_authors': ', '.join(set(
+                [a.name for a in package.authors] + [m.name for m in package.maintainers]
+            )),
+            'package_version_short': '.'.join(package.version.split('.')[0:2]),
         }
 
         print(os.path.abspath(os.path.join(directory, 'conf.py')))
