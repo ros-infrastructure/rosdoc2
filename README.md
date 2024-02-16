@@ -108,7 +108,7 @@ TODO
 
 The tool uses information from your package's `package.xml` manifest file, and assumes the source files with documentation to be extracted are all in the `include` folder of your packages, based on the package layout conventions for ROS 2:
 
-https://index.ros.org/doc/ros2/Contributing/Developer-Guide/#filesystem-layout
+https://docs.ros.org/en/rolling/The-ROS2-Project/Contributing/Developer-Guide.html#filesystem-layout
 
 #### Packages with Python API Documentation
 
