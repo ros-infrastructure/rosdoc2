@@ -158,6 +158,9 @@ The Sphinx builder will attempt to do a few things to ensure it runs even withou
 
 The final default is in place, even for packages with only C++, so that we can enable cross-referencing between packages using Sphinx and Breathe.
 
+If an existing sphinx project is found, the `conf.py` sphinx configuration will be extended to enable rosdoc2-specific features according to the rosdoc2 configuration.
+Additionally, the `project`, `author`, `release` and `version` options are populated from package.xml if they are not specified in `conf.py`.
+
 #### Doxygen Builder
 
 The Doxygen builder will attempt to run even with no additional configuration, following these steps:
