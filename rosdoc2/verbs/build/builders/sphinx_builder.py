@@ -322,6 +322,13 @@ index_rst_template = """\
 {root_title}
 {root_title_underline}
 
+{package.plaintext_description}
+
+{package_readme_include}
+
+API Docs
+========
+
 .. toctree::
    :maxdepth: 2
 
@@ -332,6 +339,22 @@ Indices and Search
 
 * :ref:`genindex`
 * :ref:`search`
+
+"""
+
+readme_include_md_template = """\
+```{{include}} {readme_file_name}
+:relative-images:
+```
+
+"""
+
+readme_include_rst_fragment = """\
+Package README
+==============
+
+.. include:: readme_include.md
+   :parser: myst_parser.sphinx_
 
 """
 
@@ -565,6 +588,14 @@ class SphinxBuilder(Builder):
                 return option
         return None
 
+    def locate_user_readme(self, package_directory) -> str | None:
+        """Try to locate a readme.md file in the package source dir and return the path."""
+        for filename in os.listdir(package_directory):
+            path = os.path.join(package_directory, filename)
+            if filename.lower() == 'readme.md' and os.path.isfile(path):
+                return os.path.abspath(path)
+        return None
+
     def generate_default_project_into_directory(self, directory, package_src_directory):
         """Generate the default project configuration files."""
         os.makedirs(directory, exist_ok=True)
@@ -582,6 +613,19 @@ class SphinxBuilder(Builder):
 
         with open(os.path.join(directory, 'conf.py'), 'w+') as f:
             f.write(default_conf_py_template.format_map(template_variables))
+
+        # If a readme file is present in the package, include it in index.rst
+        readme_path = self.locate_user_readme(os.path.dirname(self.build_context.package.filename))
+        if readme_path:
+            logger.info(f'Found a package README at {os.path.basename(readme_path)}, '
+                        'including in default index.rst.')
+            with open(os.path.join(directory, 'readme_include.md'), 'w+') as f:
+                f.write(readme_include_md_template.format_map({
+                    'readme_file_name': os.path.relpath(readme_path, directory)
+                }))
+            template_variables['package_readme_include'] = readme_include_rst_fragment
+        else:
+            template_variables['package_readme_include'] = ''
 
         root_title = f'Welcome to the documentation for {package.name}'
         template_variables.update({
