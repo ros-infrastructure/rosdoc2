@@ -649,9 +649,9 @@ class SphinxBuilder(Builder):
             'breathe_projects': ',\n'.join(breathe_projects) + '\n    ',
             'intersphinx_mapping_extensions': ',\n        '.join(intersphinx_mapping_extensions),
             'package': package,
-            'package_authors': ', '.join(set(
+            'package_authors': ', '.join(sorted(set(
                 [a.name for a in package.authors] + [m.name for m in package.maintainers]
-            )),
+            ))),
             'package_version_short': '.'.join(package.version.split('.')[0:2]),
         }
 
