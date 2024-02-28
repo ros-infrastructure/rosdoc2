@@ -16,15 +16,17 @@ import logging
 import os
 import sys
 
-from flake8 import LOG
-from flake8.api.legacy import get_style_guide
+import pytest
 
 
-# suppress warning messages from flake8
-LOG.setLevel(logging.ERROR)
-
-
+@pytest.mark.flake8
+@pytest.mark.linter
 def test_flake8():
+    from flake8.api.legacy import get_style_guide
+
+    # avoid debug / info / warning messages from flake8 internals
+    logging.getLogger('flake8').setLevel(logging.ERROR)
+
     style_guide = get_style_guide(
         extend_ignore=['D100', 'D104', 'W503'],
         show_source=True,
