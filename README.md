@@ -11,9 +11,12 @@ This tool can be viewed from two perspectives: first from the perspective of a u
 To generate the documentation for almost any ROS 2 package, first build the package locally, then run this command replacing the arguments with appropriate directories:
 
 ```
-$ rosdoc2 build \
+rosdoc2 build \
   --package-path ./src/path/to/my_package_name
 ```
+
+> [!NOTE]
+> Please make sure that ROS 2 colcon workspace is NOT sourced during build.
 
 This command will inspect your package and run various documentation tools based on the configuration of your package.
 
@@ -22,7 +25,7 @@ The package directory that you specify must contain a single ROS 2 package that 
 There will be an `index.html` file in the output directory which you can open manually, or with this command:
 
 ```
-$ rosdoc2 open ./doc_output/index.html
+rosdoc2 open ./doc_output/index.html
 ```
 
 For more advanced usage see the documentation.
@@ -37,12 +40,24 @@ Additionally, if you have a Python API then you will want to provide a Sphinx `c
 
 ## Installation
 
+### Prerequisite
+
+```
+apt install -y python3-pip git
+```
+
+and then, install [ros2_documentation](https://github.com/ros2/ros2_documentation?tab=readme-ov-file#prerequisites) required packages.
+
+### `rosdoc2` installation
+
 `rosdoc2` can be installed locally from the git repository.
 Clone the repository, change into the directory, and then run:
 
 ```
-$ pip install --user --upgrade .
+pip install --user --upgrade .
 ```
+
+`rosdoc2` will be installed under `~/.local/bin/` directory.
 
 ## Documentation
 
@@ -98,7 +113,7 @@ How to do that, and how to handle some other special cases will follow.
 To generate a default config file, run
 
 ```
-$ rosdoc2 default_config \
+rosdoc2 default_config \
   --package-path ./src/path/to/my_package_name
 ```
 
