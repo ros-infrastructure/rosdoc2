@@ -16,7 +16,7 @@ rosdoc2 build \
 ```
 
 > [!NOTE]
-> Please make sure that ROS 2 colcon workspace is NOT sourced during build.
+> Please see [Known Issues](#known-issues) if failed.
 
 This command will inspect your package and run various documentation tools based on the configuration of your package.
 
@@ -197,3 +197,9 @@ TODO
 ## Contributing
 
 TODO
+
+## Known Issues
+
+| Description / Error Message | Issue | Workaround |
+|:---|:---:|:---|
+| `No module named 'rclpy._rclpy_pybind11'` | [#66](https://github.com/ros-infrastructure/rosdoc2/issues/66) | Do not source colcon workspace. |
