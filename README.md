@@ -192,7 +192,28 @@ TODO
 
 ## Testing
 
-TODO
+To install rosdoc2 prerequisites for testing, run
+```
+pip install --user --upgrade .[test]
+```
+
+You probably want to test rosdoc2 using code in a local directory rather than
+re-running install every time you do a change. To do this, run (from the directory
+containing this README):
+```
+python3 -m pytest
+```
+If you want to see more output, try the ```-rP``` and/or ```--log-level=DEBUG``` option.
+To limit to a particular test, for example the test of "full_package", use ```-k full_package```
+
+Combining these as an example, to get detailed output from the full_package test even for
+passed tests, run:
+```
+python3 -m pytest -rP --log-level=DEBUG -k full_package
+```
+
+
+
 
 ## Contributing
 

@@ -2,8 +2,6 @@ name: CI
 
 on:
   push:
-    branches:
-    - main
   pull_request:
     branches:
     - main
@@ -11,10 +9,10 @@ on:
 jobs:
   unit_tests:
     name: Unit Tests
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     strategy:
       matrix:
-        python-version: ['3.8', '3.9']
+        python-version: ['3.8', '3.9', '3.10']
 
     steps:
     - name: Checkout
@@ -38,5 +36,8 @@ jobs:
        python -m pip install --upgrade --upgrade-strategy eager .[test]
        python -m pip freeze
 
+    - name: Install apt dependencies
+      run: sudo apt update && sudo apt install -y doxygen graphviz
+
     - name: Run tests
-      run: py.test --verbose test
+      run: python -m pytest -s test
