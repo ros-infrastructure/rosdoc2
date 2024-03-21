@@ -20,10 +20,19 @@ import logging
 import pathlib
 from urllib.parse import urlparse
 
+import pytest
 from rosdoc2.verbs.build.impl import main_impl, prepare_arguments
 
 logger = logging.getLogger('test-builder')
 DATAPATH = pathlib.Path('test/packages')
+
+
+@pytest.fixture(scope='session')
+def session_dir(tmp_path_factory):
+    tmp_path_factory.mktemp('build', False)
+    tmp_path_factory.mktemp('cross_references', False)
+    tmp_path_factory.mktemp('output', False)
+    return tmp_path_factory.getbasetemp()
 
 
 class htmlParser(HTMLParser):
@@ -149,10 +158,10 @@ def do_test_package(
             f'file represented by <{found_item}> should exist at <{link_path}>'
 
 
-def test_minimum_package(tmp_path):
+def test_minimum_package(session_dir):
     """Tests of a package containing as little as possible."""
     PKG_NAME = 'minimum_package'
-    do_build_package(DATAPATH / PKG_NAME, tmp_path)
+    do_build_package(DATAPATH / PKG_NAME, session_dir)
 
     includes = [
         PKG_NAME,
@@ -169,7 +178,7 @@ def test_minimum_package(tmp_path):
     links_exist = [
         'genindex.html',
     ]
-    do_test_package(PKG_NAME, tmp_path,
+    do_test_package(PKG_NAME, session_dir,
                     includes=includes,
                     excludes=excludes,
                     file_includes=file_includes,
@@ -177,10 +186,10 @@ def test_minimum_package(tmp_path):
                     links_exist=links_exist)
 
 
-def test_full_package(tmp_path):
+def test_full_package(session_dir):
     """Test a package with C++, python, and docs."""
     PKG_NAME = 'full_package'
-    do_build_package(DATAPATH / PKG_NAME, tmp_path)
+    do_build_package(DATAPATH / PKG_NAME, session_dir)
 
     includes = [
         PKG_NAME,
@@ -188,15 +197,15 @@ def test_full_package(tmp_path):
     file_includes = [
         'generated/index.html'
     ]
-    do_test_package(PKG_NAME, tmp_path,
+    do_test_package(PKG_NAME, session_dir,
                     includes=includes,
                     file_includes=file_includes)
 
 
-def test_minimal_publisher_py(tmp_path):
+def test_minimal_publisher_py(session_dir):
     """Test a pure python package."""
     PKG_NAME = 'minimal_publisher_py'
-    do_build_package(DATAPATH / PKG_NAME, tmp_path)
+    do_build_package(DATAPATH / PKG_NAME, session_dir)
 
     includes = [
         PKG_NAME,
@@ -204,6 +213,6 @@ def test_minimal_publisher_py(tmp_path):
     links_exist = [
         'minimal_publisher_py.html',
     ]
-    do_test_package(PKG_NAME, tmp_path,
+    do_test_package(PKG_NAME, session_dir,
                     includes=includes,
                     links_exist=links_exist)
