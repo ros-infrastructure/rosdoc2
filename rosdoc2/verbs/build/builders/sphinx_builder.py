@@ -40,8 +40,8 @@ def generate_package_toc_entry(*, build_context) -> str:
     ament_cmake_python = build_context.ament_cmake_python
     # The TOC entries have to be indented by three (or any N) spaces
     # inside the string to fall under the `:toctree:` directive
-    toc_entry_cpp = f'   C++ API <generated/index>\n'
-    toc_entry_py = f'   Python API <modules>\n'
+    toc_entry_cpp = '   EXHALE REPLACES THIS <generated/index>\n'
+    toc_entry_py = '   Python API <modules>\n'
     toc_entry = '\n'
 
     if build_type == 'ament_python' or always_run_sphinx_apidoc or ament_cmake_python:
@@ -158,7 +158,7 @@ if rosdoc2_settings.get('enable_exhale', is_doxygen_invoked):
         "createTreeView": True,
         "fullToctreeMaxDepth": 1,
         "unabridgedOrphanKinds": [],
-        "fullApiSubSectionTitle": "Reference",
+        "fullApiSubSectionTitle": "Reference C++ API",
         # TIP: if using the sphinx-bootstrap-theme, you need
         # "treeViewIsBootstrap": True,
         "exhaleExecutesDoxygen": False,
@@ -472,13 +472,11 @@ class SphinxBuilder(Builder):
             package_src_directory,
             intersphinx_mapping_extensions)
 
-        # If the package has build type `ament_python`, or if the user configured
-        # to run `sphinx-apidoc`, then invoke `sphinx-apidoc` before building
-        if (
-            self.build_context.build_type == 'ament_python'
-            or self.build_context.always_run_sphinx_apidoc
-        ):
-
+        # If the package has python code, then invoke `sphinx-apidoc` before building
+        has_python = self.build_context.build_type == 'ament_python' or \
+            self.build_context.always_run_sphinx_apidoc or \
+            self.build_context.ament_cmake_python
+        if has_python:
             if not package_src_directory or not os.path.isdir(package_src_directory):
                 raise RuntimeError(
                     'Could not locate source directory to invoke sphinx-apidoc in. '
