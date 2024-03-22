@@ -9,10 +9,10 @@ on:
 jobs:
   unit_tests:
     name: Unit Tests
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-20.04
     strategy:
       matrix:
-        python-version: ['3.8', '3.9', '3.10']
+        python-version: ['3.8', '3.9']
 
     steps:
     - name: Checkout
@@ -40,4 +40,4 @@ jobs:
       run: sudo apt update && sudo apt install -y doxygen graphviz
 
     - name: Run tests
-      run: python -m pytest -s test
+      run: py.test --verbose test

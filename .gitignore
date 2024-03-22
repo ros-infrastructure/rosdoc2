@@ -57,10 +57,3 @@ docs/_build/
 # PyBuilder
 target/
 .pytest_cache
-
-# Editors
-.vscode/
-
-# tests
-test/packages/**/index.rst
-test/packages/**/conf.py

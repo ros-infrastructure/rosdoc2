@@ -202,17 +202,15 @@ def test_full_package(session_dir):
                     file_includes=file_includes)
 
 
-def test_minimal_publisher_py(session_dir):
+def test_only_python(session_dir):
     """Test a pure python package."""
-    PKG_NAME = 'minimal_publisher_py'
+    PKG_NAME = 'only_python'
     do_build_package(DATAPATH / PKG_NAME, session_dir)
 
     includes = [
         PKG_NAME,
     ]
-    links_exist = [
-        'minimal_publisher_py.html',
-    ]
+    links_exist = ['only_python.python_node.html']
     do_test_package(PKG_NAME, session_dir,
                     includes=includes,
                     links_exist=links_exist)
