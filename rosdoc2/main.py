@@ -86,3 +86,6 @@ def main(sysargs=None):
     # Finally call the subparser's main function with the processed args
     # and the extras which the preprocessor may have returned
     sys.exit(args.main(args) or 0)
+
+if __name__ == '__main__':
+    main()
