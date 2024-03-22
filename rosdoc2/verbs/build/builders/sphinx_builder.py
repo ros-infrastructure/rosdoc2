@@ -37,13 +37,14 @@ def generate_package_toc_entry(*, build_context) -> str:
     build_type = build_context.build_type
     always_run_doxygen = build_context.always_run_doxygen
     always_run_sphinx_apidoc = build_context.always_run_sphinx_apidoc
+    ament_cmake_python = build_context.ament_cmake_python
     # The TOC entries have to be indented by three (or any N) spaces
     # inside the string to fall under the `:toctree:` directive
-    toc_entry_cpp = f'{build_context.package.name} <generated/index>\n'
-    toc_entry_py = f'{build_context.package.name} <modules>\n'
-    toc_entry = ''
+    toc_entry_cpp = f'   C++ API <generated/index>\n'
+    toc_entry_py = f'   Python API <modules>\n'
+    toc_entry = '\n'
 
-    if build_type == 'ament_python' or always_run_sphinx_apidoc:
+    if build_type == 'ament_python' or always_run_sphinx_apidoc or ament_cmake_python:
         toc_entry += toc_entry_py
     if build_type in ['ament_cmake', 'cmake'] or always_run_doxygen:
         toc_entry += toc_entry_cpp
@@ -328,8 +329,7 @@ index_rst_template = """\
 
 .. toctree::
    :maxdepth: 2
-
-   {package_toc_entry}
+{package_toc_entry}
 
 Indices and Search
 ==================

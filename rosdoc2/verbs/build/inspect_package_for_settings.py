@@ -134,4 +134,10 @@ def inspect_package_for_settings(package, tool_options):
         package_object=package,
         tool_options=tool_options,
     )
+
+    # Is this python under ament_cmake?
+    for depends in package['buildtool_depends']:
+        if str(depends) == 'ament_cmake_python':
+            build_context.ament_cmake_python = True
+
     return parse_rosdoc2_yaml(rosdoc_config_file, build_context)
