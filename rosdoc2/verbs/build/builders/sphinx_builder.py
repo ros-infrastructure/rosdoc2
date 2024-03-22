@@ -23,6 +23,7 @@ import setuptools
 from ..builder import Builder
 from ..collect_inventory_files import collect_inventory_files
 from ..create_format_map_from_package import create_format_map_from_package
+from ..generate_interface_docs import generate_interface_docs
 
 logger = logging.getLogger('rosdoc2')
 
@@ -32,7 +33,7 @@ def esc_backslash(path):
     return path.replace('\\', '\\\\') if path else path
 
 
-def generate_package_toc_entry(*, build_context) -> str:
+def generate_package_toc_entry(*, build_context, interface_counts) -> str:
     """Construct a table of content (toc) entry for the package being processed."""
     build_type = build_context.build_type
     always_run_doxygen = build_context.always_run_doxygen
@@ -48,7 +49,10 @@ def generate_package_toc_entry(*, build_context) -> str:
         toc_entry += toc_entry_py
     if build_type in ['ament_cmake', 'cmake'] or always_run_doxygen:
         toc_entry += toc_entry_cpp
-
+    if interface_counts['msg'] > 0:
+        toc_entry += toc_entry_msg
+    if interface_counts['srv'] > 0:
+        toc_entry += toc_entry_srv
     return toc_entry
 
 
@@ -451,7 +455,17 @@ class SphinxBuilder(Builder):
                     'Note: no sourcedir provided by the user and no Sphinx sourcedir was found '
                     'in the standard locations, therefore using a default Sphinx configuration.')
                 sourcedir = os.path.join(doc_build_folder, 'default_sphinx_project')
-                self.generate_default_project_into_directory(sourcedir, package_src_directory)
+
+                # Generate rst documents for interfaces
+                interface_counts = generate_interface_docs(
+                    package_xml_directory,
+                    self.build_context.package.name,
+                    os.path.join(sourcedir, 'generated')
+                )
+                logger.info(f'interface_counts: {interface_counts}')
+
+                self.generate_default_project_into_directory(
+                    sourcedir, package_src_directory, interface_counts)
 
         # Collect intersphinx mapping extensions from discovered inventory files.
         inventory_files = \
@@ -568,7 +582,8 @@ class SphinxBuilder(Builder):
                 return option
         return None
 
-    def generate_default_project_into_directory(self, directory, package_src_directory):
+    def generate_default_project_into_directory(
+            self, directory, package_src_directory, interface_counts):
         """Generate the default project configuration files."""
         os.makedirs(directory, exist_ok=True)
 
@@ -590,7 +605,9 @@ class SphinxBuilder(Builder):
         template_variables.update({
             'root_title': root_title,
             'root_title_underline': '=' * len(root_title),
-            'package_toc_entry': generate_package_toc_entry(build_context=self.build_context)
+            'package_toc_entry': generate_package_toc_entry(
+                build_context=self.build_context,
+                interface_counts=interface_counts)
         })
 
         with open(os.path.join(directory, 'index.rst'), 'w+') as f:
