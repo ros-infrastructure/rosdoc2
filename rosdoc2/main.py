@@ -87,5 +87,6 @@ def main(sysargs=None):
     # and the extras which the preprocessor may have returned
     sys.exit(args.main(args) or 0)
 
+
 if __name__ == '__main__':
     main()
