@@ -30,6 +30,12 @@ rosdoc2 open ./doc_output/index.html
 
 For more advanced usage see the documentation.
 
+It may be helpful during rosdoc2 development to run a version of rosdoc2 without installing it. This can be done
+(after doing an initial normal install to make sure prerequisites are available) by running, from the rosdoc2 main directory:
+```bash
+python3 -m rosdoc2.main <options>
+```
+
 ### Set up a ROS 2 package to be used with this tool
 
 In many cases, C/C++ packages require no configuration, and will work if you simply layout your package in a standard configuration and the tool will do the rest.
