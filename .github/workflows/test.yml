@@ -2,6 +2,8 @@ name: CI
 
 on:
   push:
+    branches:
+    - main
   pull_request:
     branches:
     - main
@@ -12,21 +14,20 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        containers: ['ros-iron', 'ros-rolling']
+        container: ['ros:iron', 'ros:rolling']
+    container: ${{ matrix.container }}
 
     steps:
     - name: Checkout
       uses: actions/checkout@v2
 
-    - name: Setup python
-      uses: actions/setup-python@v5
-      with:
-        cache: 'pip'
+    - name: Install pip
+      run: apt update && apt install -y python3-pip
 
     - name: Install pip dependencies
       run: |
-       python -m pip install --upgrade --upgrade-strategy eager .[test]
-       python -m pip freeze
+       python3 -m pip install --upgrade --upgrade-strategy eager .[test]
+       python3 -m pip freeze
 
     - name: Run tests
       run: py.test --verbose test
