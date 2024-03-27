@@ -13,12 +13,10 @@
 # limitations under the License.
 
 
-"""Generate rst files for messages and services."""
+"""Generate rst files for messages, services, and actions."""
 
 import fnmatch
 import os
-
-# from jinja2 import Template
 
 iface_fm_rst = """\
 {iface_name}
@@ -64,7 +62,7 @@ def generate_interface_docs(path: str, package: str, output_dir: str):
     :rtype: dict(str, int)
     """
     counts = {}
-    for type_info in (('msg', 'message'), ('srv', 'service')):
+    for type_info in (('msg', 'message'), ('srv', 'service'), ('action', 'action')):
         count = 0
         (type_ext, type_name) = type_info
         interfaces = _find_files_with_extension(path, type_ext)

@@ -43,6 +43,10 @@ def generate_package_toc_entry(*, build_context, interface_counts) -> str:
     # inside the string to fall under the `:toctree:` directive
     toc_entry_cpp = '   C++ API <generated/index>\n'
     toc_entry_py = '   Python API <modules>\n'
+    toc_entry_msg = '   Message Definitions <generated/message_definitions>\n'
+    toc_entry_srv = '   Service Definitions <generated/service_definitions>\n'
+    toc_entry_action = '   Action Definitions <generated/action_definitions>\n'
+
     toc_entry = '\n'
 
     if build_type == 'ament_python' or always_run_sphinx_apidoc or ament_cmake_python:
@@ -53,6 +57,8 @@ def generate_package_toc_entry(*, build_context, interface_counts) -> str:
         toc_entry += toc_entry_msg
     if interface_counts['srv'] > 0:
         toc_entry += toc_entry_srv
+    if interface_counts['action'] > 0:
+        toc_entry += toc_entry_action
     return toc_entry
 
 
