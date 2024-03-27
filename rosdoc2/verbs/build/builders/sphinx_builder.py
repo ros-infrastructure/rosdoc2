@@ -40,7 +40,7 @@ def generate_package_toc_entry(*, build_context) -> str:
     ament_cmake_python = build_context.ament_cmake_python
     # The TOC entries have to be indented by three (or any N) spaces
     # inside the string to fall under the `:toctree:` directive
-    toc_entry_cpp = '   EXHALE REPLACES THIS <generated/index>\n'
+    toc_entry_cpp = '   C++ API <generated/index>\n'
     toc_entry_py = '   Python API <modules>\n'
     toc_entry = '\n'
 
@@ -153,12 +153,13 @@ if rosdoc2_settings.get('enable_exhale', is_doxygen_invoked):
         # These arguments are required.
         "containmentFolder": "{user_sourcedir}/generated",
         "rootFileName": "index.rst",
+        "rootFileTitle": "C++ API",
         "doxygenStripFromPath": "..",
         # Suggested optional arguments.
         "createTreeView": True,
         "fullToctreeMaxDepth": 1,
         "unabridgedOrphanKinds": [],
-        "fullApiSubSectionTitle": "Reference C++ API",
+        "fullApiSubSectionTitle": "Full C++ API",
         # TIP: if using the sphinx-bootstrap-theme, you need
         # "treeViewIsBootstrap": True,
         "exhaleExecutesDoxygen": False,

@@ -193,6 +193,8 @@ def test_full_package(session_dir):
 
     includes = [
         PKG_NAME,
+        'python api',
+        'c++ api',
     ]
     file_includes = [
         'generated/index.html'
