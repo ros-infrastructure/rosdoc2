@@ -193,13 +193,20 @@ def test_full_package(session_dir):
 
     includes = [
         PKG_NAME,
+        'python api',
+        'c++ api',
     ]
     file_includes = [
         'generated/index.html'
     ]
+    links_exist = [
+        'full_package.dummy.html',
+        'modules.html',
+    ]
     do_test_package(PKG_NAME, session_dir,
                     includes=includes,
-                    file_includes=file_includes)
+                    file_includes=file_includes,
+                    links_exist=links_exist)
 
 
 def test_only_python(session_dir):
