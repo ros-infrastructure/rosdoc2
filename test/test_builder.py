@@ -195,6 +195,9 @@ def test_full_package(session_dir):
         PKG_NAME,
         'python api',
         'c++ api',
+        'message definitions',
+        'service definitions',
+        'action definitions'
     ]
     file_includes = [
         'generated/index.html'

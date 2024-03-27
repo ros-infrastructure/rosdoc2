@@ -1,0 +1,11 @@
+# This action is based on the action tutorial
+# https://docs.ros.org/en/rolling/Tutorials/Intermediate/Creating-an-Action.html
+
+# order of the Fibonacci sequence we want to compute
+int32 order
+---
+# the final result
+int32[] sequence
+---
+# feedback of what is completed so far
+int32[] partial_sequence
