@@ -113,7 +113,7 @@ if rosdoc2_settings.get('enable_intersphinx', True):
 build_type = '{build_type}'
 always_run_doxygen = {always_run_doxygen}
 # By default, the `exhale`/`breathe` extensions should be added if `doxygen` was invoked
-is_doxygen_invoked = build_type in ('ament_cmake', 'cmake') or always_run_doxygen
+is_doxygen_invoked = {did_run_doxygen}
 
 if rosdoc2_settings.get('enable_breathe', is_doxygen_invoked):
     # Configure Breathe.
@@ -666,6 +666,7 @@ class SphinxBuilder(Builder):
             + [doc_depend.name for doc_depend in package.doc_depends],
             'build_type': self.build_context.build_type,
             'always_run_doxygen': self.build_context.always_run_doxygen,
+            'did_run_doxygen': self.doxygen_xml_directory is not None,
             'user_sourcedir': esc_backslash(os.path.abspath(user_sourcedir)),
             'user_conf_py_filename': esc_backslash(
                 os.path.abspath(os.path.join(user_sourcedir, 'conf.py'))),
