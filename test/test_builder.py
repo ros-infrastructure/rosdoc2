@@ -224,3 +224,9 @@ def test_only_python(session_dir):
     do_test_package(PKG_NAME, session_dir,
                     includes=includes,
                     links_exist=links_exist)
+
+
+def test_only_messages(session_dir):
+    """Test a package only containing messages."""
+    PKG_NAME = 'only_messages'
+    do_build_package(DATAPATH / PKG_NAME, session_dir)
