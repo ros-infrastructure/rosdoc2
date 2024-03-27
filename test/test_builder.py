@@ -186,6 +186,16 @@ def test_minimum_package(session_dir):
                     links_exist=links_exist)
 
 
+def test_fake_repo(session_dir):
+    REPO_NAME = 'fake_repo'
+    PACKAGE_NAMES = ['subpackage1', 'subpackage2']
+    do_build_package(DATAPATH / REPO_NAME, session_dir)
+
+    for package_name in PACKAGE_NAMES:
+        includes = [package_name]
+        do_test_package(package_name, session_dir, includes=includes)
+
+
 def test_full_package(session_dir):
     """Test a package with C++, python, and docs."""
     PKG_NAME = 'full_package'

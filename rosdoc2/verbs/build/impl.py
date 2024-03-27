@@ -14,6 +14,7 @@
 
 import logging
 import os
+import pathlib
 import shutil
 import sys
 
@@ -21,6 +22,7 @@ from catkin_pkg.package import has_ros_schema_reference
 from catkin_pkg.package import InvalidPackage
 from catkin_pkg.package import package_exists_at
 from catkin_pkg.package import parse_package
+from catkin_pkg.packages import find_package_paths
 from rosdoc2.slugify import slugify
 
 from .inspect_package_for_settings import inspect_package_for_settings
@@ -115,8 +117,13 @@ def main(options):
 
 def main_impl(options):
     """Execute the program."""
-    # Locate and parse the package's package.xml.
-    package = get_package(options.package_path)
+    # Use the current directory as the default package path
+    if not options.package_path:
+        options.package_path = os.getcwd()
+
+    # Use a file uri reference to the output directory as default base_url
+    if not options.base_url:
+        options.base_url = pathlib.Path(options.output_directory).resolve().as_uri()
 
     if options.build_directory is not None:
         # Check that the build directory exists.
@@ -129,76 +136,92 @@ def main_impl(options):
             sys.exit(
                 f"Error: given install directory '{options.install_directory}' does not exist")
 
-    # Inspect package for additional settings, using defaults if none found.
-    tool_settings, builders = inspect_package_for_settings(
-        package,
-        options,
-    )
+    # Locate the packages to document.
+    package_paths = []
+    if package_exists_at(options.package_path):
+        package_paths.append(options.package_path)
+    else:
+        found_package_paths = find_package_paths(options.package_path)
+        if len(found_package_paths) == 0:
+            raise RuntimeError(
+                f"Failed to find a ROS package at given path '{options.package_path}'")
+        for path in found_package_paths:
+            package_paths.append(os.path.join(options.package_path, path))
 
-    # Create the cross reference directory if it doesn't exist.
-    os.makedirs(os.path.join(options.cross_reference_directory, package.name), exist_ok=True)
+    for package_path in package_paths:
+        # Locate and parse the package's package.xml.
+        package = get_package(package_path)
 
-    # Generate the doc build directory.
-    package_doc_build_directory = os.path.join(options.doc_build_directory, package.name)
-    os.makedirs(package_doc_build_directory, exist_ok=True)
-
-    # Generate the "output staging" directory.
-    output_staging_directory = os.path.join(package_doc_build_directory, 'output_staging')
-    if os.path.exists(output_staging_directory):
-        # Delete this directory because it is temporary and will cause "file collision"
-        # false positives if the tool fails to run to completion.
-        shutil.rmtree(output_staging_directory)
-    os.makedirs(output_staging_directory)
-
-    # Generate the package header content.
-    pass
-
-    # Run each builder.
-    for builder in builders:
-        # This is the working directory for the builder.
-        doc_build_folder = os.path.join(package_doc_build_directory, slugify(builder.name))
-        # This is the directory into which the results of the builder will be moved into.
-        builder_destination = os.path.join(output_staging_directory, builder.output_dir)
-        # Run the builder, get the directory where the artifacts were placed.
-        # This should be inside the doc_build_folder, but might be a subfolder.
-        doc_output_directory = builder.build(
-            doc_build_folder=doc_build_folder,
-            output_staging_directory=output_staging_directory,
+        # Inspect package for additional settings, using defaults if none found.
+        tool_settings, builders = inspect_package_for_settings(
+            package,
+            options,
         )
-        if doc_output_directory is None:
-            # This builder did not generate any output.
-            logger.info(
-                f"Note: the builder '{builder.name} ({builder.builder_type})' "
-                'did not generate any output to be copied into the destination.')
-            continue
-        assert os.path.exists(doc_output_directory), \
-            f'builder gave invalid doc_output_directory: {doc_output_directory}'
-        # Move documentation artifacts from the builder into the output staging.
-        # This is additionally in a subdirectory dictated by the output directory part of the
-        # builder configuration.
-        builder.move_files(
-            source=doc_output_directory,
-            destination=builder_destination)
 
-    # If enabled, create package index.
-    if tool_settings.get('generate_package_index', True):
+        # Create the cross reference directory if it doesn't exist.
+        os.makedirs(os.path.join(options.cross_reference_directory, package.name), exist_ok=True)
+
+        # Generate the doc build directory.
+        package_doc_build_directory = os.path.join(options.doc_build_directory, package.name)
+        os.makedirs(package_doc_build_directory, exist_ok=True)
+
+        # Generate the "output staging" directory.
+        output_staging_directory = os.path.join(package_doc_build_directory, 'output_staging')
+        if os.path.exists(output_staging_directory):
+            # Delete this directory because it is temporary and will cause "file collision"
+            # false positives if the tool fails to run to completion.
+            shutil.rmtree(output_staging_directory)
+        os.makedirs(output_staging_directory)
+
+        # Generate the package header content.
         pass
 
-    # Move staged files to user provided output directory.
-    package_output_directory = os.path.join(options.output_directory, package.name)
-    logger.info(f"Moving files to final destination in '{package_output_directory}'.")
-    for root, dirs, files in os.walk(output_staging_directory):
-        for item in dirs + files:
-            source = os.path.abspath(os.path.join(root, item))
-            destination = \
-                os.path.abspath(os.path.join(package_output_directory, item))
-            if os.path.isdir(destination):
-                # shutil.move behaves in a way such that if the destination exists
-                # and is a directory, it would copy the source directory into it,
-                # rather than replacing its contents or appending to it.
-                # So deleting it first will prevent that.
-                shutil.rmtree(destination)
-            shutil.move(source, destination)
-        break
+        # Run each builder.
+        for builder in builders:
+            # This is the working directory for the builder.
+            doc_build_folder = os.path.join(package_doc_build_directory, slugify(builder.name))
+            # This is the directory into which the results of the builder will be moved into.
+            builder_destination = os.path.join(output_staging_directory, builder.output_dir)
+            # Run the builder, get the directory where the artifacts were placed.
+            # This should be inside the doc_build_folder, but might be a subfolder.
+            doc_output_directory = builder.build(
+                doc_build_folder=doc_build_folder,
+                output_staging_directory=output_staging_directory,
+            )
+            if doc_output_directory is None:
+                # This builder did not generate any output.
+                logger.info(
+                    f"Note: the builder '{builder.name} ({builder.builder_type})' "
+                    'did not generate any output to be copied into the destination.')
+                continue
+            assert os.path.exists(doc_output_directory), \
+                f'builder gave invalid doc_output_directory: {doc_output_directory}'
+            # Move documentation artifacts from the builder into the output staging.
+            # This is additionally in a subdirectory dictated by the output directory part of the
+            # builder configuration.
+            builder.move_files(
+                source=doc_output_directory,
+                destination=builder_destination)
+
+        # If enabled, create package index.
+        if tool_settings.get('generate_package_index', True):
+            pass
+
+        # Move staged files to user provided output directory.
+        package_output_directory = os.path.join(options.output_directory, package.name)
+        logger.info(f"Moving files to final destination in '{package_output_directory}'.")
+        for root, dirs, files in os.walk(output_staging_directory):
+            for item in dirs + files:
+                source = os.path.abspath(os.path.join(root, item))
+                destination = \
+                    os.path.abspath(os.path.join(package_output_directory, item))
+                if os.path.isdir(destination):
+                    # shutil.move behaves in a way such that if the destination exists
+                    # and is a directory, it would copy the source directory into it,
+                    # rather than replacing its contents or appending to it.
+                    # So deleting it first will prevent that.
+                    shutil.rmtree(destination)
+                shutil.move(source, destination)
+            break
 
     return 0
