@@ -113,7 +113,7 @@ if rosdoc2_settings.get('enable_intersphinx', True):
 build_type = '{build_type}'
 always_run_doxygen = {always_run_doxygen}
 # By default, the `exhale`/`breathe` extensions should be added if `doxygen` was invoked
-is_doxygen_invoked = build_type in ('ament_cmake', 'cmake') or always_run_doxygen
+is_doxygen_invoked = {did_run_doxygen}
 
 if rosdoc2_settings.get('enable_breathe', is_doxygen_invoked):
     # Configure Breathe.
@@ -407,17 +407,18 @@ class SphinxBuilder(Builder):
     def build(self, *, doc_build_folder, output_staging_directory):
         """Actually do the build."""
         # Check that doxygen_xml_directory exists relative to output staging, if specified.
-        should_run_doxygen = \
-            self.build_context.build_type in ('ament_cmake', 'cmake') or \
-            self.build_context.always_run_doxygen
-        if self.doxygen_xml_directory is not None and should_run_doxygen:
+        if self.doxygen_xml_directory is not None:
             self.doxygen_xml_directory = \
                 os.path.join(output_staging_directory, self.doxygen_xml_directory)
             self.doxygen_xml_directory = os.path.abspath(self.doxygen_xml_directory)
+
             if not os.path.isdir(self.doxygen_xml_directory):
-                raise RuntimeError(
-                    f"Error the 'doxygen_xml_directory' specified "
-                    f"'{self.doxygen_xml_directory}' does not exist.")
+                self.doxygen_xml_directory = None
+                logger.info('No doxygen_xml_directory found, apparently doxygen did not run')
+                if self.build_context.always_run_doxygen:
+                    raise RuntimeError(
+                        f"Error the 'doxygen_xml_directory' specified "
+                        f"'{self.doxygen_xml_directory}' does not exist.")
 
         package_xml_directory = os.path.dirname(self.build_context.package.filename)
         # If 'python_source' is specified, construct 'package_src_directory' from it
@@ -665,6 +666,7 @@ class SphinxBuilder(Builder):
             + [doc_depend.name for doc_depend in package.doc_depends],
             'build_type': self.build_context.build_type,
             'always_run_doxygen': self.build_context.always_run_doxygen,
+            'did_run_doxygen': self.doxygen_xml_directory is not None,
             'user_sourcedir': esc_backslash(os.path.abspath(user_sourcedir)),
             'user_conf_py_filename': esc_backslash(
                 os.path.abspath(os.path.join(user_sourcedir, 'conf.py'))),
