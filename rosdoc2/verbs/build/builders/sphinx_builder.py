@@ -24,6 +24,7 @@ from ..builder import Builder
 from ..collect_inventory_files import collect_inventory_files
 from ..create_format_map_from_package import create_format_map_from_package
 from ..generate_interface_docs import generate_interface_docs
+from ..include_user_docs import include_user_docs
 
 logger = logging.getLogger('rosdoc2')
 
@@ -33,7 +34,7 @@ def esc_backslash(path):
     return path.replace('\\', '\\\\') if path else path
 
 
-def generate_package_toc_entry(*, build_context, interface_counts) -> str:
+def generate_package_toc_entry(*, build_context, interface_counts, user_docs) -> str:
     """Construct a table of content (toc) entry for the package being processed."""
     build_type = build_context.build_type
     always_run_doxygen = build_context.always_run_doxygen
@@ -43,9 +44,16 @@ def generate_package_toc_entry(*, build_context, interface_counts) -> str:
     # inside the string to fall under the `:toctree:` directive
     toc_entry_cpp = '   C++ API <generated/index>\n'
     toc_entry_py = '   Python API <modules>\n'
-    toc_entry_msg = '   Message Definitions <generated/message_definitions>\n'
-    toc_entry_srv = '   Service Definitions <generated/service_definitions>\n'
-    toc_entry_action = '   Action Definitions <generated/action_definitions>\n'
+    toc_entry_msg = '   Message Definitions <interfaces/message_definitions>\n'
+    toc_entry_srv = '   Service Definitions <interfaces/service_definitions>\n'
+    toc_entry_action = '   Action Definitions <interfaces/action_definitions>\n'
+    toc_doc_entry = """\
+.. toctree::
+   :titlesonly:
+   :maxdepth: 2
+
+   Documentation <user_docs>
+"""
 
     toc_entry = '\n'
 
@@ -59,6 +67,11 @@ def generate_package_toc_entry(*, build_context, interface_counts) -> str:
         toc_entry += toc_entry_srv
     if interface_counts['action'] > 0:
         toc_entry += toc_entry_action
+
+    # User documentation
+    if user_docs:
+        toc_entry += toc_doc_entry
+
     return toc_entry
 
 
@@ -633,7 +646,8 @@ class SphinxBuilder(Builder):
             'root_title_underline': '=' * len(root_title),
             'package_toc_entry': generate_package_toc_entry(
                 build_context=self.build_context,
-                interface_counts=interface_counts)
+                interface_counts=interface_counts,
+                user_docs=user_docs)
         })
 
         with open(os.path.join(wrapped_sphinx_directory, 'index.rst'), 'w+') as f:

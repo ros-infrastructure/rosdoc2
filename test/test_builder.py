@@ -240,7 +240,7 @@ def test_only_messages(session_dir):
         PKG_NAME,
         'message definitions',
     ]
-    links_exist = ['generated/msg/NumPwrResult.html']
+    links_exist = ['interfaces/msg/NumPwrResult.html']
 
     do_test_package(PKG_NAME, session_dir, includes=includes, links_exist=links_exist)
 
