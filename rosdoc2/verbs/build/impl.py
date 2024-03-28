@@ -14,7 +14,6 @@
 
 import logging
 import os
-import pathlib
 import shutil
 import sys
 
@@ -117,14 +116,6 @@ def main(options):
 
 def main_impl(options):
     """Execute the program."""
-    # Use the current directory as the default package path
-    if not options.package_path:
-        options.package_path = os.getcwd()
-
-    # Use a file uri reference to the output directory as default base_url
-    if not options.base_url:
-        options.base_url = pathlib.Path(options.output_directory).resolve().as_uri()
-
     if options.build_directory is not None:
         # Check that the build directory exists.
         if not os.path.exists(options.build_directory):
