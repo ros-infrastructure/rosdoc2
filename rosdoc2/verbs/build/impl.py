@@ -14,7 +14,6 @@
 
 import logging
 import os
-import pathlib
 import shutil
 import sys
 
@@ -80,7 +79,7 @@ def prepare_arguments(parser):
     parser.add_argument(
         '--base-url',
         '-u',
-        default=None,
+        default='http://docs.ros.org/en/latest/p',
         help='The base url where the package docs will be hosted, used to configure tag files.',
     )
     parser.add_argument(
@@ -117,10 +116,6 @@ def main(options):
 
 def main_impl(options):
     """Execute the program."""
-    # Use a file uri reference to the output directory as default base_url
-    if not options.base_url:
-        options.base_url = pathlib.Path(options.output_directory).resolve().as_uri()
-
     if options.build_directory is not None:
         # Check that the build directory exists.
         if not os.path.exists(options.build_directory):
@@ -150,7 +145,7 @@ def main_impl(options):
         # Locate and parse the package's package.xml.
         try:
             package = get_package(package_path)
-
+            logger.info(f'Documenting package {package.name} at {package_path}')
             # Inspect package for additional settings, using defaults if none found.
             tool_settings, builders = inspect_package_for_settings(
                 package,
@@ -158,7 +153,8 @@ def main_impl(options):
             )
 
             # Create the cross reference directory if it doesn't exist.
-            os.makedirs(os.path.join(options.cross_reference_directory, package.name), exist_ok=True)
+            os.makedirs(os.path.join(options.cross_reference_directory, package.name),
+                        exist_ok=True)
 
             # Generate the doc build directory.
             package_doc_build_directory = os.path.join(options.doc_build_directory, package.name)
@@ -196,8 +192,8 @@ def main_impl(options):
                 assert os.path.exists(doc_output_directory), \
                     f'builder gave invalid doc_output_directory: {doc_output_directory}'
                 # Move documentation artifacts from the builder into the output staging.
-                # This is additionally in a subdirectory dictated by the output directory part of the
-                # builder configuration.
+                # This is additionally in a subdirectory dictated by the output directory
+                # part of the builder configuration.
                 builder.move_files(
                     source=doc_output_directory,
                     destination=builder_destination)
@@ -222,7 +218,7 @@ def main_impl(options):
                         shutil.rmtree(destination)
                     shutil.move(source, destination)
                 break
-        except Exception as error:
+        except RuntimeError as error:
             logger.error(f'Error processing package at {package_path}: {error}')
 
     return 0

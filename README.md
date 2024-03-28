@@ -6,7 +6,7 @@ Command-line tool for generating documentation for ROS 2 packages.
 
 This tool can be viewed from two perspectives: first from the perspective of a user wanting to building documentation for any given ROS 2 package in order to view it, and second from the perspective of package maintainers who need to write their documentation and configure how this tool works on their package.
 
-### Build documentation for a ROS 2 package
+### Build documentation for a ROS 2 package or packages
 
 To generate the documentation for almost any ROS 2 package, first build the package locally, then run this command replacing the arguments with appropriate directories:
 
@@ -20,15 +20,19 @@ rosdoc2 build \
 
 This command will inspect your package and run various documentation tools based on the configuration of your package.
 
-The package directory that you specify must contain a single ROS 2 package that has a `package.xml` file and optionally a YAML configuration file to configure the doc build process.
+The ```--package-path``` may also be a directory with a number of packages in subdirectories, for example a repository.
+Or if you omit ```package-path```, rosdoc2 will use the current working directory as the starting point.
+
+Package directories must contain a single ROS 2 package that has a `package.xml` file and optionally a YAML configuration file to configure the doc build process.
 
 There will be an `index.html` file in the output directory which you can open manually, or with this command:
+
 
 ```
 rosdoc2 open ./doc_output/index.html
 ```
 
-For more advanced usage see the documentation.
+You can run ```rosdoc2 -h``` to get full instructions on how to run. For more advanced usage see the documentation.
 
 It may be helpful during rosdoc2 development to run a version of rosdoc2 without installing it. This can be done
 (after doing an initial normal install to make sure prerequisites are available) by running, from the rosdoc2 main directory:
@@ -102,6 +106,17 @@ Including:
 - using this tool in automated testing and/or CI
 
 ### Building Documentation for a Package
+
+Run:
+```
+rosdoc2 build ---package-path ./src/path/to/my_package_name
+```
+
+The ```--package-path``` can also be a directory with a number of packages, for example a repository.
+Or if you omit this, rosdoc2 will use the current working directory as the starting point.
+
+You can run ```rosdoc2 -h``` to get full instructions on how to run.
+
 
 ### Documenting a Package
 
