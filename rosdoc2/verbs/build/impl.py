@@ -61,7 +61,7 @@ def prepare_arguments(parser):
     parser.add_argument(
         '--build-directory',
         '-b',
-        help='UNUSED, to be removed in the future',
+        help='UNUSED, to be removed at some time after September 1st, 2024',
     )
     parser.add_argument(
         '--install-directory',
