@@ -15,7 +15,6 @@
 
 """Generate rst files for messages, services, and actions."""
 
-import fnmatch
 import os
 
 iface_fm_rst = """\
@@ -43,11 +42,20 @@ toc_fm_rst = """\
 
 
 def _find_files_with_extension(path, ext):
+    """
+    Search a package path, in subdirectory <ext>, for files with that <ext>.
+    """
     # Partly adapted from https://github.com/ros-infrastructure/rosdoc_lite
     matches = []
-    for root, _, filenames in os.walk(path):
-        for filename in fnmatch.filter(filenames, f'*.{ext}'):
-            matches.append((os.path.splitext(filename)[0], os.path.join(root, filename)))
+    # We assume that the directory name is the same as the extension
+    iface_dir = os.path.join(path, ext)
+    if not os.path.isdir(iface_dir):
+        return matches
+    for item in os.listdir(iface_dir):
+        filepath = os.path.join(iface_dir, item)
+        (filename, fileext) = os.path.splitext(item)
+        if os.path.isfile(filepath) and (ext == fileext[1:]):
+            matches.append((filename, filepath))
     return matches
 
 

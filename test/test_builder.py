@@ -206,9 +206,13 @@ def test_full_package(session_dir):
         'full_package.dummy.html',
         'modules.html',
     ]
+    excludes = [
+        'dontshowme'
+    ]
     do_test_package(PKG_NAME, session_dir,
                     includes=includes,
                     file_includes=file_includes,
+                    excludes=excludes,
                     links_exist=links_exist)
 
 
