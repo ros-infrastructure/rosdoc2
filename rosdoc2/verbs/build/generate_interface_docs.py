@@ -44,8 +44,12 @@ toc_fm_rst = """\
 
 def _find_files_with_extension(path, ext):
     # Partly adapted from https://github.com/ros-infrastructure/rosdoc_lite
+    # and https://stackoverflow.com/questions/19859840/excluding-directories-in-os-walk
     matches = []
-    for root, _, filenames in os.walk(path):
+    excludes = ['test', 'doc']
+    for root, dirs, filenames in os.walk(path, topdown=True):
+        # exclude directories
+        dirs[:] = [d for d in dirs if d not in excludes]
         for filename in fnmatch.filter(filenames, f'*.{ext}'):
             matches.append((os.path.splitext(filename)[0], os.path.join(root, filename)))
     return matches
