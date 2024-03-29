@@ -3,7 +3,6 @@
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-#
 #     http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
@@ -62,7 +61,7 @@ def prepare_arguments(parser):
     parser.add_argument(
         '--build-directory',
         '-b',
-        help='build directory of the package',
+        help='UNUSED, to be removed at some time after September 1st, 2024',
     )
     parser.add_argument(
         '--install-directory',
@@ -119,9 +118,8 @@ def main_impl(options):
     package = get_package(options.package_path)
 
     if options.build_directory is not None:
-        # Check that the build directory exists.
-        if not os.path.exists(options.build_directory):
-            sys.exit(f"Error: given build directory '{options.build_directory}' does not exist")
+        logger.warn(
+            'The --build-directory option (-b) is unused and will be removed in a future version')
 
     if options.install_directory is not None:
         # Check that the install directory exists.
