@@ -56,7 +56,6 @@ def _find_files_with_extension(path, ext):
         (filename, fileext) = os.path.splitext(item)
         if os.path.isfile(filepath) and (ext == fileext[1:]):
             matches.append((filename, filepath))
-    print(f'returning {matches}')
     return matches
 
 
