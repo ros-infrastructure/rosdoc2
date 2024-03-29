@@ -8,7 +8,7 @@ This tool can be viewed from two perspectives: first from the perspective of a u
 
 ### Build documentation for a ROS 2 package
 
-To generate the documentation for almost any ROS 2 package, first build the package locally, then run this command replacing the arguments with appropriate directories:
+To generate the documentation for almost any ROS 2 package, run this command replacing the arguments with appropriate directories:
 
 ```
 rosdoc2 build \
