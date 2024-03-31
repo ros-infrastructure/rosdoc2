@@ -679,6 +679,5 @@ class SphinxBuilder(Builder):
             'package_version_short': '.'.join(package.version.split('.')[0:2]),
         })
 
-        print(os.path.abspath(os.path.join(wrapped_sphinx_directory, 'conf.py')))
         with open(os.path.join(wrapped_sphinx_directory, 'conf.py'), 'w+') as f:
             f.write(rosdoc2_wrapping_conf_py_template.format_map(self.template_variables))
