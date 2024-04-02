@@ -442,7 +442,8 @@ class SphinxBuilder(Builder):
 
         # We will ultimately run the sphinx project from a wrapped directory. Create it now,
         # so that we can put generated items there.
-        wrapped_sphinx_directory = os.path.join(doc_build_folder, 'wrapped_sphinx_directory')
+        wrapped_sphinx_directory = os.path.abspath(
+            os.path.join(doc_build_folder, 'wrapped_sphinx_directory'))
         os.makedirs(wrapped_sphinx_directory, exist_ok=True)
 
         # Generate rst documents for interfaces
