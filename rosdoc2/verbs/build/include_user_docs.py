@@ -33,10 +33,11 @@ Documentation
 """
 
 subdirectory_rst_template = """\
-DOCUMENTATION DIRECTORY /{name}/
-========================={name_underline}=
+doc/{name}
+===={name_underline}
 
 .. toctree::
+   :caption: Documentation in this subdirectory
    :maxdepth: 2
    :glob:
 
@@ -48,48 +49,54 @@ def include_user_docs(package_dir: str,
                       output_dir: str,
                       ):
     """Generate rst files for user documents."""
-    doclist = {}
-
     logger.info(f'include_user_docs: package_dir {package_dir} output_dir {output_dir}')
     # Search the ./doc directory
     doc_dir = os.path.join(package_dir, 'doc')
-    # locate and copy all documentation in package
-    for root, directories, files in os.walk(doc_dir):
+    # Search /doc to insure there is at least one item of renderable documentation
+    doc_directories = []
+    for root, _, files in os.walk(doc_dir):
         for file in files:
-            print(f'root {root} file {file}')
-
-        relpath = os.path.relpath(root, doc_dir) or '.'
-        # Use forward slash path separators in sphinx documents
-        # relpath = relpath.replace('\\', '/')
-        # ensure a valid documentation file exists
-        for file in files:
-            (filename, ext) = os.path.splitext(file)
+            
+            # ensure a valid documentation file exists. Some directories may only contain resources.
+            (_, ext) = os.path.splitext(file)
             if ext in ['.rst', '.md', '.markdown']:
-                if relpath not in doclist:
-                    doclist[relpath] = []
-                doclist[relpath].append(filename)
-                directory = os.path.join(output_dir, 'user_docs')
-                if relpath != '.':
-                    directory = os.path.join(directory, relpath)
-                Path(directory).mkdir(parents=True, exist_ok=True)
-                shutil.copy(os.path.join(root, file), directory)
+                logger.debug(f'Found renderable documentation file in {root} named {file}')
+                relpath = os.path.relpath(root, doc_dir)
+                relpath = relpath.replace('\\', '/')
+                doc_directories.append(relpath)
+                break
+
+    if not doc_directories:
+        logger.debug('no documentation found in /doc')
+        return doc_directories
+    
+    logger.info(f'Documentation found in /doc in directories {doc_directories}')
+    # At this point we know that there are some directories that have documentation in them under
+    # /doc, but we do not know which ones might also be needed for images or includes. So we copy
+    # everything to the output directory.
+    shutil.copytree(
+        os.path.abspath(doc_dir),
+        os.path.abspath(os.path.join(output_dir, 'user_docs')),
+        dirs_exist_ok=True)
 
     toc_content = documentation_rst_template
     # generate a glob rst entry for each directory with documents
-    for relpath in doclist:
+    for relpath in doc_directories:
         # directories that will be explicitly listed in index.rst
         if relpath == '.':
             continue
+        # Use forward slash path separators in sphinx documents
+        relpath = relpath.replace('\\', '/')
         docname = 'user_docs_' + slugify(relpath)  # This is the name that sphinx uses
         content = subdirectory_rst_template.format_map(
             {'name': relpath, 'name_underline': '=' * len(relpath)})
         sub_path = os.path.join(output_dir, docname + '.rst')
         with open(sub_path, 'w+') as f:
             f.write(content)
-        toc_content += f'   {relpath} <{docname}>\n'
+        toc_content += f'   doc/{relpath} <{docname}>\n'
 
-    if doclist:
-        sub_path = os.path.join(output_dir, 'user_docs.rst')
-        with open(sub_path, 'w+') as f:
-            f.write(toc_content)
-    return doclist
+    sub_path = os.path.join(output_dir, 'user_docs.rst')
+    with open(sub_path, 'w+') as f:
+        f.write(toc_content)
+
+    return doc_directories
