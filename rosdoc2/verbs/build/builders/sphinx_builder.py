@@ -34,7 +34,7 @@ def esc_backslash(path):
     return path.replace('\\', '\\\\') if path else path
 
 
-def generate_package_toc_entry(*, build_context, interface_counts, user_docs) -> str:
+def generate_package_toc_entry(*, build_context, interface_counts, doc_directories) -> str:
     """Construct a table of content (toc) entry for the package being processed."""
     build_type = build_context.build_type
     always_run_doxygen = build_context.always_run_doxygen
@@ -69,7 +69,7 @@ def generate_package_toc_entry(*, build_context, interface_counts, user_docs) ->
         toc_entry += toc_entry_action
 
     # User documentation
-    if user_docs:
+    if doc_directories:
         toc_entry += toc_doc_entry
 
     return toc_entry
@@ -463,9 +463,13 @@ class SphinxBuilder(Builder):
         interface_counts = generate_interface_docs(
             package_xml_directory,
             self.build_context.package.name,
-            os.path.join(wrapped_sphinx_directory, 'generated')
+            os.path.join(wrapped_sphinx_directory, 'interfaces')
         )
         logger.info(f'interface_counts: {interface_counts}')
+
+        # include user documentation
+        doc_directories = include_user_docs(package_xml_directory, wrapped_sphinx_directory)
+        logger.info(f'doc_directories: {doc_directories}')
 
         # Check if the user provided a sphinx directory.
         sphinx_project_directory = self.sphinx_sourcedir
@@ -514,7 +518,8 @@ class SphinxBuilder(Builder):
             sphinx_project_directory,
             python_src_directory,
             intersphinx_mapping_extensions,
-            interface_counts)
+            interface_counts,
+            doc_directories)
 
         # If the package has python code, then invoke `sphinx-apidoc` before building
         has_python = self.build_context.build_type == 'ament_python' or \
@@ -636,6 +641,7 @@ class SphinxBuilder(Builder):
         python_src_directory,
         intersphinx_mapping_extensions,
         interface_counts,
+        doc_directories,
     ):
         """Generate the rosdoc2 sphinx project configuration files."""
         # Generate a default index.rst
@@ -647,7 +653,7 @@ class SphinxBuilder(Builder):
             'package_toc_entry': generate_package_toc_entry(
                 build_context=self.build_context,
                 interface_counts=interface_counts,
-                user_docs=user_docs)
+                doc_directories=doc_directories)
         })
 
         with open(os.path.join(wrapped_sphinx_directory, 'index.rst'), 'w+') as f:
