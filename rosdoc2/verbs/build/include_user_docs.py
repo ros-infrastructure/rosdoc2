@@ -14,7 +14,6 @@
 
 import logging
 import os
-from pathlib import Path
 import shutil
 
 from rosdoc2.slugify import slugify
@@ -33,8 +32,8 @@ Documentation
 """
 
 subdirectory_rst_template = """\
-doc/{name}
-===={name_underline}
+{name}/
+{name_underline}=
 
 .. toctree::
    :caption: Documentation in this subdirectory
@@ -56,8 +55,7 @@ def include_user_docs(package_dir: str,
     doc_directories = []
     for root, _, files in os.walk(doc_dir):
         for file in files:
-            
-            # ensure a valid documentation file exists. Some directories may only contain resources.
+            # ensure a valid documentation file exists, directories might only contain resources.
             (_, ext) = os.path.splitext(file)
             if ext in ['.rst', '.md', '.markdown']:
                 logger.debug(f'Found renderable documentation file in {root} named {file}')
@@ -69,7 +67,7 @@ def include_user_docs(package_dir: str,
     if not doc_directories:
         logger.debug('no documentation found in /doc')
         return doc_directories
-    
+
     logger.info(f'Documentation found in /doc in directories {doc_directories}')
     # At this point we know that there are some directories that have documentation in them under
     # /doc, but we do not know which ones might also be needed for images or includes. So we copy
@@ -93,7 +91,7 @@ def include_user_docs(package_dir: str,
         sub_path = os.path.join(output_dir, docname + '.rst')
         with open(sub_path, 'w+') as f:
             f.write(content)
-        toc_content += f'   doc/{relpath} <{docname}>\n'
+        toc_content += f'   {relpath}/ <{docname}>\n'
 
     sub_path = os.path.join(output_dir, 'user_docs.rst')
     with open(sub_path, 'w+') as f:
