@@ -243,3 +243,23 @@ def test_only_messages(session_dir):
     links_exist = ['generated/msg/NumPwrResult.html']
 
     do_test_package(PKG_NAME, session_dir, includes=includes, links_exist=links_exist)
+
+
+def test_basic_cpp(session_dir):
+    """Test a basic C++ package."""
+    PKG_NAME = 'basic_cpp'
+
+    do_build_package(DATAPATH / PKG_NAME, session_dir)
+
+    includes = [
+        'a different title',  # changed in custom index.rst
+        'basic_cpp_and_more',  # changed in custom config.py
+    ]
+    do_test_package(PKG_NAME, session_dir, includes=includes)
+
+    # Previously, running rosdoc2 would create a 'generated' folder in the doc
+    # subdirectory of the package. Directory refactoring should have eliminated
+    # this.
+    generated = pathlib.Path(DATAPATH / PKG_NAME / 'doc' / 'generated')
+    assert not generated.exists(), \
+        'Building should not create a "generated" directory in package/doc'
