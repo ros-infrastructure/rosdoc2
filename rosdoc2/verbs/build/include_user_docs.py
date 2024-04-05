@@ -83,8 +83,6 @@ def include_user_docs(package_dir: str,
         # directories that will be explicitly listed in index.rst
         if relpath == '.':
             continue
-        # Use forward slash path separators in sphinx documents
-        relpath = relpath.replace('\\', '/')
         docname = 'user_docs_' + slugify(relpath)  # This is the name that sphinx uses
         content = subdirectory_rst_template.format_map(
             {'name': relpath, 'name_underline': '=' * len(relpath)})

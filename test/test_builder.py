@@ -197,7 +197,8 @@ def test_full_package(session_dir):
         'c++ api',
         'message definitions',
         'service definitions',
-        'action definitions'
+        'action definitions',
+        'instructions',  # has documentation
     ]
     file_includes = [
         'generated/index.html'
@@ -205,6 +206,7 @@ def test_full_package(session_dir):
     links_exist = [
         'full_package.dummy.html',
         'modules.html',
+        'user_docs/morestuff/more_of_more/subsub.html'  # a deep documentation file
     ]
     excludes = [
         'dontshowme'
