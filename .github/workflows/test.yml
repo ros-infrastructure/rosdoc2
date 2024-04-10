@@ -22,13 +22,13 @@ jobs:
     - name: Install pip
       run: |
         VENV=$(mktemp -d)
-        python -m venv $VENV
+        python3 -m venv $VENV
         if [ -f $VENV/Scripts/activate ]; then
           . $VENV/Scripts/activate
         else
           . $VENV/bin/activate
         fi
-        python -m pip install -U pip setuptools
+        python3 -m pip install -U pip setuptools
 
     - name: Install pip dependencies
       run: |
