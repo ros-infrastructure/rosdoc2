@@ -19,10 +19,11 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
 
-    - name: Install pip
     - uses: actions/setup-python@v5
       with:
         python-version: '3.x'
+
+    - name: Install pip
       run: |
         python3 -m pip install -U pip setuptools
 
