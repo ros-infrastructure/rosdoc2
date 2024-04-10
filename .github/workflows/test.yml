@@ -20,7 +20,7 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Install pip
-      run: \
+      run: |
         VENV=$(mktemp -d)
         python -m venv $VENV
         if [ -f $VENV/Scripts/activate ]; then
