@@ -27,6 +27,7 @@ jobs:
 
     - name: Install pip dependencies
       run: |
+       python3 -m pip install -U pycodestyle flake8 flake8-blind-except flake8-builtins flake8-class-newline flake8-comprehension flake8-deprecated flake8-docstring flake8-import-order flake8-quotes
        python3 -m pip install .[test]
        python3 -m pip freeze
 
