@@ -9,6 +9,9 @@ on:
 jobs:
   unit_tests:
     name: Unit Tests
+    defaults:
+      run:
+        shell: bash
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -17,18 +20,29 @@ jobs:
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v2
-
-    - name: Install pip
-      run: apt update && apt install -y python3-pip
-
-    - name: Install pip dependencies
-      run: |
-       python3 -m pip install --upgrade --upgrade-strategy eager .[test]
-       python3 -m pip freeze
+      uses: actions/checkout@v4
 
     - name: Install apt dependencies
-      run: sudo apt update && sudo apt install -y doxygen graphviz
+      run: |
+       sudo apt update
+       sudo apt install -y doxygen graphviz python3-pip python3-venv python3-pytest pipx python3-sphinx
 
-    - name: Run tests
-      run: py.test --verbose test
+    - name: Smoke test of pipx install
+      run: |
+       PATH="$HOME/.local/bin:$PATH"
+       pipx install .
+       rosdoc2 build -d tmp/docs_build -c /tmp/cross_references -o /tmp/docs_output -p test/packages/full_package
+       if [ ! -f /tmp/docs_output/full_package/index.html ]; then
+         echo "Failed to find any output from rosdoc2"
+         exit 2
+       else
+        echo "rosdoc2 ran successfully under pipx"
+       fi
+
+    - name: Install modules and run tests in venv
+      run: |
+       python3 -m venv env
+       source env/bin/activate
+       python3 -m pip install --upgrade --upgrade-strategy eager .[test]
+       python3 -m pip freeze
+       py.test --verbose test
