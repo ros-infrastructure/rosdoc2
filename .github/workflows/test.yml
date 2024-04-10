@@ -27,7 +27,7 @@ jobs:
 
     - name: Install pip dependencies
       run: |
-       python3 -m pip install --upgrade --upgrade-strategy eager .[test]
+       python3 -m pip install .[test]
        python3 -m pip freeze
 
     - name: Install apt dependencies
