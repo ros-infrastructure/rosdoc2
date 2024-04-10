@@ -15,13 +15,12 @@ jobs:
         container: ['ros:iron', 'ros:rolling']
     container: ${{ matrix.container }}
 
+    env:
+      ENV PIP_BREAK_SYSTEM_PACKAGES: 1
+
     steps:
     - name: Checkout
       uses: actions/checkout@v4
-
-    - uses: actions/setup-python@v5
-      with:
-        python-version: '3.x'
 
     - name: Install pip
       run: |
