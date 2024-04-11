@@ -35,4 +35,4 @@ jobs:
       run: sudo apt update && sudo apt install -y doxygen graphviz
 
     - name: Run tests
-      run: py.test --verbose test
+      run: python3 -m pytest --verbose test
