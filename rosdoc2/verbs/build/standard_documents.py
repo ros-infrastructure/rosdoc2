@@ -27,6 +27,13 @@ Standard Documents
    standard_docs/*
 """
 
+readme_include_rst = """\
+README
+======
+
+
+"""
+
 
 def locate_standard_documents(package_xml_directory):
     """Locate standard documents."""
@@ -86,6 +93,20 @@ def generate_standard_document_files(standard_docs, wrapped_sphinx_directory):
             file_contents += '   :parser: myst_parser.sphinx_\n'
         else:
             file_contents += f'.. literalinclude:: {file_path}\n'
-
+            file_contents += '   :language: none\n'
         with open(os.path.join(standards_sphinx_directory, f'{key.upper()}.rst'), 'w+') as f:
             f.write(file_contents)
+        if key == 'readme':
+            # We create a second README to use with include
+            file_contents = readme_include_rst
+            file_path = f"standard_docs/original/{standard_doc['filename']}"
+            if file_type == 'rst':
+                file_contents += f'.. include:: {file_path}\n'
+            elif file_type == 'md':
+                file_contents += f'.. include:: {file_path}\n'
+                file_contents += '   :parser: myst_parser.sphinx_\n'
+            else:
+                file_contents += f'.. literalinclude:: {file_path}\n'
+                file_contents += '   :language: none\n'
+            with open(os.path.join(wrapped_sphinx_directory, 'readme_include.rst'), 'w+') as f:
+                f.write(file_contents)

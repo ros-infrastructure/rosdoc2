@@ -52,6 +52,7 @@ def generate_package_toc_entry(*, build_context,
     toc_entry_srv = '   Service Definitions <interfaces/service_definitions>\n'
     toc_entry_action = '   Action Definitions <interfaces/action_definitions>\n'
     toc_entry_standard = '   Standard Documents <standards>\n'
+    toc_entry_readme = '.. include:: readme_include.rst'
     toc_doc_entry = """\
 .. toctree::
    :titlesonly:
@@ -78,7 +79,8 @@ def generate_package_toc_entry(*, build_context,
     # User documentation
     if doc_directories:
         toc_entry += toc_doc_entry
-
+    if 'readme' in standard_docs:
+        toc_entry += toc_entry_readme
     return toc_entry
 
 
