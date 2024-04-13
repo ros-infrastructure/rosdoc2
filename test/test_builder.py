@@ -84,11 +84,12 @@ def do_test_package(
     file_includes=[],
     file_excludes=[],
     links_exist=[],
+    fragments=[],
 ) -> None:
     """Test that package documentation exists and includes/excludes certain text.
 
     :param pathlib.Path work_path: path where generated files were placed
-    :param list[str] includes: lower case text found in index.html data
+    :param list[str] includes: lower case text found exactly in index.html data
     :param list[str] excludes: lower case text not found in index.html data
     :param list[str] file_includes: path to files
         (relative to root index.html directory) of files that should exist
@@ -96,6 +97,7 @@ def do_test_package(
         (relative to root index.html directory) of files that should not exist
     :param list[str] links_exist: Confirm that 1) a link exists containing this text, and
         2) the link is a valid file
+    :param list[str] fragments: lower case text found partially in index.html data
     """
     logger.info(f'*** Testing package {name} work_path {work_path}')
     output_dir = work_path / 'output'
@@ -157,6 +159,16 @@ def do_test_package(
         assert link_path.is_file(), \
             f'file represented by <{found_item}> should exist at <{link_path}>'
 
+    # look for fragments of text
+    for item in fragments:
+        found_fragment = False
+        for text in parser.content:
+            if item in text:
+                found_fragment = True
+                break
+        assert found_fragment, \
+            f'html should have text fragment <{item}>'
+
 
 def test_minimum_package(session_dir):
     """Tests of a package containing as little as possible."""
@@ -199,6 +211,7 @@ def test_full_package(session_dir):
         'service definitions',
         'action definitions',
         'instructions',  # has documentation
+        'changelog',
     ]
     file_includes = [
         'generated/index.html'
@@ -206,16 +219,21 @@ def test_full_package(session_dir):
     links_exist = [
         'full_package.dummy.html',
         'modules.html',
-        'user_docs/morestuff/more_of_more/subsub.html'  # a deep documentation file
+        'user_docs/morestuff/more_of_more/subsub.html',  # a deep documentation file
+        'standards.html',
     ]
     excludes = [
         'dontshowme'
+    ]
+    fragments = [
+        'this is the package readme.',
     ]
     do_test_package(PKG_NAME, session_dir,
                     includes=includes,
                     file_includes=file_includes,
                     excludes=excludes,
-                    links_exist=links_exist)
+                    links_exist=links_exist,
+                    fragments=fragments)
 
 
 def test_only_python(session_dir):

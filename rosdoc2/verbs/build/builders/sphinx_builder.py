@@ -25,6 +25,7 @@ from ..collect_inventory_files import collect_inventory_files
 from ..create_format_map_from_package import create_format_map_from_package
 from ..generate_interface_docs import generate_interface_docs
 from ..include_user_docs import include_user_docs
+from ..standard_documents import generate_standard_document_files, locate_standard_documents
 
 logger = logging.getLogger('rosdoc2')
 
@@ -34,7 +35,10 @@ def esc_backslash(path):
     return path.replace('\\', '\\\\') if path else path
 
 
-def generate_package_toc_entry(*, build_context, interface_counts, doc_directories) -> str:
+def generate_package_toc_entry(*, build_context,
+                               interface_counts,
+                               doc_directories,
+                               standard_docs) -> str:
     """Construct a table of content (toc) entry for the package being processed."""
     build_type = build_context.build_type
     always_run_doxygen = build_context.always_run_doxygen
@@ -47,6 +51,8 @@ def generate_package_toc_entry(*, build_context, interface_counts, doc_directori
     toc_entry_msg = '   Message Definitions <interfaces/message_definitions>\n'
     toc_entry_srv = '   Service Definitions <interfaces/service_definitions>\n'
     toc_entry_action = '   Action Definitions <interfaces/action_definitions>\n'
+    toc_entry_standard = '   Standard Documents <standards>\n'
+    toc_entry_readme = '.. include:: readme_include.rst'
     toc_doc_entry = """\
 .. toctree::
    :titlesonly:
@@ -68,10 +74,13 @@ def generate_package_toc_entry(*, build_context, interface_counts, doc_directori
     if interface_counts['action'] > 0:
         toc_entry += toc_entry_action
 
+    if standard_docs:
+        toc_entry += toc_entry_standard
     # User documentation
     if doc_directories:
         toc_entry += toc_doc_entry
-
+    if 'readme' in standard_docs:
+        toc_entry += toc_entry_readme
     return toc_entry
 
 
@@ -467,6 +476,12 @@ class SphinxBuilder(Builder):
         )
         logger.info(f'interface_counts: {interface_counts}')
 
+        # locate standard documents
+        standard_docs = locate_standard_documents(package_xml_directory)
+        if standard_docs:
+            generate_standard_document_files(standard_docs, wrapped_sphinx_directory)
+        logger.info(f'standard_docs: {standard_docs}')
+
         # include user documentation
         doc_directories = include_user_docs(package_xml_directory, wrapped_sphinx_directory)
         logger.info(f'doc_directories: {doc_directories}')
@@ -519,7 +534,8 @@ class SphinxBuilder(Builder):
             python_src_directory,
             intersphinx_mapping_extensions,
             interface_counts,
-            doc_directories)
+            doc_directories,
+            standard_docs)
 
         # If the package has python code, then invoke `sphinx-apidoc` before building
         has_python = self.build_context.build_type == 'ament_python' or \
@@ -642,6 +658,7 @@ class SphinxBuilder(Builder):
         intersphinx_mapping_extensions,
         interface_counts,
         doc_directories,
+        standard_docs,
     ):
         """Generate the rosdoc2 sphinx project configuration files."""
         # Generate a default index.rst
@@ -653,7 +670,8 @@ class SphinxBuilder(Builder):
             'package_toc_entry': generate_package_toc_entry(
                 build_context=self.build_context,
                 interface_counts=interface_counts,
-                doc_directories=doc_directories)
+                doc_directories=doc_directories,
+                standard_docs=standard_docs)
         })
 
         with open(os.path.join(wrapped_sphinx_directory, 'index.rst'), 'w+') as f:
