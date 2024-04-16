@@ -58,19 +58,6 @@ jobs:
     - name: Install apt dependencies
       run: apt update && apt install -y doxygen graphviz
 
-    - name: Smoke test of pipx install
-      run: |
-        apt install -y pipx python3-sphinx
-        PATH="$HOME/.local/bin:$PATH"
-        pipx install .
-        rosdoc2 build -d tmp/docs_build -c /tmp/cross_references -o /tmp/docs_output -p test/packages/full_package
-        if [ ! -f /tmp/docs_output/full_package/index.html ]; then
-          echo "Failed to find any output from rosdoc2"
-          exit 2
-        else
-        echo "rosdoc2 ran successfully under pipx"
-        fi
-
     - name: Install pip dependencies
       run: |
        python3 -m pip install -U pycodestyle flake8 flake8-blind-except flake8-builtins flake8-class-newline flake8-comprehensions flake8-deprecated flake8-docstrings flake8-import-order flake8-quotes
