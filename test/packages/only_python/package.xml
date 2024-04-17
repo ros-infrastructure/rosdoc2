@@ -4,7 +4,7 @@
   <name>only_python</name>
   <version>0.0.0</version>
   <description>Basic Python node using ros2 create command</description>
-  <maintainer email="pythonpro@example.com">Python Pro</maintainer>
+  <maintainer email="pythonpro@example.com">Ye ol' Python Pro</maintainer>
   <license>Apache-2.0</license>
 
   <test_depend>ament_copyright</test_depend>

@@ -107,7 +107,7 @@ def ensure_global(name, default):
 ensure_global('rosdoc2_settings', {{}})
 ensure_global('extensions', [])
 ensure_global('project', "{package_name}")
-ensure_global('author', "{package_authors}")
+ensure_global('author', \"\"\"{package_authors}\"\"\")
 ensure_global('release', "{package.version}")
 ensure_global('version', "{package_version_short}")
 
@@ -251,7 +251,7 @@ sys.path.insert(0, os.path.abspath(os.path.join('{python_src_directory}', '..'))
 project = '{package.name}'
 # TODO(tfoote) The docs say year and author but we have this and it seems more relevant.
 copyright = '2021, {package_licenses}'
-author = '{package_authors}'
+author = \"\"\"{package_authors}\"\"\"
 
 # The full version, including alpha/beta/rc tags
 release = '{package.version}'
