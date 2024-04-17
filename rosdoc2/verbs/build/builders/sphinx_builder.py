@@ -12,12 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from importlib import resources
 import json
 import logging
 import os
 import shutil
 import subprocess
 
+from jinja2 import Template
 import setuptools
 from sphinx.cmd.build import main as sphinx_main
 
@@ -34,55 +36,6 @@ logger = logging.getLogger('rosdoc2')
 def esc_backslash(path):
     """Escape backslashes to support Windows paths in strings."""
     return path.replace('\\', '\\\\') if path else path
-
-
-def generate_package_toc_entry(*, build_context,
-                               interface_counts,
-                               doc_directories,
-                               standard_docs) -> str:
-    """Construct a table of content (toc) entry for the package being processed."""
-    build_type = build_context.build_type
-    always_run_doxygen = build_context.always_run_doxygen
-    always_run_sphinx_apidoc = build_context.always_run_sphinx_apidoc
-    ament_cmake_python = build_context.ament_cmake_python
-    # The TOC entries have to be indented by three (or any N) spaces
-    # inside the string to fall under the `:toctree:` directive
-    toc_entry_cpp = '   C++ API <generated/index>\n'
-    toc_entry_py = '   Python API <modules>\n'
-    toc_entry_msg = '   Message Definitions <interfaces/message_definitions>\n'
-    toc_entry_srv = '   Service Definitions <interfaces/service_definitions>\n'
-    toc_entry_action = '   Action Definitions <interfaces/action_definitions>\n'
-    toc_entry_standard = '   Standard Documents <standards>\n'
-    toc_entry_readme = '.. include:: readme_include.rst'
-    toc_doc_entry = """\
-.. toctree::
-   :titlesonly:
-   :maxdepth: 2
-
-   Documentation <user_docs>
-"""
-
-    toc_entry = '\n'
-
-    if build_type == 'ament_python' or always_run_sphinx_apidoc or ament_cmake_python:
-        toc_entry += toc_entry_py
-    if build_type in ['ament_cmake', 'cmake'] or always_run_doxygen:
-        toc_entry += toc_entry_cpp
-    if interface_counts['msg'] > 0:
-        toc_entry += toc_entry_msg
-    if interface_counts['srv'] > 0:
-        toc_entry += toc_entry_srv
-    if interface_counts['action'] > 0:
-        toc_entry += toc_entry_action
-
-    if standard_docs:
-        toc_entry += toc_entry_standard
-    # User documentation
-    if doc_directories:
-        toc_entry += toc_doc_entry
-    if 'readme' in standard_docs:
-        toc_entry += toc_entry_readme
-    return toc_entry
 
 
 rosdoc2_wrapping_conf_py_template = """\
@@ -357,22 +310,6 @@ rosdoc2_settings = {{
 }}
 """
 
-index_rst_template = """\
-{root_title}
-{root_title_underline}
-
-.. toctree::
-   :maxdepth: 2
-{package_toc_entry}
-
-Indices and Search
-==================
-
-* :ref:`genindex`
-* :ref:`search`
-
-"""
-
 
 class SphinxBuilder(Builder):
     """
@@ -527,21 +464,32 @@ class SphinxBuilder(Builder):
             if package_name != self.build_context.package.name
         ]
 
+        build_context = self.build_context
+        has_python = build_context.build_type == 'ament_python' or \
+            build_context.always_run_sphinx_apidoc or \
+            build_context.ament_cmake_python
+
+        always_run_doxygen = build_context.always_run_doxygen
+        has_cpp = build_context.build_type in ['ament_cmake', 'cmake'] or always_run_doxygen
+        self.template_variables.update({
+            'has_python': has_python,
+            'has_cpp': has_cpp,
+            'has_standard_docs': bool(standard_docs),
+            'has_documentation': bool(doc_directories),
+            'has_readme': 'readme' in standard_docs,
+            'interface_counts': interface_counts,
+            'package': self.build_context.package,
+        })
+
         # Setup rosdoc2 Sphinx file which will include and extend the one in
         # `sphinx_project_directory`.
         self.generate_wrapping_rosdoc2_sphinx_project_into_directory(
             wrapped_sphinx_directory,
             sphinx_project_directory,
             python_src_directory,
-            intersphinx_mapping_extensions,
-            interface_counts,
-            doc_directories,
-            standard_docs)
+            intersphinx_mapping_extensions)
 
         # If the package has python code, then invoke `sphinx-apidoc` before building
-        has_python = self.build_context.build_type == 'ament_python' or \
-            self.build_context.always_run_sphinx_apidoc or \
-            self.build_context.ament_cmake_python
         if has_python:
             if not python_src_directory or not os.path.isdir(python_src_directory):
                 raise RuntimeError(
@@ -652,26 +600,18 @@ class SphinxBuilder(Builder):
         sphinx_project_directory,
         python_src_directory,
         intersphinx_mapping_extensions,
-        interface_counts,
-        doc_directories,
-        standard_docs,
     ):
         """Generate the rosdoc2 sphinx project configuration files."""
         # Generate a default index.rst
         package = self.build_context.package
-        root_title = f'Welcome to the documentation for {package.name}'
-        self.template_variables.update({
-            'root_title': root_title,
-            'root_title_underline': '=' * len(root_title),
-            'package_toc_entry': generate_package_toc_entry(
-                build_context=self.build_context,
-                interface_counts=interface_counts,
-                doc_directories=doc_directories,
-                standard_docs=standard_docs)
-        })
+        logger.info('Using a default index.rst.jinja')
+        template_path = resources.files('rosdoc2.verbs.build.builders').joinpath('index.rst.jinja')
+        template_jinja = template_path.read_text()
+
+        index_rst = Template(template_jinja).render(self.template_variables)
 
         with open(os.path.join(wrapped_sphinx_directory, 'index.rst'), 'w+') as f:
-            f.write(index_rst_template.format_map(self.template_variables))
+            f.write(index_rst)
 
         # Copy all user content, like images or documentation files, and
         # source files to the wrapping directory
