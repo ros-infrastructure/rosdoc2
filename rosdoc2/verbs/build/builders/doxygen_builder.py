@@ -38,6 +38,7 @@ GENERATE_LATEX         = NO
 
 MACRO_EXPANSION        = YES
 EXPAND_ONLY_PREDEF     = YES
+STRIP_FROM_PATH        = {package_directory}
 """
 
 EXTENDED_DOXYFILE = """\

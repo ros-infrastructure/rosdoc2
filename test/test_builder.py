@@ -85,7 +85,7 @@ def do_test_package(
     file_excludes=[],
     links_exist=[],
     fragments=[],
-) -> None:
+) -> htmlParser:
     """Test that package documentation exists and includes/excludes certain text.
 
     :param pathlib.Path work_path: path where generated files were placed
@@ -169,6 +169,8 @@ def do_test_package(
         assert found_fragment, \
             f'html should have text fragment <{item}>'
 
+    return parser
+
 
 def test_minimum_package(session_dir):
     """Tests of a package containing as little as possible."""
@@ -228,12 +230,17 @@ def test_full_package(session_dir):
     fragments = [
         'this is the package readme.',
     ]
-    do_test_package(PKG_NAME, session_dir,
-                    includes=includes,
-                    file_includes=file_includes,
-                    excludes=excludes,
-                    links_exist=links_exist,
-                    fragments=fragments)
+    parser = do_test_package(PKG_NAME, session_dir,
+                             includes=includes,
+                             file_includes=file_includes,
+                             excludes=excludes,
+                             links_exist=links_exist,
+                             fragments=fragments)
+
+    # We don't want the parent directories to appear
+    for item in parser.links:
+        assert 'rosdoc2_test_packages' not in item, \
+            f'Found link {item} should not contain parent rosdoc2_test_packages'
 
 
 def test_only_python(session_dir):
