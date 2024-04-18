@@ -108,5 +108,5 @@ def generate_standard_document_files(standard_docs, wrapped_sphinx_directory):
             else:
                 file_contents += f'.. literalinclude:: {file_path}\n'
                 file_contents += '   :language: none\n'
-            with open(os.path.join(wrapped_sphinx_directory, 'readme_include.rst'), 'w+') as f:
+            with open(os.path.join(wrapped_sphinx_directory, '__readme_include.rst'), 'w+') as f:
                 f.write(file_contents)
