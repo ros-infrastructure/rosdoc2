@@ -156,8 +156,9 @@ def do_test_package(
             f'a link should exist containing the string <{item}>'
         link_object = urlparse(found_item)
         link_path = output_dir / name / link_object.path
-        assert link_path.is_file(), \
-            f'file represented by <{found_item}> should exist at <{link_path}>'
+        if not item.startswith('http'):
+            assert link_path.is_file(), \
+                f'file represented by <{found_item}> should exist at <{link_path}>'
 
     # look for fragments of text
     for item in fragments:
@@ -182,6 +183,7 @@ def test_minimum_package(session_dir):
     ]
     excludes = [
         'classes and structs',  # only found in C++ projects
+        'links',  # only found if urls defined
     ]
     file_includes = [
         'search.html',
@@ -215,6 +217,7 @@ def test_full_package(session_dir):
         'instructions',  # has documentation
         'changelog',
         'full ros2 test package',  # the package description
+        'links',
     ]
     file_includes = [
         'generated/index.html'
@@ -224,6 +227,7 @@ def test_full_package(session_dir):
         'modules.html',
         'user_docs/morestuff/more_of_more/subsub.html',  # a deep documentation file
         'standards.html',
+        'https://example.com/repo',
     ]
     excludes = [
         'dontshowme'
