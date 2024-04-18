@@ -228,6 +228,7 @@ def test_full_package(session_dir):
         'user_docs/morestuff/more_of_more/subsub.html',  # a deep documentation file
         'standards.html',
         'https://example.com/repo',
+        'standard_docs/PACKAGE.html',  # package.xml
     ]
     excludes = [
         'dontshowme'
