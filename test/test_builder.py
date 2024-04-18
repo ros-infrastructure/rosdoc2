@@ -212,6 +212,7 @@ def test_full_package(session_dir):
         'action definitions',
         'instructions',  # has documentation
         'changelog',
+        'full ros2 test package',  # the package description
     ]
     file_includes = [
         'generated/index.html'
