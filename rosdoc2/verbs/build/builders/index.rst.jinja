@@ -5,6 +5,13 @@ Welcome to the documentation for {{ package.name }}
 
 {{ package.description }}
 
+{% if package.urls -%}
+* Links
+{% for link in package.urls %}
+  * `{{ link.type.capitalize() }} <{{ link.url }}>`_
+{% endfor -%}
+{% endif -%}
+
 .. toctree::
    :maxdepth: 2
 
