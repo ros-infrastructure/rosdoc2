@@ -479,6 +479,7 @@ class SphinxBuilder(Builder):
             'has_readme': 'readme' in standard_docs,
             'interface_counts': interface_counts,
             'package': self.build_context.package,
+            'base_url': base_url,
         })
 
         # Setup rosdoc2 Sphinx file which will include and extend the one in

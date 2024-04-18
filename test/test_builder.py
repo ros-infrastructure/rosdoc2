@@ -69,6 +69,7 @@ def do_build_package(package_path, work_path) -> None:
         '-c', str(cr_dir),
         '-o', str(output_dir),
         '-d', str(build_dir),
+        '-u', '..',
     ])
     logger.info(f'*** Building package(s) at {package_path} with options {options}')
 
@@ -183,6 +184,7 @@ def test_minimum_package(session_dir):
     ]
     excludes = [
         'classes and structs',  # only found in C++ projects
+        'dependencies of this meta package',  # only in meta packages
         'links',  # only found if urls defined
     ]
     file_includes = [
@@ -296,3 +298,16 @@ def test_basic_cpp(session_dir):
     generated = pathlib.Path(DATAPATH / PKG_NAME / 'doc' / 'generated')
     assert not generated.exists(), \
         'Building should not create a "generated" directory in package/doc'
+
+
+def test_meta_package(session_dir):
+    """Tests a meta package."""
+    PKG_NAME = 'meta_package'
+
+    do_build_package(DATAPATH / PKG_NAME, session_dir)
+
+    includes = [
+        'dependencies of this meta package',
+        'only_python',
+    ]
+    do_test_package(PKG_NAME, session_dir, includes=includes)
