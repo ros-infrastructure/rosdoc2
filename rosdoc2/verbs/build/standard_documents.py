@@ -37,7 +37,7 @@ README
 
 def locate_standard_documents(package_xml_directory):
     """Locate standard documents."""
-    names = ['readme', 'license', 'contributing', 'changelog', 'quality_declaration']
+    names = ['readme', 'license', 'contributing', 'changelog', 'quality_declaration', 'package']
     found_paths = {}
     package_directory_items = os.scandir(package_xml_directory)
     for item in package_directory_items:
@@ -53,6 +53,10 @@ def locate_standard_documents(package_xml_directory):
                     filetype = 'md'
                 elif ext.lower() == '.rst':
                     filetype = 'rst'
+                elif ext.lower() == '.xml':
+                    if item.name != 'package.xml':
+                        continue
+                    filetype = 'xml'
                 else:
                     filetype = 'other'
                 found_paths[name] = {
@@ -91,6 +95,9 @@ def generate_standard_document_files(standard_docs, wrapped_sphinx_directory):
         elif file_type == 'md':
             file_contents += f'.. include:: {file_path}\n'
             file_contents += '   :parser: myst_parser.sphinx_\n'
+        elif file_type == 'xml':
+            file_contents += f'.. literalinclude:: {file_path}\n'
+            file_contents += '   :language: xml\n'
         else:
             file_contents += f'.. literalinclude:: {file_path}\n'
             file_contents += '   :language: none\n'
