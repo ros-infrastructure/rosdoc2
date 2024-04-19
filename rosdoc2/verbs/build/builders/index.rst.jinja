@@ -21,7 +21,7 @@
 {% if interface_counts['srv'] > 0 %}   Service Definitions <interfaces/service_definitions>{% endif %}
 {% if interface_counts['action'] > 0 %}   Action Definitions <interfaces/action_definitions>{% endif %}
 {% if has_standard_docs %}   Standard Documents <standards>{% endif %}
-{% if not package.build_depends and package.exec_depends %}
+{% if is_meta %}
 Dependencies of this META package
 ---------------------------------
 {% for dependency in package.exec_depends %}

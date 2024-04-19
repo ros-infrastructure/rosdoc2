@@ -16,6 +16,7 @@ from importlib import resources
 import json
 import logging
 import os
+from pathlib import Path
 import shutil
 import subprocess
 
@@ -471,6 +472,21 @@ class SphinxBuilder(Builder):
 
         always_run_doxygen = build_context.always_run_doxygen
         has_cpp = build_context.build_type in ['ament_cmake', 'cmake'] or always_run_doxygen
+        package = self.build_context.package
+
+        # Detect meta packages. They have no build_dependencies, do have exec_dependencies,
+        # and have no subdirectories except for possibly 'doc'.
+        is_meta = True
+        if package.build_depends or not package.exec_depends:
+            is_meta = False
+        else:
+            pp = Path(package_xml_directory)
+            subdirectories = [x for x in pp.iterdir() if x.is_dir()]
+            for subdirectory in subdirectories:
+                if subdirectory.name != 'doc':
+                    is_meta = False
+                    continue
+
         self.template_variables.update({
             'has_python': has_python,
             'has_cpp': has_cpp,
@@ -478,8 +494,9 @@ class SphinxBuilder(Builder):
             'has_documentation': bool(doc_directories),
             'has_readme': 'readme' in standard_docs,
             'interface_counts': interface_counts,
-            'package': self.build_context.package,
+            'package': package,
             'base_url': base_url,
+            'is_meta': is_meta or package.is_metapackage(),
         })
 
         # Setup rosdoc2 Sphinx file which will include and extend the one in
