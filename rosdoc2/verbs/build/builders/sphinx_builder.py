@@ -203,7 +203,7 @@ sys.path.insert(0, os.path.abspath(os.path.join('{python_src_directory}', '..'))
 
 project = '{package.name}'
 # TODO(tfoote) The docs say year and author but we have this and it seems more relevant.
-copyright = '2021, {package_licenses}'
+copyright = 'The <{package.name}> Contributors. License: {package_licenses}'
 author = \"\"\"{package_authors}\"\"\"
 
 # The full version, including alpha/beta/rc tags
