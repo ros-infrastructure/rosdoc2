@@ -474,19 +474,29 @@ class SphinxBuilder(Builder):
         has_cpp = build_context.build_type in ['ament_cmake', 'cmake'] or always_run_doxygen
         package = self.build_context.package
 
-        # Detect meta packages. They have no build_dependencies, do have exec_dependencies,
-        # and have no subdirectories except for possibly 'doc'.
-        is_meta = True
-        if package.build_depends or not package.exec_depends:
-            is_meta = False
+        show_exec_dep = build_context.show_exec_dep
+        if show_exec_dep is None:
+            if package.is_metapackage():
+                show_exec_dep = True
+                logger.info('show_exec_dep set True because is_metapackage set in package.xml')
+            # Detect meta packages. They have no build_dependencies, do have exec_dependencies,
+            # and have no subdirectories except for possibly 'doc'.
+            elif package.build_depends or not package.exec_depends:
+                show_exec_dep = False
+                logger.info("show_exec_dep set False because depends don't match meta pattern")
+            else:
+                pp = Path(package_xml_directory)
+                subdirectories = [x for x in pp.iterdir() if x.is_dir()]
+                for subdirectory in subdirectories:
+                    if subdirectory.name != 'doc':
+                        show_exec_dep = False
+                        logger.info('show_exec_dep set False because non-"doc/" directory found')
+                        continue
+            if show_exec_dep is None:
+                show_exec_dep = True
+                logger.info('show_exec_dep set True as package matches meta pattern')
         else:
-            pp = Path(package_xml_directory)
-            subdirectories = [x for x in pp.iterdir() if x.is_dir()]
-            for subdirectory in subdirectories:
-                if subdirectory.name != 'doc':
-                    is_meta = False
-                    continue
-
+            logger.info(f'show_exec_dep set to {show_exec_dep} in rosdoc2.yml')
         self.template_variables.update({
             'has_python': has_python,
             'has_cpp': has_cpp,
@@ -496,7 +506,7 @@ class SphinxBuilder(Builder):
             'interface_counts': interface_counts,
             'package': package,
             'base_url': base_url,
-            'is_meta': is_meta or package.is_metapackage(),
+            'show_exec_dep': show_exec_dep,
         })
 
         # Setup rosdoc2 Sphinx file which will include and extend the one in

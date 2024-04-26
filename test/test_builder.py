@@ -184,8 +184,8 @@ def test_minimum_package(session_dir):
     ]
     excludes = [
         'classes and structs',  # only found in C++ projects
-        'dependencies of this meta package',  # only in meta packages
-        'links',  # only found if urls defined
+        'links',  # only found if urls defined,
+        'execution dependencies of this package',  # only in meta packages
     ]
     file_includes = [
         'search.html',
@@ -307,7 +307,31 @@ def test_meta_package(session_dir):
     do_build_package(DATAPATH / PKG_NAME, session_dir)
 
     includes = [
-        'dependencies of this meta package',
+        'execution dependencies of this package',
         'only_python',
     ]
     do_test_package(PKG_NAME, session_dir, includes=includes)
+
+
+def test_do_show_dep(session_dir):
+    """Tests rosdoc2.yaml with show_exec_dep=true."""
+    PKG_NAME = 'do_show_dep'
+
+    do_build_package(DATAPATH / PKG_NAME, session_dir)
+
+    includes = [
+        'execution dependencies of this package',
+    ]
+    do_test_package(PKG_NAME, session_dir, includes=includes)
+
+
+def test_dont_show_dep(session_dir):
+    """Tests rosdoc2.yaml with show_exec_dep=false."""
+    PKG_NAME = 'dont_show_dep'
+
+    do_build_package(DATAPATH / PKG_NAME, session_dir)
+
+    excludes = [
+        'execution dependencies of this package',
+    ]
+    do_test_package(PKG_NAME, session_dir, excludes=excludes)
