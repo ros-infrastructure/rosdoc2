@@ -20,7 +20,6 @@ import shutil
 import subprocess
 
 from jinja2 import Template
-import setuptools
 from sphinx.cmd.build import main as sphinx_main
 
 from ..builder import Builder
@@ -382,23 +381,42 @@ class SphinxBuilder(Builder):
 
         package_xml_directory = os.path.dirname(self.build_context.package.filename)
         # If 'python_source' is specified, construct 'python_src_directory' from it
+        python_src_directory = None
         if self.build_context.python_source is not None:
             python_src_directory = \
                 os.path.abspath(
                     os.path.join(
                         package_xml_directory,
                         self.build_context.python_source))
-        # If not provided, try to find the python source directory
-        else:
-            package_list = setuptools.find_packages(where=package_xml_directory)
-            if self.build_context.package.name in package_list:
-                python_src_directory = \
-                    os.path.abspath(
-                        os.path.join(
-                            package_xml_directory,
-                            self.build_context.package.name))
-            else:
+            if not os.path.isdir(python_src_directory):
+                logger.warning(f'python_source specified as {self.build_context.python_source} '
+                               'is not a directory')
                 python_src_directory = None
+        # If not provided or invalid, try to find the python source directory
+        if not python_src_directory:
+            search_dirs = ['.', 'src']
+            for search_dir in search_dirs:
+                found_packages = []
+                where = os.path.abspath(os.path.join(package_xml_directory, search_dir))
+                if not os.path.isdir(where):
+                    continue
+                subfolders = [f for f in os.scandir(where) if f.is_dir()]
+                for subfolder in subfolders:
+                    if subfolder.name == self.build_context.package.name:
+                        python_src_directory = subfolder.path
+                        break
+                    if os.path.isfile(os.path.join(subfolder.path, '__init__.py')):
+                        found_packages.append(subfolder)
+
+                if python_src_directory:
+                    break
+
+                if len(found_packages) == 1:
+                    # If we only found single misnamed package, use it
+                    python_src_directory = found_packages[0].path
+                    logger.warning(
+                        f'using a python package with a non-standard name: {python_src_directory}')
+                    break
 
         # We will ultimately run the sphinx project from a wrapped directory. Create it now,
         # so that we can put generated items there.
@@ -492,25 +510,26 @@ class SphinxBuilder(Builder):
         # If the package has python code, then invoke `sphinx-apidoc` before building
         if has_python:
             if not python_src_directory or not os.path.isdir(python_src_directory):
-                raise RuntimeError(
+                logger.warning(
                     'Could not locate source directory to invoke sphinx-apidoc in. '
                     'If this is package does not have a standard Python package layout, '
                     "please specify the Python source in 'rosdoc2.yaml'.")
-            cmd = [
-                'sphinx-apidoc',
-                '-o', wrapped_sphinx_directory,
-                '-e',  # Document each module in its own page.
-                python_src_directory,
-            ]
-            logger.info(
-                f"Running sphinx-apidoc: '{' '.join(cmd)}' in '{wrapped_sphinx_directory}'"
-            )
-            completed_process = subprocess.run(cmd, cwd=wrapped_sphinx_directory)
-            msg = f"sphinx-apidoc exited with return code '{completed_process.returncode}'"
-            if completed_process.returncode == 0:
-                logger.debug(msg)
             else:
-                raise RuntimeError(msg)
+                cmd = [
+                    'sphinx-apidoc',
+                    '-o', wrapped_sphinx_directory,
+                    '-e',  # Document each module in its own page.
+                    python_src_directory,
+                ]
+                logger.info(
+                    f"Running sphinx-apidoc: '{' '.join(cmd)}' in '{wrapped_sphinx_directory}'"
+                )
+                completed_process = subprocess.run(cmd, cwd=wrapped_sphinx_directory)
+                msg = f"sphinx-apidoc exited with return code '{completed_process.returncode}'"
+                if completed_process.returncode == 0:
+                    logger.debug(msg)
+                else:
+                    logger.warning(msg)
 
         # Invoke Sphinx-build.
         sphinx_output_dir = os.path.abspath(
