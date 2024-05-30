@@ -367,12 +367,15 @@ class SphinxBuilder(Builder):
     def build(self, *, doc_build_folder, output_staging_directory):
         """Actually do the build."""
         # Check that doxygen_xml_directory exists relative to output staging, if specified.
+        has_cpp = False
         if self.doxygen_xml_directory is not None:
             self.doxygen_xml_directory = \
                 os.path.join(output_staging_directory, self.doxygen_xml_directory)
             self.doxygen_xml_directory = os.path.abspath(self.doxygen_xml_directory)
 
-            if not os.path.isdir(self.doxygen_xml_directory):
+            if os.path.isdir(self.doxygen_xml_directory):
+                has_cpp = True
+            else:
                 self.doxygen_xml_directory = None
                 logger.info('No doxygen_xml_directory found, apparently doxygen did not run')
                 if self.build_context.always_run_doxygen:
@@ -469,8 +472,6 @@ class SphinxBuilder(Builder):
             build_context.always_run_sphinx_apidoc or \
             build_context.ament_cmake_python
 
-        always_run_doxygen = build_context.always_run_doxygen
-        has_cpp = build_context.build_type in ['ament_cmake', 'cmake'] or always_run_doxygen
         self.template_variables.update({
             'has_python': has_python,
             'has_cpp': has_cpp,
