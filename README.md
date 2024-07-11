@@ -52,17 +52,23 @@ Additionally, if you have a Python API then you will want to provide a Sphinx `c
 apt install -y python3-rosdoc2
 ```
 
+#### Installation from PyPI
 
-### `rosdoc2` installation
-
-`rosdoc2` can be installed locally from the git repository.
-Clone the repository, change into the directory, and then run:
+You may also install rosdoc2 from [PyPI](https://pypi.org/project/rosdoc2).
+If you do so, we recommend you install and use it from a [virtualenv][].
 
 ```
-pip install --user --upgrade .
+python3 -m pip install rosdoc2
 ```
 
-`rosdoc2` will be installed under `~/.local/bin/` directory.
+#### Installation from source
+
+You can also use pip to install rosdoc2 from source.
+Again, we recommend you install and use it from a [virtualenv][].
+
+```
+python3 -m pip install --upgrade 'git+https://github.com/ros-infrastructure/rosdoc2@main'
+```
 
 ## Documentation
 
@@ -229,3 +235,5 @@ TODO
 | Description / Error Message | Issue | Workaround |
 |:---|:---:|:---|
 | `No module named 'rclpy._rclpy_pybind11'` | [#66](https://github.com/ros-infrastructure/rosdoc2/issues/66) | Do not source colcon workspace. |
+
+[virtualenv]: https://packaging.python.org/en/latest/guides/installing-using-pip-and-virtual-environments/#create-and-use-virtual-environments
