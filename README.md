@@ -46,13 +46,12 @@ Additionally, if you have a Python API then you will want to provide a Sphinx `c
 
 ## Installation
 
-### Prerequisite
+`rosdoc2` can be installed from the [ROS repositories](https://docs.ros.org/en/jazzy/Installation/Ubuntu-Install-Debians.html#enable-required-repositories).
 
 ```
-apt install -y python3-pip git
+apt install -y python3-rosdoc2
 ```
 
-and then, install [ros2_documentation](https://github.com/ros2/ros2_documentation?tab=readme-ov-file#prerequisites) required packages.
 
 ### `rosdoc2` installation
 
