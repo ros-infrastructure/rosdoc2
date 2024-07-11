@@ -263,6 +263,56 @@ def test_only_python(session_dir):
                     links_exist=links_exist)
 
 
+def test_src_python(session_dir):
+    PKG_NAME = 'src_python'
+    do_build_package(DATAPATH / PKG_NAME, session_dir)
+
+    includes = ['src_python package']
+    links_exist = ['src_python.html']
+
+    do_build_package(DATAPATH / PKG_NAME, session_dir)
+
+    do_test_package(PKG_NAME, session_dir,
+                    includes=includes,
+                    links_exist=links_exist)
+
+
+def test_false_python(session_dir):
+    PKG_NAME = 'false_python'
+    do_build_package(DATAPATH / PKG_NAME, session_dir)
+
+    excludes = ['python api']
+    includes = ['I say I am python, but no actual python']
+
+    do_test_package(PKG_NAME, session_dir,
+                    includes=includes,
+                    excludes=excludes)
+
+
+def test_invalid_python_source(session_dir):
+    PKG_NAME = 'invalid_python_source'
+    do_build_package(DATAPATH / PKG_NAME, session_dir)
+
+    excludes = ['python api']
+    includes = ['This packages incorrectly specifies python source']
+
+    do_test_package(PKG_NAME, session_dir,
+                    includes=includes,
+                    excludes=excludes)
+
+
+def test_too_many_python_packages(session_dir):
+    PKG_NAME = 'too_many_python_packages'
+    do_build_package(DATAPATH / PKG_NAME, session_dir)
+
+    excludes = ['python api']
+    includes = ['Too many unspecified python packages']
+
+    do_test_package(PKG_NAME, session_dir,
+                    includes=includes,
+                    excludes=excludes)
+
+
 def test_only_messages(session_dir):
     """Test a package only containing messages."""
     PKG_NAME = 'only_messages'
