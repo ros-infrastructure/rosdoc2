@@ -55,7 +55,7 @@ apt install -y python3-rosdoc2
 #### Installation from PyPI
 
 You may also install rosdoc2 from [PyPI](https://pypi.org/project/rosdoc2).
-If you do so, we recommend you install and use it from a [virtualenv][].
+If you do so, we recommend you install and use it from a [virtualenv](https://docs.python.org/3/library/venv.html).
 
 ```
 python3 -m pip install rosdoc2
@@ -64,7 +64,7 @@ python3 -m pip install rosdoc2
 #### Installation from source
 
 You can also use pip to install rosdoc2 from source.
-Again, we recommend you install and use it from a [virtualenv][].
+Again, we recommend you install and use it from a [virtualenv](https://docs.python.org/3/library/venv.html).
 
 ```
 python3 -m pip install --upgrade 'git+https://github.com/ros-infrastructure/rosdoc2@main'
@@ -222,9 +222,6 @@ passed tests, run:
 ```
 python3 -m pytest -rP --log-level=DEBUG -k full_package
 ```
-
-
-
 
 ## Contributing
 
