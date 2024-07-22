@@ -417,6 +417,9 @@ class SphinxBuilder(Builder):
         wrapped_sphinx_directory = os.path.abspath(
             os.path.join(doc_build_folder, 'wrapped_sphinx_directory'))
         os.makedirs(wrapped_sphinx_directory, exist_ok=True)
+        ignore_path = os.path.join(wrapped_sphinx_directory, 'COLCON_IGNORE')
+        with open(ignore_path, 'a'):
+            pass
 
         # Generate rst documents for interfaces
         interface_counts = generate_interface_docs(
