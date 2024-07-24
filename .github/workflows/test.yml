@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        container: ['ros:jazzy', 'ros:iron', 'ros:rolling']
+        container: ['ros:iron', 'ros:jazzy', 'ros:rolling']
     container: ${{ matrix.container }}
 
     steps:
