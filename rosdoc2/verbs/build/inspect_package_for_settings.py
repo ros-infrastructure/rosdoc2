@@ -28,23 +28,6 @@ version: 1
 ---
 
 settings:
-    ## If this is true, a standard index page is generated in the output directory.
-    ## It uses the package information from the 'package.xml' to show details
-    ## about the package, creates a table of contents for the various builders
-    ## that were run, and may contain links to things like build farm jobs for
-    ## this package or links to other versions of this package.
-
-    ## If false, you can still include content that would have been in the index
-    ## into one of your '.rst' files from your Sphinx project, using the
-    ## '.. include::' directive in Sphinx.
-    ## For example, you could include it in a custom 'index.rst' so you can have
-    ## the standard information followed by custom content.
-
-    ## TODO(wjwwood): provide a concrete example of this (relative path?)
-
-    ## If this is not specified explicitly, it defaults to 'true'.
-    generate_package_index: true
-
     ## This setting is relevant mostly if the standard Python package layout cannot
     ## be assumed for 'sphinx-apidoc' invocation. The user can provide the path
     ## (relative to the 'package.xml' file) where the Python modules defined by this
