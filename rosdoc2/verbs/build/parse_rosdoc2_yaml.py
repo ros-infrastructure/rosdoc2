@@ -57,6 +57,7 @@ def parse_rosdoc2_yaml(yaml_string, build_context):
             f'expected a dict{{output_dir: build_settings, ...}}, '
             f"got a '{type(settings_dict)}' instead")
 
+    # if None, python_source is set to either './<package.name>' or 'src/<package.name>'
     build_context.python_source = settings_dict.get('python_source', None)
     build_context.always_run_doxygen = settings_dict.get('always_run_doxygen', False)
     build_context.always_run_sphinx_apidoc = settings_dict.get('always_run_sphinx_apidoc', False)
