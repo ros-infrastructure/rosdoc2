@@ -56,20 +56,20 @@ builders:
     ## available builders.
     ## The value of each stanza is a dictionary of settings for the builder that
     ## outputs to that directory.
-    ## Required keys in the settings dictionary are:
+    ## Keys in all settings dictionary are:
     ##  * 'output_dir' - determines output subdirectory for builder instance
     ##                   relative to --output-directory
     ##  * 'name' - used when referencing the built docs from the index.
 
     - doxygen: {{
-        name: '{package_name} Public C/C++ API',
-        output_dir: 'generated/doxygen'
+        # name: '{package_name} Public C/C++ API',
+        # output_dir: 'generated/doxygen'
       }}
     - sphinx: {{
-        name: '{package_name}',
+        # name: '{package_name}',
         ## This path is relative to output staging.
-        doxygen_xml_directory: 'generated/doxygen/xml',
-        output_dir: ''
+        # doxygen_xml_directory: 'generated/doxygen/xml',
+        # output_dir: ''
       }}
 """
 

@@ -79,6 +79,8 @@ class DoxygenBuilder(Builder):
             build_context)
 
         assert self.builder_type == 'doxygen'
+        self.name = self.name or self.build_context.package.name + " Public C/C++ API"
+        self.output_dir = self.output_dir or 'generated/doxygen'
 
         # If the build type is not `ament_cmake/cmake`, there is no reason
         # to create a doxygen builder.
