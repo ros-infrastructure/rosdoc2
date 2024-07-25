@@ -63,13 +63,20 @@ builders:
 
     - doxygen: {{
         # name: '{package_name} Public C/C++ API',
-        # output_dir: 'generated/doxygen'
+        # output_dir: 'generated/doxygen',
+        ## file name for a user-supplied Doxyfile
+        # doxyfile: null,
+        ## additional statements to add to the Doxyfile, list of strings
+        # extra_doxyfile_statements: [],
       }}
     - sphinx: {{
         # name: '{package_name}',
         ## This path is relative to output staging.
         # doxygen_xml_directory: 'generated/doxygen/xml',
-        # output_dir: ''
+        # output_dir: '',
+        ## Root folder for the user-supplied documentation. If not specified, either 'doc' or
+        ## 'doc/source' will be used if renderable documentation is found there.
+        # sphinx_sourcedir: 'doc',
       }}
 """
 

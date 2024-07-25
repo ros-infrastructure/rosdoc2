@@ -103,6 +103,8 @@ class DoxygenBuilder(Builder):
             if key in ['name', 'output_dir']:
                 continue
             if key == 'doxyfile':
+                if not value:
+                    continue
                 config_file_dir = os.path.dirname(configuration_file_path)
                 doxyfile = os.path.join(config_file_dir, value)
                 if not os.path.exists(doxyfile):

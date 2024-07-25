@@ -1,0 +1,5 @@
+# Commands to start or stop launch files or behaviors
+string name # thing to start
+string command # start, stop, status
+---
+string response

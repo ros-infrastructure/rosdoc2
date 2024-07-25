@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>default_yaml</name>
+  <version>0.1.3</version>
+  <description>Full ROS2 test package</description>
+  <maintainer email="someone@example.com">Some One</maintainer>
+  <url type="repository">https://example.com/repo</url>
+  <url type="website">https://example.com/website</url>
+  <url type="bugtracker">https://example.com/issues</url>
+  <license>Apache License 2.0</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <buildtool_depend>ament_cmake_python</buildtool_depend>
+
+  <depend>rclcpp</depend>
+  <depend>rclpy</depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+    <rosdoc2>rosdoc2.yaml</rosdoc2>
+  </export>
+
+</package>

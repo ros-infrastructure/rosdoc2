@@ -249,6 +249,53 @@ def test_full_package(session_dir):
             f'Found link {item} should not contain parent rosdoc2_test_packages'
 
 
+def test_default_yaml(session_dir):
+    """Test a package with C++, python, and docs."""
+    PKG_NAME = 'default_yaml'
+    do_build_package(DATAPATH / PKG_NAME, session_dir)
+
+    includes = [
+        PKG_NAME,
+        'python api',
+        'c++ api',
+        'message definitions',
+        'service definitions',
+        'action definitions',
+        'instructions',  # has documentation
+        'changelog',
+        'full ros2 test package',  # the package description
+        'links',
+    ]
+    file_includes = [
+        'generated/index.html'
+    ]
+    links_exist = [
+        'default_yaml.dummy.html',
+        'modules.html',
+        'user_docs/morestuff/more_of_more/subsub.html',  # a deep documentation file
+        'standards.html',
+        'https://example.com/repo',
+        'standard_docs/PACKAGE.html',  # package.xml
+    ]
+    excludes = [
+        'dontshowme'
+    ]
+    fragments = [
+        'this is the package readme.',
+    ]
+    parser = do_test_package(PKG_NAME, session_dir,
+                             includes=includes,
+                             file_includes=file_includes,
+                             excludes=excludes,
+                             links_exist=links_exist,
+                             fragments=fragments)
+
+    # We don't want the parent directories to appear
+    for item in parser.links:
+        assert 'rosdoc2_test_packages' not in item, \
+            f'Found link {item} should not contain parent rosdoc2_test_packages'
+
+
 def test_only_python(session_dir):
     """Test a pure python package."""
     PKG_NAME = 'only_python'
