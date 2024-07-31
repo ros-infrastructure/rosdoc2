@@ -27,65 +27,56 @@ version: 1
 
 ---
 
-settings:
-    ## If this is true, a standard index page is generated in the output directory.
-    ## It uses the package information from the 'package.xml' to show details
-    ## about the package, creates a table of contents for the various builders
-    ## that were run, and may contain links to things like build farm jobs for
-    ## this package or links to other versions of this package.
-
-    ## If false, you can still include content that would have been in the index
-    ## into one of your '.rst' files from your Sphinx project, using the
-    ## '.. include::' directive in Sphinx.
-    ## For example, you could include it in a custom 'index.rst' so you can have
-    ## the standard information followed by custom content.
-
-    ## TODO(wjwwood): provide a concrete example of this (relative path?)
-
-    ## If this is not specified explicitly, it defaults to 'true'.
-    generate_package_index: true
-
+settings: {{
     ## This setting is relevant mostly if the standard Python package layout cannot
     ## be assumed for 'sphinx-apidoc' invocation. The user can provide the path
     ## (relative to the 'package.xml' file) where the Python modules defined by this
     ## package are located.
-    # python_source: '{package_name}'
+    # python_source: '{package_name}',
 
     ## This setting, if true, attempts to run `doxygen` and the `breathe`/`exhale`
     ## extensions to `sphinx` regardless of build type. This is most useful if the
     ## user would like to generate C/C++ API documentation for a package that is not
     ## of the `ament_cmake/cmake` build type.
-    always_run_doxygen: false
+    # always_run_doxygen: false,
 
     ## This setting, if true, attempts to run `sphinx-apidoc` regardless of build
     ## type. This is most useful if the user would like to generate Python API
     ## documentation for a package that is not of the `ament_python` build type.
-    always_run_sphinx_apidoc: false
+    # always_run_sphinx_apidoc: false,
 
     # This setting, if provided, will override the build_type of this package
     # for documentation purposes only. If not provided, documentation will be
     # generated assuming the build_type in package.xml.
-    # override_build_type: 'ament_python'
+    # override_build_type: '{package_build_type}',
+}}
 builders:
     ## Each stanza represents a separate build step, performed by a specific 'builder'.
     ## The key of each stanza is the builder to use; this must be one of the
     ## available builders.
     ## The value of each stanza is a dictionary of settings for the builder that
     ## outputs to that directory.
-    ## Required keys in the settings dictionary are:
+    ## Keys in all settings dictionary are:
     ##  * 'output_dir' - determines output subdirectory for builder instance
     ##                   relative to --output-directory
     ##  * 'name' - used when referencing the built docs from the index.
 
     - doxygen: {{
-        name: '{package_name} Public C/C++ API',
-        output_dir: 'generated/doxygen'
+        # name: '{package_name} Public C/C++ API',
+        # output_dir: 'generated/doxygen',
+        ## file name for a user-supplied Doxyfile
+        # doxyfile: null,
+        ## additional statements to add to the Doxyfile, list of strings
+        # extra_doxyfile_statements: [],
       }}
     - sphinx: {{
-        name: '{package_name}',
+        # name: '{package_name}',
         ## This path is relative to output staging.
-        doxygen_xml_directory: 'generated/doxygen/xml',
-        output_dir: ''
+        # doxygen_xml_directory: 'generated/doxygen/xml',
+        # output_dir: '',
+        ## Root folder for the user-supplied documentation. If not specified, either 'doc' or
+        ## 'doc/source' will be used if renderable documentation is found there.
+        # sphinx_sourcedir: 'doc',
       }}
 """
 

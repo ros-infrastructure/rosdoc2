@@ -25,15 +25,8 @@ class Builder:
     def __init__(self, builder_name, builder_entry_dictionary, build_context):
         """Construct a new Builder."""
         self.builder_type = builder_name
-
-        if 'name' not in builder_entry_dictionary:
-            raise RuntimeError("Error entry without 'name' field found")
-        self.name = builder_entry_dictionary['name']
-
-        if 'output_dir' not in builder_entry_dictionary:
-            raise RuntimeError("Error entry without 'output_dir' field found")
-        self.output_dir = builder_entry_dictionary['output_dir']
-
+        self.name = builder_entry_dictionary.get('name')
+        self.output_dir = builder_entry_dictionary.get('output_dir')
         self.builder_entry_dictionary = builder_entry_dictionary
         self.build_context = build_context
 

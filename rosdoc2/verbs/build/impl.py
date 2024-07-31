@@ -178,10 +178,6 @@ def main_impl(options):
             source=doc_output_directory,
             destination=builder_destination)
 
-    # If enabled, create package index.
-    if tool_settings.get('generate_package_index', True):
-        pass
-
     # Move staged files to user provided output directory.
     package_output_directory = os.path.join(options.output_directory, package.name)
     logger.info(f"Moving files to final destination in '{package_output_directory}'.")

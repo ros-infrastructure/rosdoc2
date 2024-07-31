@@ -1,4 +1,4 @@
-# Copyright 2020 Open Source Robotics Foundation, Inc.
+# Copyright 2022 Open Source Robotics Foundation, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,15 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
+"""This file is used to test documentation generation."""
 
 
-def create_format_map_from_package(package):
-    """Create a dictionary used in format strings using a package object."""
-    return {
-        'package_name': package.name,
-        'package_version': package.version,
-        'package_description': package.description,
-        'package_directory': os.path.abspath(os.path.dirname(package.filename)),
-        'package_build_type': package.get_build_type()
-    }
+class Example():
+    """This is the overview of the Example class."""
+
+    def __init__(self):
+        """Construct example."""
+        pass
+
+    def do_something(p) -> str:
+        """Do something.
+
+        :param list[str] p: This is a parameter description
+        :return: just the input arm itself
+        """
+        return p

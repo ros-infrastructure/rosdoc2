@@ -79,6 +79,8 @@ class DoxygenBuilder(Builder):
             build_context)
 
         assert self.builder_type == 'doxygen'
+        self.name = self.name or self.build_context.package.name + ' Public C/C++ API'
+        self.output_dir = self.output_dir or 'generated/doxygen'
 
         # If the build type is not `ament_cmake/cmake`, there is no reason
         # to create a doxygen builder.
@@ -101,6 +103,8 @@ class DoxygenBuilder(Builder):
             if key in ['name', 'output_dir']:
                 continue
             if key == 'doxyfile':
+                if not value:
+                    continue
                 config_file_dir = os.path.dirname(configuration_file_path)
                 doxyfile = os.path.join(config_file_dir, value)
                 if not os.path.exists(doxyfile):

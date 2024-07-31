@@ -335,8 +335,13 @@ class SphinxBuilder(Builder):
 
         assert self.builder_type == 'sphinx'
 
+        self.name = self.name or self.build_context.package.name
+        self.output_dir = self.output_dir or ''
         self.sphinx_sourcedir = None
-        self.doxygen_xml_directory = None
+
+        # Must check for the existence of this later, as it may not have been made yet.
+        self.doxygen_xml_directory = \
+            builder_entry_dictionary.get('doxygen_xml_directory', 'generated/doxygen/xml')
         configuration_file_path = build_context.configuration_file_path
         if not os.path.exists(configuration_file_path):
             # This can be the case if the default config is used from a string.
@@ -346,7 +351,7 @@ class SphinxBuilder(Builder):
 
         # Process keys.
         for key, value in builder_entry_dictionary.items():
-            if key in ['name', 'output_dir']:
+            if key in ['name', 'output_dir', 'doxygen_xml_directory']:
                 continue
             if key == 'sphinx_sourcedir':
                 sphinx_sourcedir = os.path.join(configuration_file_dir, value)
@@ -355,9 +360,6 @@ class SphinxBuilder(Builder):
                         f"Error Sphinx SOURCEDIR '{value}' does not exist relative "
                         f"to '{configuration_file_path}', or is not a directory.")
                 self.sphinx_sourcedir = sphinx_sourcedir
-            elif key == 'doxygen_xml_directory':
-                self.doxygen_xml_directory = value
-                # Must check for the existence of this later, as it may not have been made yet.
             else:
                 raise RuntimeError(f"Error the Sphinx builder does not support key '{key}'")
 
