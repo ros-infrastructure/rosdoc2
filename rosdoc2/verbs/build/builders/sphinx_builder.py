@@ -16,6 +16,7 @@ from importlib import resources
 import json
 import logging
 import os
+from pathlib import Path
 import shutil
 import subprocess
 
@@ -417,9 +418,7 @@ class SphinxBuilder(Builder):
         wrapped_sphinx_directory = os.path.abspath(
             os.path.join(doc_build_folder, 'wrapped_sphinx_directory'))
         os.makedirs(wrapped_sphinx_directory, exist_ok=True)
-        ignore_path = os.path.join(wrapped_sphinx_directory, 'COLCON_IGNORE')
-        with open(ignore_path, 'a'):
-            pass
+        Path(wrapped_sphinx_directory).joinpath('COLCON_IGNORE').touch()
 
         # Generate rst documents for interfaces
         interface_counts = generate_interface_docs(
