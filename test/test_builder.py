@@ -117,7 +117,10 @@ def test_src_python(module_dir):
     PKG_NAME = 'src_python'
     do_build_package(DATAPATH / PKG_NAME, module_dir)
 
-    includes = ['src_python package']
+    includes = [
+        'src_python package',
+        'documentation in source',  # We found the documentation in doc/source
+    ]
     links_exist = ['src_python.html']
 
     do_build_package(DATAPATH / PKG_NAME, module_dir)

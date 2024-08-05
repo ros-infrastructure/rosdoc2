@@ -28,7 +28,7 @@ Documentation
    :maxdepth: 1
    :glob:
 
-   user_docs/*
+   {sphinx_project_directory}/*
 """
 
 subdirectory_rst_template = """\
@@ -40,26 +40,27 @@ subdirectory_rst_template = """\
    :maxdepth: 2
    :glob:
 
-   user_docs/{name}/*
+   {sphinx_project_directory}/{name}/*
 """
 
 
 def include_user_docs(sphinx_project_directory: str,
                       output_dir: str,
+                      package_xml_directory: str
                       ):
     """Generate rst files for user documents."""
-    logger.info(f'include_user_docs: sphinx_project_directory {sphinx_project_directory} '
-                f'output_dir {output_dir}')
+    logger.info(f'include_user_docs: sphinx_project_directory <{sphinx_project_directory}> '
+                f'output_dir <{output_dir}>')
+    user_doc_directory = os.path.join(
+        os.path.join(package_xml_directory, sphinx_project_directory))
     doc_directories = []
-    for root, _, files in os.walk(sphinx_project_directory):
+    for root, _, files in os.walk(user_doc_directory):
         for file in files:
             # ensure a valid documentation file exists, directories might only contain resources.
             (_, ext) = os.path.splitext(file)
             if ext in ['.rst', '.md', '.markdown']:
                 logger.debug(f'Found renderable documentation file in {root} named {file}')
-                relpath = os.path.relpath(root, sphinx_project_directory)
-                relpath = relpath.replace('\\', '/')
-                doc_directories.append(relpath)
+                doc_directories.append(os.path.relpath(root, user_doc_directory))
                 break
 
     if not doc_directories:
@@ -70,14 +71,15 @@ def include_user_docs(sphinx_project_directory: str,
     # At this point we know that there are some directories that have documentation in them under
     # /doc, but we do not know which ones might also be needed for images or includes. So we copy
     # everything to the output directory.
+    logger.info(f'Copying {os.path.join(package_xml_directory, sphinx_project_directory)} to '
+                f'{os.path.join(output_dir, sphinx_project_directory)}')
     shutil.copytree(
-        os.path.abspath(sphinx_project_directory),
-        os.path.abspath(os.path.join(output_dir, 'user_docs')),
+        os.path.join(package_xml_directory, sphinx_project_directory),
+        os.path.join(output_dir, sphinx_project_directory),
         dirs_exist_ok=True)
 
-    logger.info(f'Copying {os.path.abspath(sphinx_project_directory)} to '
-                f'{os.path.abspath(os.path.join(output_dir, "user_docs"))}')
-    toc_content = documentation_rst_template
+    toc_content = documentation_rst_template.format_map(
+        {'sphinx_project_directory': sphinx_project_directory})
     # generate a glob rst entry for each directory with documents
     for relpath in doc_directories:
         # directories that will be explicitly listed in index.rst
@@ -85,7 +87,9 @@ def include_user_docs(sphinx_project_directory: str,
             continue
         docname = 'user_docs_' + slugify(relpath)  # This is the name that sphinx uses
         content = subdirectory_rst_template.format_map(
-            {'name': relpath, 'name_underline': '=' * len(relpath)})
+            {'name': relpath,
+             'name_underline': '=' * len(relpath),
+             'sphinx_project_directory': sphinx_project_directory})
         sub_path = os.path.join(output_dir, docname + '.rst')
         with open(sub_path, 'w+') as f:
             f.write(content)

@@ -392,10 +392,10 @@ class SphinxBuilder(Builder):
             if key in ['name', 'output_dir', 'doxygen_xml_directory']:
                 continue
             if key == 'sphinx_sourcedir':
-                if not value:
+                if value is None:
                     continue
-                sphinx_sourcedir = os.path.join(configuration_file_dir, value)
-                if not os.path.isdir(sphinx_sourcedir):
+                sphinx_sourcedir = value
+                if not os.path.isdir(os.path.join(configuration_file_dir, value)):
                     raise RuntimeError(
                         f"Error Sphinx SOURCEDIR '{value}' does not exist relative "
                         f"to '{configuration_file_path}', or is not a directory.")
@@ -494,10 +494,14 @@ class SphinxBuilder(Builder):
 
         # include user documentation
         if sphinx_project_directory:
-            doc_directories = include_user_docs(sphinx_project_directory, wrapped_sphinx_directory)
+            doc_directories = include_user_docs(
+                sphinx_project_directory, wrapped_sphinx_directory, package_xml_directory)
             logger.info(f'doc_directories: {doc_directories}')
         else:
             doc_directories = None
+            sphinx_project_directory = 'doc'
+            os.makedirs(os.path.join(wrapped_sphinx_directory, sphinx_project_directory),
+                        exist_ok=True)
 
         # Collect intersphinx mapping extensions from discovered inventory files.
         inventory_files = \
@@ -529,12 +533,14 @@ class SphinxBuilder(Builder):
 
         # If the user did no include a conf.py in sphinx_project_directory, generate
         # a default conf.py
-        conf_py_directory = sphinx_project_directory
-        if not conf_py_directory or not os.path.isfile(os.path.join(conf_py_directory, 'conf.py')):
+        conf_py_directory = os.path.join(wrapped_sphinx_directory, sphinx_project_directory)
+        logger.info(f'conf_py_directory: {conf_py_directory}')
+        if os.path.isfile(os.path.join(conf_py_directory, 'conf.py')):
+            os.rename(os.path.join(conf_py_directory, 'conf.py'),
+                      os.path.join(conf_py_directory, '__conf.py'))
+        else:
             logger.info('Note: no conf.py provided by the user, '
                         'therefore using a default Sphinx configuration.')
-            conf_py_directory = os.path.join(doc_build_folder, 'default_sphinx_project')
-            os.makedirs(conf_py_directory, exist_ok=True)
             self.generate_default_project_into_directory(
                 conf_py_directory, python_src_directory)
 
@@ -632,11 +638,11 @@ class SphinxBuilder(Builder):
         """
         package_xml_directory = os.path.dirname(self.build_context.package.filename)
         options = [
-            os.path.join(package_xml_directory, 'doc'),
-            os.path.join(package_xml_directory, 'doc', 'source'),
+            os.path.join('doc', 'source'),
+            'doc',
         ]
         for option in options:
-            if os.path.isdir(option):
+            if os.path.isdir(os.path.join(package_xml_directory, option)):
                 return option
         return None
 
@@ -654,7 +660,7 @@ class SphinxBuilder(Builder):
             )),
         })
 
-        with open(os.path.join(conf_py_directory, 'conf.py'), 'w') as f:
+        with open(os.path.join(conf_py_directory, '__conf.py'), 'w') as f:
             f.write(default_conf_py_template.format_map(self.template_variables))
 
     def generate_wrapping_rosdoc2_sphinx_project_into_directory(
@@ -693,7 +699,7 @@ class SphinxBuilder(Builder):
             'did_run_doxygen': self.doxygen_xml_directory is not None,
             'wrapped_sphinx_directory': esc_backslash(os.path.abspath(wrapped_sphinx_directory)),
             'user_conf_py_filename': esc_backslash(
-                os.path.abspath(os.path.join(conf_py_directory, 'conf.py'))),
+                os.path.abspath(os.path.join(conf_py_directory, '__conf.py'))),
             'breathe_projects': ',\n'.join(breathe_projects) + '\n    ',
             'intersphinx_mapping_extensions': ',\n        '.join(intersphinx_mapping_extensions),
             'package': package,
