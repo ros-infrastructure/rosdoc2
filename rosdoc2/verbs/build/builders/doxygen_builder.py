@@ -17,6 +17,7 @@ import logging
 import os
 import shutil
 import subprocess
+import sys
 
 from ..builder import Builder
 from ..collect_tag_files import collect_tag_files
@@ -243,7 +244,8 @@ class DoxygenBuilder(Builder):
         logger.info(
             f"Running Doxygen: '{' '.join(cmd)}' in '{working_directory}'"
         )
-        completed_process = subprocess.run(cmd, cwd=working_directory)
+        completed_process = subprocess.run(
+            cmd, cwd=working_directory, stdout=sys.stdout, stderr=sys.stderr)
         logger.info(
             f"Doxygen exited with return code '{completed_process.returncode}'")
 
