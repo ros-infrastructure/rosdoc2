@@ -323,8 +323,9 @@ class SphinxBuilder(Builder):
     - builder (str) (required)
       - required for all builders, must be 'sphinx' to use this class
     - sphinx_sourcedir (str) (optional)
-      - directory containing the Sphinx project, i.e. the `conf.py`, the setting
-        you would pass to sphinx-build as SOURCEDIR. Defaults to `doc`.
+      - If set, the documentation in this folder replaces the default documentation generated
+      by rosdoc2. That is, the directory you would pass to sphinx-build as SOURCEDIR.
+      Defaults to empty (or null in yaml, None in python).
     """
 
     def __init__(self, builder_name, builder_entry_dictionary, build_context):
@@ -355,6 +356,8 @@ class SphinxBuilder(Builder):
             if key in ['name', 'output_dir', 'doxygen_xml_directory']:
                 continue
             if key == 'sphinx_sourcedir':
+                if not value:
+                    continue
                 sphinx_sourcedir = os.path.join(configuration_file_dir, value)
                 if not os.path.isdir(sphinx_sourcedir):
                     raise RuntimeError(
