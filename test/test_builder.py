@@ -139,7 +139,10 @@ def test_false_python(module_dir):
         'I say I am python, but no actual python',
         'this is documentation'  # the title of included documentation
     ]
-    links_exist = ['user_docs.html']  # Found docs in a non-standard location
+    links_exist = [
+        'user_docs.html',  # Found docs in a non-standard location
+        'docs/moredocs/more1.html'  # Found subdirectory in non-standard location
+    ]
 
     do_test_package(PKG_NAME, module_dir,
                     includes=includes,
@@ -204,3 +207,47 @@ def test_basic_cpp(module_dir):
     generated = pathlib.Path(DATAPATH / PKG_NAME / 'doc' / 'generated')
     assert not generated.exists(), \
         'Building should not create a "generated" directory in package/doc'
+
+
+def test_has_sphinx_sourcedir(module_dir):
+    PKG_NAME = 'has_sphinx_sourcedir'
+    do_build_package(DATAPATH / PKG_NAME, module_dir)
+
+    includes = [
+        'i defined sphinx_sourcedir'
+    ]
+    excludes = [
+        'standards.html',  # We override normal rosdoc2, so this should be missing.
+    ]
+    links_exist = [
+        'moredocs/more1.html',  # Documentation in a subdirectory
+    ]
+
+    do_test_package(PKG_NAME, module_dir,
+                    includes=includes,
+                    excludes=excludes,
+                    links_exist=links_exist)
+
+    do_test_package(PKG_NAME, module_dir)
+
+
+def test_empty_doc_dir(module_dir):
+    PKG_NAME = 'empty_doc_dir'
+    do_build_package(DATAPATH / PKG_NAME, module_dir)
+
+    includes = [
+        'package with an empty doc directory',  # The package description
+    ]
+    excludes = [
+        'documentation'  # We should not show empty documentation
+    ]
+    links_exist = [
+        'standards.html',  # We still show the package
+    ]
+
+    do_test_package(PKG_NAME, module_dir,
+                    includes=includes,
+                    excludes=excludes,
+                    links_exist=links_exist)
+
+    do_test_package(PKG_NAME, module_dir)

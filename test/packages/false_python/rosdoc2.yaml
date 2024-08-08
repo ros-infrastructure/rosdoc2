@@ -24,9 +24,9 @@ settings: {
     ## documentation for a package that is not of the `ament_python` build type.
     # always_run_sphinx_apidoc: false,
 
-    # This setting, if provided, will override the build_type of this package
-    # for documentation purposes only. If not provided, documentation will be
-    # generated assuming the build_type in package.xml.
+    ## This setting, if provided, will override the build_type of this package
+    ## for documentation purposes only. If not provided, documentation will be
+    ## generated assuming the build_type in package.xml.
     # override_build_type: 'ament_python',
 }
 builders:
@@ -53,7 +53,16 @@ builders:
         ## This path is relative to output staging.
         # doxygen_xml_directory: 'generated/doxygen/xml',
         # output_dir: '',
-        ## Root folder for the user-supplied documentation. If not specified, either 'doc' or
-        ## 'doc/source' will be used if renderable documentation is found there.
-        sphinx_sourcedir: 'docs',
+        ## If sphinx_sourcedir is specified and not null, then the documentation in that folder
+        ## (specified relative to the package.xml directory) will replace rosdoc2's normal output.
+        ## If sphinx_sourcedir is left unspecified, any documentation found in the doc/ or
+        ## doc/source/ folder will still be included by default, along with other relevant package
+        ## information.
+        # sphinx_sourcedir: null,
+        ## Directory (relative to the package.xml directory) where user documentation is found. If
+        ## documentation is in one of the standard locations (doc/ or doc/source) this is not
+        ## needed. Unlike sphinx_sourcedir, specifying this does not override the standard rosdoc2
+        ## output, but includes this user documentation along with other items included by default
+        ## by rosdoc2.
+        user_doc_dir: 'docs'
       }
