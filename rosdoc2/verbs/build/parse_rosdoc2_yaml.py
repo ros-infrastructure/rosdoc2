@@ -12,19 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import yaml
 
-from .builders import create_builder_by_name
-
-
-def parse_rosdoc2_yaml(yaml_string, build_context):
+def parse_rosdoc2_yaml(configs, build_context):
     """
     Parse a rosdoc2.yaml configuration string, returning it as a tuple of settings and builders.
 
     :return: a tuple with the first item being the tool settings as a dictionary,
         and the second item being a list of Builder objects.
     """
-    configs = list(yaml.load_all(yaml_string, Loader=yaml.SafeLoader))
     file_name = build_context.configuration_file_path
     if len(configs) != 2:
         raise ValueError(
@@ -57,12 +52,6 @@ def parse_rosdoc2_yaml(yaml_string, build_context):
             f'expected a dict{{output_dir: build_settings, ...}}, '
             f"got a '{type(settings_dict)}' instead")
 
-    # if None, python_source is set to either './<package.name>' or 'src/<package.name>'
-    build_context.python_source = settings_dict.get('python_source', None)
-    build_context.always_run_doxygen = settings_dict.get('always_run_doxygen', False)
-    build_context.always_run_sphinx_apidoc = settings_dict.get('always_run_sphinx_apidoc', False)
-    build_context.build_type = settings_dict.get('override_build_type', build_context.build_type)
-
     if 'builders' not in config:
         raise ValueError(
             f"Error parsing file '{file_name}', in the second section, "
@@ -74,15 +63,10 @@ def parse_rosdoc2_yaml(yaml_string, build_context):
             'expected a list of builders, '
             f"got a '{type(builders_list)}' instead")
 
-    builders = []
     for builder in builders_list:
         if len(builder) != 1:
             raise ValueError(
                 f"Error parsing file '{file_name}', in the second section, each builder "
                 'must have exactly one key (which is the type of builder to use)')
-        builder_name = next(iter(builder))
-        builders.append(create_builder_by_name(builder_name,
-                                               builder_dict=builder[builder_name],
-                                               build_context=build_context))
 
-    return (settings_dict, builders)
+    return (settings_dict, builders_list)

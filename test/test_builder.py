@@ -35,19 +35,22 @@ def module_dir(tmp_path_factory):
     return tmp_path_factory.getbasetemp()
 
 
-def do_build_package(package_path, work_path) -> None:
+def do_build_package(package_path, work_path, with_extension=False) -> None:
     build_dir = work_path / 'build'
     output_dir = work_path / 'output'
     cr_dir = work_path / 'cross_references'
 
     # Create a top level parser
     parser = prepare_arguments(argparse.ArgumentParser())
-    options = parser.parse_args([
+    args = [
         '-p', str(package_path),
         '-c', str(cr_dir),
         '-o', str(output_dir),
         '-d', str(build_dir),
-    ])
+    ]
+    if with_extension:
+        args.extend(['-y', str(pathlib.Path('test') / 'ex_test.yaml')])
+    options = parser.parse_args(args)
     logger.info(f'*** Building package(s) at {package_path} with options {options}')
 
     # run rosdoc2 on the package
@@ -93,7 +96,7 @@ def test_full_package(module_dir):
 def test_default_yaml(module_dir):
     """Test a package with C++, python, and docs using specified default rosdoc2.yaml configs."""
     PKG_NAME = 'default_yaml'
-    do_build_package(DATAPATH / PKG_NAME, module_dir)
+    do_build_package(DATAPATH / PKG_NAME, module_dir, with_extension=True)
 
     do_test_full_package(module_dir, pkg_name=PKG_NAME)
 
@@ -101,7 +104,8 @@ def test_default_yaml(module_dir):
 def test_only_python(module_dir):
     """Test a pure python package."""
     PKG_NAME = 'only_python'
-    do_build_package(DATAPATH / PKG_NAME, module_dir)
+    # Use with_extension=True to show that nothing changes if the package is not there.
+    do_build_package(DATAPATH / PKG_NAME, module_dir, with_extension=True)
 
     includes = [
         PKG_NAME,
@@ -151,10 +155,13 @@ def test_false_python(module_dir):
 
 def test_invalid_python_source(module_dir):
     PKG_NAME = 'invalid_python_source'
-    do_build_package(DATAPATH / PKG_NAME, module_dir)
+    do_build_package(DATAPATH / PKG_NAME, module_dir, with_extension=True)
 
     excludes = ['python api']
-    includes = ['This packages incorrectly specifies python source']
+    includes = [
+        'This packages incorrectly specifies python source',
+        'this is in a funny place',  # Documentation found using extended yaml
+    ]
 
     do_test_package(PKG_NAME, module_dir,
                     includes=includes,
@@ -250,3 +257,14 @@ def test_empty_doc_dir(module_dir):
                     links_exist=links_exist)
 
     do_test_package(PKG_NAME, module_dir)
+
+
+def test_src_alt_python(module_dir):
+    PKG_NAME = 'src_alt_python'
+    do_build_package(DATAPATH / PKG_NAME, module_dir, with_extension=True)
+
+    includes = ['python api']  # We found the python source with the extended yaml
+    links_exist = ['dummy.html']  # We found python source with extended yaml
+    do_test_package(PKG_NAME, module_dir,
+                    includes=includes,
+                    links_exist=links_exist)

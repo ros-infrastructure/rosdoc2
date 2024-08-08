@@ -1,0 +1,19 @@
+---
+- docs_support:
+    options: {'only_if_missing': true}
+    packages:
+      invalid_python_source:
+        builders:
+          - sphinx:
+              user_doc_dir: funny_docs
+      # Test of the 'only_if_missing' option.
+      default_yaml:
+        builders:
+          - sphinx:
+              user_doc_dir: i_do_not_exist
+- python_location:
+    options: {}
+    packages:
+      src_alt_python:
+        settings:
+          python_source: launch
