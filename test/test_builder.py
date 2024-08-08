@@ -132,11 +132,16 @@ def test_false_python(module_dir):
     do_build_package(DATAPATH / PKG_NAME, module_dir)
 
     excludes = ['python api']
-    includes = ['I say I am python, but no actual python']
+    includes = [
+        'I say I am python, but no actual python',
+        'this is documentation'  # the title of included documentation
+    ]
+    links_exist = ['user_docs.html']  # Found docs in a non-standard location
 
     do_test_package(PKG_NAME, module_dir,
                     includes=includes,
-                    excludes=excludes)
+                    excludes=excludes,
+                    links_exist=links_exist)
 
 
 def test_invalid_python_source(module_dir):
