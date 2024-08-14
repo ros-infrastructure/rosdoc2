@@ -166,16 +166,12 @@ def package_impl(package):
         os.kill(os.getpid(), signal.SIGINT)
     threading.Thread(target=watchdog, daemon=True).start()
 
-    try:
-        # Generate the doc build directory.
-        package_doc_build_directory = os.path.join(options.doc_build_directory, package.name)
-        os.makedirs(package_doc_build_directory, exist_ok=True)
-    except BaseException as e:  # noqa: B902
-        return (package.path, 4, type(e).__name__ + ' ' + str(e))
+    # Generate the doc build directory.
+    os.makedirs(options.doc_build_directory, exist_ok=True)
 
     print(f'{_clocktime()} Begin processing {package.name}', flush=True)
     # remap output
-    outfile = open(os.path.join(package_doc_build_directory, 'stdout.txt'), 'w')
+    outfile = open(os.path.join(options.doc_build_directory, f'{package.name}.txt'), 'w')
     old_stdout = sys.stdout
     old_stderr = sys.stderr
     sys.stdout = outfile
