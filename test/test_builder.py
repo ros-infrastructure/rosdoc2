@@ -64,7 +64,6 @@ def test_minimum_package(module_dir):
     ]
     excludes = [
         'classes and structs',  # only found in C++ projects
-        'links',  # only found if urls defined
     ]
     file_includes = [
         'search.html',
