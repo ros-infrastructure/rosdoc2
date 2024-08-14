@@ -16,6 +16,7 @@
 
 import argparse
 import logging
+import os
 import pathlib
 
 import pytest
@@ -214,6 +215,8 @@ def test_only_messages(module_dir):
     """Test a package only containing messages."""
     PKG_NAME = 'only_messages'
 
+    # This tests that run succeeds even if rosdistro entry is missing.
+    os.environ['ROS_DISTRO'] = 'rolling'
     do_build_package(DATAPATH / PKG_NAME, module_dir)
 
     includes = [
@@ -310,3 +313,18 @@ def test_ignore_doc(module_dir):
     excludes = ['do not show']
 
     do_test_package(PKG_NAME, module_dir, excludes=excludes)
+
+
+def test_rclcpp(module_dir):
+    """Tests of repo url lookup from a known standard package."""
+    PKG_NAME = 'rclcpp'
+    os.environ['ROS_DISTRO'] = 'rolling'
+    do_build_package(DATAPATH / PKG_NAME, module_dir)
+
+    includes = [
+        PKG_NAME,
+    ]
+
+    links_exist = ['https://github.com/ros2/rclcpp.git']  # Found repo url from rosdistro.
+    do_test_package(PKG_NAME, module_dir,
+                    includes=includes, links_exist=links_exist)
