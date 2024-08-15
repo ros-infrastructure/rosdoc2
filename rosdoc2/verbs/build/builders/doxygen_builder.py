@@ -82,6 +82,10 @@ class DoxygenBuilder(Builder):
         assert self.builder_type == 'doxygen'
         self.name = self.name or self.build_context.package.name + ' Public C/C++ API'
         self.output_dir = self.output_dir or 'generated/doxygen'
+        self.doxyfile = None
+        self.extra_doxyfile_statements = []
+        self.rosdoc2_doxyfile_statements = []
+        self.doxyfile_content = None
 
         # If the build type is not `ament_cmake/cmake`, there is no reason
         # to create a doxygen builder.
@@ -93,13 +97,12 @@ class DoxygenBuilder(Builder):
                 f"The package build type is not 'ament_cmake' or 'cmake', hence the "
                 f"'{self.builder_type}' builder was not configured")
             return
-
-        self.doxyfile = None
-        self.extra_doxyfile_statements = []
-        self.rosdoc2_doxyfile_statements = []
-        configuration_file_path = build_context.configuration_file_path
+        elif self.build_context.never_run_doxygen:
+            logger.debug('The package has never_run_doxygen set, so skipping doxygen.')
+            return
 
         # Process keys.
+        configuration_file_path = build_context.configuration_file_path
         for key, value in builder_entry_dictionary.items():
             if key in ['name', 'output_dir']:
                 continue
@@ -132,7 +135,6 @@ class DoxygenBuilder(Builder):
         # Prepare the template variables for formatting strings.
         self.template_variables = create_format_map_from_package(build_context.package)
 
-        self.doxyfile_content = None
         # If the user does not supply a Doxygen file, look for one in the package root.
         if self.doxyfile is None:
             package_directory = os.path.dirname(build_context.package.filename)
@@ -178,6 +180,10 @@ class DoxygenBuilder(Builder):
                 f"The package build type is not 'ament_cmake' or 'cmake', hence the "
                 f"'{self.builder_type}' builder was not invoked")
             return None  # Explicitly generated no documentation.
+
+        if self.build_context.never_run_doxygen:
+            logger.debug('The package has never_run_doxygen set, so skipping doxygen.')
+            return None
 
         # If both doxyfile and doxyfile_content are None, that means there is
         # no reason to run doxygen.

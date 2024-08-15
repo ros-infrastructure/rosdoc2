@@ -46,10 +46,21 @@ settings: {{
     ## of the `ament_cmake/cmake` build type.
     # always_run_doxygen: false,
 
+    ## This setting, if true, will skip running doxygen` and the `breathe`/`exhale`
+    ## extensions to `sphinx` regardless of build type. This is most useful if the
+    ## user has generated C++ documentation elsewhere that is included in the doc
+    ## folder, or in external documentation.
+    # never_run_doxygen: false,
+
     ## This setting, if true, attempts to run `sphinx-apidoc` regardless of build
     ## type. This is most useful if the user would like to generate Python API
     ## documentation for a package that is not of the `ament_python` build type.
     # always_run_sphinx_apidoc: false,
+
+    ## This setting, if true, will skip running `sphinx-apidoc` regardless of build
+    ## type. This is most useful if the user has generated python documentation elsewhere
+    ## that is included in the doc folder, or in external documentation.
+    # never_run_sphinx_apidoc: false,
 
     ## This setting, if provided, will override the build_type of this package
     ## for documentation purposes only. If not provided, documentation will be
@@ -196,7 +207,9 @@ def inspect_package_for_settings(package, tool_options):
     # if None, python_source is set to either './<package.name>' or 'src/<package.name>'
     build_context.python_source = settings_dict.get('python_source', None)
     build_context.always_run_doxygen = settings_dict.get('always_run_doxygen', False)
+    build_context.never_run_doxygen = settings_dict.get('never_run_doxygen', False)
     build_context.always_run_sphinx_apidoc = settings_dict.get('always_run_sphinx_apidoc', False)
+    build_context.never_run_sphinx_apidoc = settings_dict.get('never_run_sphinx_apidoc', False)
     build_context.build_type = settings_dict.get('override_build_type', build_context.build_type)
 
     builders = []

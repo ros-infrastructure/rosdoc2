@@ -1,0 +1,18 @@
+## This 'attic section' self-documents this file's type and version.
+type: 'rosdoc2 config'
+version: 1
+
+---
+
+settings: {
+    ## This setting, if true, will skip running doxygen` and the `breathe`/`exhale`
+    ## extensions to `sphinx` regardless of build type. This is most useful if the
+    ## user has generated C++ documentation elsewhere that is included in the doc
+    ## folder, or in external documentation.
+    never_run_doxygen: true,
+}
+builders:
+    - doxygen: {
+      }
+    - sphinx: {
+      }

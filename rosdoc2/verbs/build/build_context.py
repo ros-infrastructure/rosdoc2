@@ -29,5 +29,7 @@ class BuildContext:
         self.build_type = package_object.get_build_type()
         self.python_source = None
         self.always_run_doxygen = False
+        self.never_run_doxygen = False
         self.always_run_sphinx_apidoc = False
+        self.never_run_sphinx_apidoc = False
         self.ament_cmake_python = False
