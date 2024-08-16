@@ -522,6 +522,11 @@ class SphinxBuilder(Builder):
             except OSError as e:
                 print(f'Failed to copy user content: {e}')
         else:
+            # copy jinja file if it exists
+            index_jinja_path = os.path.join(package_xml_directory, 'index.rst.jinja')
+            if os.path.isfile(index_jinja_path):
+                shutil.copy(index_jinja_path, wrapped_sphinx_directory)
+
             # include user documentation
             if self.user_doc_dir == IGNORE_DOC_DIRECTORY:
                 user_doc_dir = None
@@ -727,15 +732,21 @@ class SphinxBuilder(Builder):
         index_rst_path = os.path.join(wrapped_sphinx_directory, 'index.rst')
         package = self.build_context.package
         if not os.path.isfile(index_rst_path):
-            # Generate a default index.rst
-            logger.info('Using a default index.rst.jinja')
-            template_path = resources.files(
-                'rosdoc2.verbs.build.builders').joinpath('index.rst.jinja')
-            template_jinja = template_path.read_text()
-
+            # Did the user provide index.rst.jinja?
+            user_jinja_path = os.path.join(wrapped_sphinx_directory, 'index.rst.jinja')
+            if os.path.isfile(user_jinja_path):
+                logger.info('Using a user-supplied index.rst.jinja')
+                with open(user_jinja_path, 'r') as f:
+                    template_jinja = f.read()
+            else:
+                # Generate a default index.rst
+                logger.info('Using a default index.rst.jinja')
+                template_path = resources.files(
+                    'rosdoc2.verbs.build.builders').joinpath('index.rst.jinja')
+                template_jinja = template_path.read_text()
             index_rst = Template(template_jinja).render(self.template_variables)
 
-            with open(os.path.join(wrapped_sphinx_directory, 'index.rst'), 'w+') as f:
+            with open(index_rst_path, 'w+') as f:
                 f.write(index_rst)
 
         breathe_projects = []
