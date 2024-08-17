@@ -66,20 +66,22 @@ def include_user_docs(rel_user_doc_directory: str,
             # We assume that this index will also show any desired files in subdirectories
             dirs.clear()
 
+    if os.path.isdir(user_doc_directory):
+        # At this point we know that a documentation directory exists, but we do not know what
+        # might also be needed for images or includes, perhaps in a README. So we copy
+        # everything to the output directory.
+        logger.info(f'Copying {os.path.join(package_xml_directory, rel_user_doc_directory)} to '
+                    f'{os.path.join(output_dir, rel_user_doc_directory)}')
+        shutil.copytree(
+            os.path.join(package_xml_directory, rel_user_doc_directory),
+            os.path.join(output_dir, rel_user_doc_directory),
+            dirs_exist_ok=True)
+
     if not doc_directories:
         logger.debug(f'no documentation found in {user_doc_directory}')
         return doc_directories
 
     logger.info(f'Documentation found in directories {doc_directories}')
-    # At this point we know that there are some directories that have documentation in them under
-    # /doc, but we do not know which ones might also be needed for images or includes. So we copy
-    # everything to the output directory.
-    logger.info(f'Copying {os.path.join(package_xml_directory, rel_user_doc_directory)} to '
-                f'{os.path.join(output_dir, rel_user_doc_directory)}')
-    shutil.copytree(
-        os.path.join(package_xml_directory, rel_user_doc_directory),
-        os.path.join(output_dir, rel_user_doc_directory),
-        dirs_exist_ok=True)
 
     toc_content = documentation_rst_template.format_map(
         {'rel_user_doc_directory': rel_user_doc_directory})

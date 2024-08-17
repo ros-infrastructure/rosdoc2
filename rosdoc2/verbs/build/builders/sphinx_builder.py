@@ -495,7 +495,7 @@ class SphinxBuilder(Builder):
         interface_counts = generate_interface_docs(
             package_xml_directory,
             self.build_context.package.name,
-            os.path.join(wrapped_sphinx_directory, 'interfaces')
+            wrapped_sphinx_directory
         )
         logger.info(f'interface_counts: {interface_counts}')
 

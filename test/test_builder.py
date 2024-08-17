@@ -183,6 +183,20 @@ def test_false_python(module_dir):
                     excludes=excludes,
                     links_exist=links_exist)
 
+    # Confirm that the image in the readme was detected.
+    image_path = module_dir / 'output' / PKG_NAME / '_images' / 'ros.png'
+    assert image_path.is_file(), \
+        f'ros logo image file exists at {image_path}'
+
+    readme_path = module_dir / 'output' / PKG_NAME / '__README.html'
+    assert readme_path.is_file(), \
+        f'wrapped README file exists at {readme_path}'
+
+    with readme_path.open(mode='r', errors='replace') as f:
+        readme_content = f.read()
+    assert 'src="_images/ros.png"' in readme_content, \
+        'wrapped README file links to image'
+
 
 def test_invalid_python_source(module_dir):
     PKG_NAME = 'invalid_python_source'
@@ -223,7 +237,9 @@ def test_only_messages(module_dir):
         PKG_NAME,
         'message definitions',
     ]
-    links_exist = ['interfaces/msg/NumPwrResult.html']
+    links_exist = [
+        'msg/NumPwrResult.html',  # a link to a defined message appears
+    ]
 
     do_test_package(PKG_NAME, module_dir, includes=includes, links_exist=links_exist)
 
