@@ -20,10 +20,9 @@ import sys
 import threading
 import time
 
+from catkin_pkg.packages import find_packages_allowing_duplicates
 from rosdoc2.verbs.build.impl import main_impl as build_main_impl
 from rosdoc2.verbs.build.impl import prepare_arguments as build_prepare_arguments
-
-from .get_packages import get_packages
 
 logging.basicConfig(
     format='[%(name)s] [%(levelname)s] %(message)s', level=logging.INFO)
@@ -89,7 +88,7 @@ def main_impl(options):
                 f"Error: given install directory '{options.install_directory}' does not exist")
 
     # Locate the packages to document.
-    packages = get_packages(options.package_path)
+    packages = find_packages_allowing_duplicates(options.package_path)
     if len(packages) == 0:
         logger_scan.error(f'No packages found in subdirectories of {options.package_path}')
         exit(1)
@@ -106,6 +105,7 @@ def main_impl(options):
     while len(packages) > 0:
         batch_no += 1
         batch_packages.clear()
+        packages = list(packages.values())
         for i in range(len(packages)):
             batch_packages.append(packages.pop())
             if len(batch_packages) >= BATCH_SIZE:
@@ -153,7 +153,8 @@ def package_impl(package):
     """Execute for a single function."""
     global goptions
     options = Struct(**goptions.__dict__)
-    options.package_path = package.path
+    package_path = os.path.dirname(package.filename)
+    options.package_path = package_path
     return_value = 100
     message = 'Unknown error'
     start = time.time()
@@ -180,7 +181,7 @@ def package_impl(package):
         format='%(asctime)s [%(name)s] [%(levelname)s] %(message)s',
         level=logging.INFO, stream=outfile, force=True)
     logger = logging.getLogger('rosdoc2')
-    logger.info(f'Processing package build at {package.path}')
+    logger.info(f'Processing package build at {package_path}')
 
     try:
         # run rosdoc2 for the package
@@ -203,13 +204,13 @@ def package_impl(package):
         sys.stderr = old_stderr
         elapsed_time = '{:.3f}'.format(time.time() - start)
         if return_value != 0:
-            print(f'{_clocktime()} Package at {package.path} failed {return_value}: {message}',
+            print(f'{_clocktime()} Package at {package_path} failed {return_value}: {message}',
                   flush=True)
-            logger.error(f'Package at {package.path} failed {return_value}: {message}')
+            logger.error(f'Package at {package_path} failed {return_value}: {message}')
         else:
             print(f'{_clocktime()} Package {package.name} succeeded '
                   f'in {elapsed_time} seconds', flush=True)
-            logger.info(f'Completed rosdoc2 build for {package.path} '
+            logger.info(f'Completed rosdoc2 build for {package_path} '
                         f'in {elapsed_time} seconds')
         if not outfile.closed:
             outfile.close()
