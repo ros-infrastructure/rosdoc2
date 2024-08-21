@@ -28,6 +28,7 @@ from ..builder import Builder
 from ..collect_inventory_files import collect_inventory_files
 from ..create_format_map_from_package import create_format_map_from_package
 from ..generate_interface_docs import generate_interface_docs
+from ..include_links import include_links
 from ..include_user_docs import include_user_docs
 from ..package_repo_url import package_repo_url
 from ..standard_documents import generate_standard_document_files, locate_standard_documents
@@ -569,6 +570,9 @@ class SphinxBuilder(Builder):
 
         # Try to locate package repo url if missing
         package_repo_url(self.build_context.package)
+
+        # generate links rst
+        include_links(self.build_context.package, wrapped_sphinx_directory)
 
         self.template_variables.update({
             'has_python': has_python,
