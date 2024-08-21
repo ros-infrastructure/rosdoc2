@@ -253,6 +253,7 @@ def test_basic_cpp(module_dir):
     includes = [
         'a different title',  # changed in custom index.rst
         'basic_cpp_and_more',  # changed in custom config.py
+        'add me to toc',  # added in a template
     ]
     do_test_package(PKG_NAME, module_dir, includes=includes)
 
