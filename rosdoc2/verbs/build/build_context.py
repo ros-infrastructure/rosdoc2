@@ -34,3 +34,4 @@ class BuildContext:
         self.never_run_sphinx_apidoc = False
         self.ament_cmake_python = False
         self.disable_breathe = False
+        self.show_doxygen_html = False

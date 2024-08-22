@@ -71,6 +71,9 @@ settings: {{
     #  use the doxygen html instead. This is intended for cases where breathe is throwing
     #  errors.
     # disable_breathe: false,
+
+    ## This setting, if true, will display a link to the Doxygen html output.
+    # show_doxygen_html: false,
 }}
 builders:
     ## Each stanza represents a separate build step, performed by a specific 'builder'.
@@ -231,6 +234,7 @@ def inspect_package_for_settings(package, tool_options):
     build_context.never_run_sphinx_apidoc = settings_dict.get('never_run_sphinx_apidoc', False)
     build_context.build_type = settings_dict.get('override_build_type', build_context.build_type)
     build_context.disable_breathe = settings_dict.get('disable_breathe', False)
+    build_context.show_doxygen_html = settings_dict.get('show_doxygen_html', False)
 
     builders = []
     for builder in builders_list:

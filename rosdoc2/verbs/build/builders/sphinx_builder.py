@@ -27,6 +27,7 @@ import setuptools
 from ..builder import Builder
 from ..collect_inventory_files import collect_inventory_files
 from ..create_format_map_from_package import create_format_map_from_package
+from ..doxygen_toc_template import doxygen_toc_template
 from ..generate_interface_docs import generate_interface_docs
 from ..include_links import include_links
 from ..include_user_docs import include_user_docs
@@ -231,6 +232,9 @@ if rosdoc2_settings.get('support_markdown', True):
     # The `myst_parser` is used specifically if there are markdown files
     # in the sphinx project
     extensions.append('myst_parser')
+
+if {show_doxygen_html} and {has_cpp}:
+    templates_path.append('__doxy_template')
 """  # noqa: W605 B902
 
 default_conf_py_template = """\
@@ -589,6 +593,10 @@ class SphinxBuilder(Builder):
         # generate links rst
         include_links(self.build_context.package, wrapped_sphinx_directory)
 
+        # show Doxygen C++ API version if desired.
+        if self.build_context.show_doxygen_html and has_cpp:
+            doxygen_toc_template(wrapped_sphinx_directory)
+
         self.template_variables.update({
             'has_python': has_python,
             'has_cpp': has_cpp,
@@ -598,6 +606,7 @@ class SphinxBuilder(Builder):
             'interface_counts': interface_counts,
             'package': self.build_context.package,
             'disable_breathe': self.build_context.disable_breathe,
+            'show_doxygen_html': self.build_context.show_doxygen_html,
         })
 
         # If the user did no include a conf.py, generate a default conf.py
