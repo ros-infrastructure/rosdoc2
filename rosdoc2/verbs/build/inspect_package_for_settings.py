@@ -66,6 +66,11 @@ settings: {{
     ## for documentation purposes only. If not provided, documentation will be
     ## generated assuming the build_type in package.xml.
     # override_build_type: '{package_build_type}',
+
+    ## This setting, if true, will skip using breathe to process the C++ documentation, and
+    #  use the doxygen html instead. This is intended for cases where breathe is throwing
+    #  errors.
+    # disable_breathe: false,
 }}
 builders:
     ## Each stanza represents a separate build step, performed by a specific 'builder'.
@@ -225,6 +230,7 @@ def inspect_package_for_settings(package, tool_options):
     build_context.always_run_sphinx_apidoc = settings_dict.get('always_run_sphinx_apidoc', False)
     build_context.never_run_sphinx_apidoc = settings_dict.get('never_run_sphinx_apidoc', False)
     build_context.build_type = settings_dict.get('override_build_type', build_context.build_type)
+    build_context.disable_breathe = settings_dict.get('disable_breathe', False)
 
     builders = []
     for builder in builders_list:

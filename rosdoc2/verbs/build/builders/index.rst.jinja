@@ -5,12 +5,14 @@
 
 {{ package.description }}
 
+{% if disable_breathe and has_cpp %}* `C++ API <generated/doxygen/html/>`_{% endif %}
+
 .. toctree::
    :maxdepth: 2
 
    Links <__links>
 {% if has_python %}   Python API <modules>{% endif %}
-{% if has_cpp %}   C++ API <generated/index>{% endif %}
+{% if not disable_breathe and has_cpp %}   C++ API <generated/index>{% endif %}
 {% if interface_counts['msg'] > 0 %}   Message Definitions <__message_definitions>{% endif %}
 {% if interface_counts['srv'] > 0 %}   Service Definitions <__service_definitions>{% endif %}
 {% if interface_counts['action'] > 0 %}   Action Definitions <__action_definitions>{% endif %}

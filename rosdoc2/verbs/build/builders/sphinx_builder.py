@@ -102,11 +102,16 @@ allowed_extensions = set((
     'sphinx.ext.imgmath',
     'sphinx.ext.mathjax',
     # Installed by us
-    'breathe',
-    'exhale',
     'myst_parser',
     'sphinx_rtd_theme',
 ))
+
+if not {disable_breathe}:
+    allowed_extensions.add(('breathe', 'exhale'))
+else:
+    rosdoc2_settings['enable_breathe'] = False
+    rosdoc2_settings['enable_exhale'] = False
+
 for extension in extensions[:]:
     if extension not in allowed_extensions:
         print(f'[rosdoc2] *** Warning *** removing extension "{{extension}}", not supported')
@@ -454,6 +459,7 @@ class SphinxBuilder(Builder):
             self.doxygen_xml_directory = \
                 os.path.join(output_staging_directory, self.doxygen_xml_directory)
             self.doxygen_xml_directory = os.path.abspath(self.doxygen_xml_directory)
+            logger.info(self.doxygen_xml_directory)
 
             if os.path.isdir(self.doxygen_xml_directory):
                 has_cpp = True
@@ -591,6 +597,7 @@ class SphinxBuilder(Builder):
             'has_readme': 'readme' in standard_docs,
             'interface_counts': interface_counts,
             'package': self.build_context.package,
+            'disable_breathe': self.build_context.disable_breathe,
         })
 
         # If the user did no include a conf.py, generate a default conf.py
