@@ -138,7 +138,9 @@ def main_impl(options):
 
     # Generate the doc build directory.
     package_doc_build_directory = os.path.join(options.doc_build_directory, package.name)
-    os.makedirs(package_doc_build_directory, exist_ok=True)
+    if os.path.exists(package_doc_build_directory):
+        shutil.rmtree(package_doc_build_directory)
+    os.makedirs(package_doc_build_directory)
 
     # Generate the "output staging" directory.
     output_staging_directory = os.path.join(package_doc_build_directory, 'output_staging')
