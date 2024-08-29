@@ -25,25 +25,33 @@ def prepare_arguments(parser):
         'package_output_directory',
         nargs='?',
         default=DEFAULT_OUTPUT_DIR,
-        help='path where the built documentation for the package was output into',
+        help=f'(optional) path to the built documentation (default "{DEFAULT_OUTPUT_DIR}") '
+             'OR package name',
     )
     return parser
 
 
 def main(options):
-    """Execute the program."""
+    """Open a web browser to display the built documentation."""
     # Locate the entry point for the built documentation.
-    if not os.path.exists(options.package_output_directory):
-        sys.exit(f"given output directory '{options.package_output_directory}' does not exist")
+    path_to_open = None
+    if os.path.isdir(options.package_output_directory):
+        path_to_open = options.package_output_directory
+        # Maybe this is a package directory?
+        if os.path.isfile(os.path.join(path_to_open, 'index.html')):
+            # open it directly
+            path_to_open = os.path.join(path_to_open, 'index.html')
+    elif os.path.isfile(options.package_output_directory):
+        path_to_open = options.package_output_directory
+    else:
+        # Last chance: the default output_dir plus a package name
+        candidate = os.path.join(
+            DEFAULT_OUTPUT_DIR, options.package_output_directory, 'index.html')
+        if os.path.isfile(candidate):
+            path_to_open = candidate
 
-    if os.path.isfile(options.package_output_directory):
-        # Open directly.
-        webbrowser.open(f'file://{os.path.abspath(options.package_output_directory)}')
-        return
-
-    # TODO(wjwwood): fix this up, the expected path doesn't make sense now...
-    expected_path = os.path.join(options.package_output_directory, 'build', 'index.html')
-    if not os.path.exists(expected_path):
-        sys.exit(f"did not find package documentation at the expected path '{expected_path}'")
-
-    webbrowser.open(f'file://{os.path.abspath(expected_path)}')
+    if path_to_open:
+        webbrowser.open(f'file://{os.path.abspath(path_to_open)}')
+    else:
+        sys.exit('did not find package documentation at given package_output_directory '
+                 f'"{options.package_output_directory}"')
