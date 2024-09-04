@@ -29,9 +29,8 @@ logging.basicConfig(
 logger_scan = logging.getLogger('rosdoc2.scan')
 
 goptions = None
-# Setting the BATCH_SIZE or MAX_PACKAGES to a smaller value may be useful in debugging
+# Setting the MAX_PACKAGES to a smaller value may be useful in debugging
 # this module, to reduce run time or isolate sections that cause hangs.
-BATCH_SIZE = 10000
 MAX_PACKAGES = 10000
 WATCHDOG_TIMEOUT = 15 * 60  # Seconds
 
@@ -73,6 +72,12 @@ def prepare_arguments(parser):
         default=MAX_PACKAGES,
         help='maximum number of packages to process'
     )
+    parser.add_argument(
+        '--subprocesses',
+        '-s',
+        default=None,
+        help='number of subprocesses to use, defaults to os.cpu_count()'
+    )
     return parser
 
 
@@ -88,52 +93,43 @@ def main_impl(options):
                 f"Error: given install directory '{options.install_directory}' does not exist")
 
     # Locate the packages to document.
-    packages = find_packages_allowing_duplicates(options.package_path)
+    found_packages = find_packages_allowing_duplicates(options.package_path)
+    packages = list(found_packages.values())
     if len(packages) == 0:
         logger_scan.error(f'No packages found in subdirectories of {options.package_path}')
         exit(1)
     max_packages = int(options.max_packages)
+    subprocesses = int(options.subprocesses) if options.subprocesses is not None else None
     if len(packages) > max_packages:
         packages = packages[0:max_packages]
-
     packages_total = len(packages)
     packages_done = 0
     logger_scan.info(f'Processing {packages_total} packages')
-    batch_packages = []
-    batch_no = 0
     failed_packages = []
-    while len(packages) > 0:
-        batch_no += 1
-        batch_packages.clear()
-        packages = list(packages.values())
-        for i in range(len(packages)):
-            batch_packages.append(packages.pop())
-            if len(batch_packages) >= BATCH_SIZE:
-                break
-        logger_scan.info(f'Begin batch # {batch_no}')
-        for package in batch_packages:
-            logger_scan.info(f'Adding {package.name} for processing')
-        pool = mp.Pool(maxtasksperchild=1)
-        pool_results = pool.imap_unordered(package_impl, batch_packages)
-        while True:
-            try:
-                (package, returns, message) = pool_results.next()
-                packages_done += 1
-                if returns != 0:
-                    logger_scan.warning(f'{package.name} ({packages_done}/{packages_total})'
-                                        f' returned {returns}: {message}')
-                    failed_packages.append((package, returns, message))
-                else:
-                    logger_scan.info(
-                        f'{package.name} successful ({packages_done}/{packages_total})')
-            except StopIteration:
-                break
-            except BaseException as e:  # noqa: B902
-                logger_scan.error(f'Unexpected error in scan: {type(e).__name__ + " " + str(e)}')
-                break
-        logger_scan.info(f'Finished batch {batch_no}')
-        # I'd prefer close() then join() but that seems to sometimes hang.
-        pool.terminate()
+    for package in packages:
+        logger_scan.info(f'Adding {package.name} for processing')
+
+    pool = mp.Pool(maxtasksperchild=1, processes=subprocesses)
+    pool_results = pool.imap_unordered(package_impl, packages)
+    while True:
+        try:
+            (package, returns, message) = pool_results.next()
+            packages_done += 1
+            if returns != 0:
+                logger_scan.warning(f'{package.name} ({packages_done}/{packages_total})'
+                                    f' returned {returns}: {message}')
+                failed_packages.append((package, returns, message))
+            else:
+                logger_scan.info(
+                    f'{package.name} successful ({packages_done}/{packages_total})')
+        except StopIteration:
+            break
+        except BaseException as e:  # noqa: B902
+            logger_scan.error(f'Unexpected error in scan: {type(e).__name__ + " " + str(e)}')
+            break
+    logger_scan.info('Finished')
+    # I'd prefer close() then join() but that seems to sometimes hang.
+    pool.terminate()
 
     logger_scan.info('scan complete')
     if len(failed_packages) > 0:
