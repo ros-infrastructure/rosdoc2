@@ -65,6 +65,42 @@ ensure_global('author', \"\"\"{package_authors}\"\"\")
 ensure_global('release', "{package.version}")
 ensure_global('version', "{package_version_short}")
 
+# Remove any unsupported extensions
+allowed_extensions = set((
+    # Shipped with sphinx
+    'sphinx.ext.autodoc',
+    'sphinx.ext.autosectionlabel',
+    'sphinx.ext.autosummary',
+    'sphinx.ext.coverage',
+    'sphinx.ext.doctest',
+    'sphinx.ext.duration',
+    'sphinx.ext.extlinks',
+    'sphinx.ext.githubpages',
+    'sphinx.ext.graphviz',
+    'sphinx.ext.ifconfig',
+    'sphinx.ext.imgconverter',
+    'sphinx.ext.inheritance_diagram',
+    'sphinx.ext.intersphinx',
+    'sphinx.ext.linkcode',
+    'sphinx.ext.napoleon',
+    'sphinx.ext.todo',
+    'sphinx.ext.viewcode',
+    # Sphinx-included math extensions
+    'sphinx.ext.imgmath',
+    'sphinx.ext.mathjax',
+    # Installed by us
+    'breathe',
+    'exhale',
+    'myst_parser',
+    'sphinx_rtd_theme',
+))
+for extension in extensions[:]:
+    if extension not in allowed_extensions:
+        print(f'[rosdoc2] *** Warning *** removing extension "{{extension}}", not supported')
+        extensions.remove(extension)
+if extensions:
+    print(f'[rosdoc2] user conf.py specified allowed extensions: {{extensions}}')
+
 if rosdoc2_settings.get('enable_autodoc', True):
     print('[rosdoc2] enabling autodoc', file=sys.stderr)
     extensions.append('sphinx.ext.autodoc')

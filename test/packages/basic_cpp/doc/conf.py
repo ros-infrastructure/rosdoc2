@@ -41,6 +41,29 @@ version = '0.0'
 ## See the rosdoc2_settings below for some options on avoiding that.
 extensions = [
     'sphinx_rtd_theme',
+    'i_do_not_exist',
+    # Shipped with sphinx
+    'sphinx.ext.autodoc',
+    'sphinx.ext.autosectionlabel',
+    'sphinx.ext.autosummary',
+    'sphinx.ext.coverage',
+    'sphinx.ext.doctest',
+    'sphinx.ext.duration',
+    'sphinx.ext.extlinks',
+    'sphinx.ext.githubpages',
+    'sphinx.ext.graphviz',
+    'sphinx.ext.ifconfig',
+    'sphinx.ext.imgconverter',
+    'sphinx.ext.inheritance_diagram',
+    'sphinx.ext.intersphinx',
+    'sphinx.ext.linkcode',
+    'sphinx.ext.napoleon',
+    'sphinx.ext.todo',
+    'sphinx.ext.viewcode',
+    # Sphinx-included math extensions
+    'sphinx.ext.imgmath',
+    'sphinx.ext.mathjax',
+
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -126,3 +149,8 @@ rosdoc2_settings = {
     ## Support markdown
     # 'support_markdown': True,
 }
+
+## This function is required by the linkcode extension.
+## See https://www.sphinx-doc.org/en/master/usage/extensions/linkcode.html
+def linkcode_resolve(domain, info):
+    return None
