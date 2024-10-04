@@ -19,10 +19,10 @@ import os
 from pathlib import Path
 import shutil
 import subprocess
+import sys
 
 from jinja2 import Template
 import setuptools
-from sphinx.cmd.build import main as sphinx_main
 
 from ..builder import Builder
 from ..collect_inventory_files import collect_inventory_files
@@ -559,7 +559,8 @@ class SphinxBuilder(Builder):
                 logger.info(
                     f"Running sphinx-apidoc: '{' '.join(cmd)}' in '{wrapped_sphinx_directory}'"
                 )
-                completed_process = subprocess.run(cmd, cwd=wrapped_sphinx_directory)
+                completed_process = subprocess.run(cmd, cwd=wrapped_sphinx_directory,
+                                                   stdout=sys.stdout, stderr=sys.stderr)
                 msg = f"sphinx-apidoc exited with return code '{completed_process.returncode}'"
                 if completed_process.returncode == 0:
                     logger.debug(msg)
@@ -569,12 +570,18 @@ class SphinxBuilder(Builder):
         # Invoke Sphinx-build.
         sphinx_output_dir = os.path.abspath(
             os.path.join(wrapped_sphinx_directory, 'sphinx_output'))
+        cmd = [
+            'sphinx-build',
+            wrapped_sphinx_directory,
+            sphinx_output_dir,
+        ]
         logger.info(
-            f"Running sphinx_build with: [{wrapped_sphinx_directory}, '{sphinx_output_dir}]'"
+            f"Running Sphinx-build: '{' '.join(cmd)}' in '{wrapped_sphinx_directory}'"
         )
-        returncode = sphinx_main([wrapped_sphinx_directory, sphinx_output_dir])
-        msg = f"sphinx_build exited with return code '{returncode}'"
-        if returncode == 0:
+        completed_process = subprocess.run(cmd, cwd=wrapped_sphinx_directory,
+                                           stdout=sys.stdout, stderr=sys.stderr)
+        msg = f"Sphinx-build exited with return code '{completed_process.returncode}'"
+        if completed_process.returncode == 0:
             logger.info(msg)
         else:
             raise RuntimeError(msg)

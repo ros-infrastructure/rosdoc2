@@ -7,42 +7,45 @@ on:
     - main
 
 jobs:
-  install_tests:
-    name: Install check using pipx
-    runs-on: ubuntu-latest
+  venv_tests:
+    name: Install test using venv
     strategy:
       matrix:
-        container: ['ros:iron', 'ros:jazzy', 'ros:rolling']
-    container: ${{ matrix.container }}
+        os: ['ubuntu-22.04', 'ubuntu-24.04']
+    runs-on: ${{ matrix.os }}
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-  
-      - name: Install pip
-        run: apt update && apt install -y python3-pip python3-pytest
-  
-      - name: Install apt dependencies
-        run: apt update && apt install -y doxygen graphviz pipx python3-sphinx
-  
-      - name: Smoke test of pipx install
-        run: |
-          PATH="$HOME/.local/bin:$PATH"
-          pipx install .
-          rosdoc2 build -d tmp/docs_build -c /tmp/cross_references -o /tmp/docs_output -p test/packages/full_package
-          if [ ! -f /tmp/docs_output/full_package/index.html ]; then
-            echo "Failed to find any output from rosdoc2"
-            exit 2
-          else
-          echo "rosdoc2 ran successfully under pipx"
-          fi
+    - name: Checkout
+      uses: actions/checkout@v4
 
+    - name: Install apt dependencies
+      run: |
+        sudo apt update && sudo apt install -y \
+        python3-pip \
+        python3-venv \
+        doxygen \
+        graphviz
+
+    - name: Activate python virtual environment
+      run: |
+        python3 -m venv venv
+        source venv/bin/activate
+        echo PATH=$PATH >> $GITHUB_ENV
+
+    - name: Install pip dependencies
+      run: |
+        python3 -m pip install .[test]
+        python3 -m pip freeze
+
+    - name: Run tests
+      run: python3 -m pytest --verbose test
+  
   unit_tests:
     name: Unit Tests
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        container: ['ros:iron', 'ros:rolling']
+        container: ['ros:iron', 'ros:jazzy', 'ros:rolling']
     container: ${{ matrix.container }}
 
     env:
