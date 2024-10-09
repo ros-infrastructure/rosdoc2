@@ -5,12 +5,12 @@
 
 {{ package.description }}
 
-{% if package.urls -%}
 * Links
+
+  * `Rosindex <https://index.ros.org/p/{{package.name}}>`_
 {% for link in package.urls %}
   * `{{ link.type.capitalize() }} <{{ link.url }}>`_
 {% endfor -%}
-{% endif -%}
 
 .. toctree::
    :maxdepth: 2
