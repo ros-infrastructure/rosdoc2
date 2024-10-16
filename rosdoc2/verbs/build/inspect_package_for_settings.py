@@ -80,6 +80,12 @@ builders:
         ## doc/source/ folder will still be included by default, along with other relevant package
         ## information.
         # sphinx_sourcedir: null,
+        ## Directory (relative to the package.xml directory) where user documentation is found. If
+        ## documentation is in one of the standard locations (doc/ or doc/source) this is not
+        ## needed. Unlike sphinx_sourcedir, specifying this does not override the standard rosdoc2
+        ## output, but includes this user documentation along with other items included by default
+        ## by rosdoc2.
+        # user_doc_dir: 'doc'
       }}
 """
 
