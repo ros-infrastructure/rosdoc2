@@ -162,7 +162,7 @@ def do_test_full_package(module_dir, output_path='output', pkg_name='full_packag
     links_exist = [
         f'{pkg_name}.dummy.html',
         'modules.html',
-        'user_docs/morestuff/more_of_more/subsub.html',  # a deep documentation file
+        'doc/morestuff/more_of_more/subsub.html',  # a deep documentation file
         'standards.html',
         'https://example.com/repo',
         'standard_docs/PACKAGE.html',  # package.xml

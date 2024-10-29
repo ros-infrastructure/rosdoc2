@@ -362,6 +362,12 @@ class SphinxBuilder(Builder):
       - If set, the documentation in this folder replaces the default documentation generated
       by rosdoc2. That is, the directory you would pass to sphinx-build as SOURCEDIR.
       Defaults to empty (or null in yaml, None in python).
+    - user_doc_dir (str) (optional)
+      - Directory (relative to the package.xml directory) where user documentation is found. If
+      documentation is in one of the standard locations (doc/ or doc/source) this is not
+      needed. Unlike sphinx_sourcedir, specifying this does not override the standard rosdoc2
+      output, but includes this user documentation along with other items included by default.
+
     """
 
     def __init__(self, builder_name, builder_entry_dictionary, build_context):
@@ -376,6 +382,7 @@ class SphinxBuilder(Builder):
         self.name = self.name or self.build_context.package.name
         self.output_dir = self.output_dir or ''
         self.sphinx_sourcedir = None
+        self.user_doc_dir = None
 
         # Must check for the existence of this later, as it may not have been made yet.
         self.doxygen_xml_directory = \
@@ -392,14 +399,21 @@ class SphinxBuilder(Builder):
             if key in ['name', 'output_dir', 'doxygen_xml_directory']:
                 continue
             if key == 'sphinx_sourcedir':
-                if not value:
+                if value is None:
                     continue
-                sphinx_sourcedir = os.path.join(configuration_file_dir, value)
-                if not os.path.isdir(sphinx_sourcedir):
+                if not os.path.isdir(os.path.join(configuration_file_dir, value)):
                     raise RuntimeError(
                         f"Error Sphinx SOURCEDIR '{value}' does not exist relative "
                         f"to '{configuration_file_path}', or is not a directory.")
-                self.sphinx_sourcedir = sphinx_sourcedir
+                logger.info(f'The user specified sphinx_sourcedir as {value}')
+                self.sphinx_sourcedir = value
+            elif key == 'user_doc_dir':
+                if not os.path.isdir(os.path.join(configuration_file_dir, value)):
+                    raise RuntimeError(
+                        f"Error user documentation directory '{value}' does not exist relative "
+                        f"to '{configuration_file_path}', or is not a directory.")
+                logger.info(f'The user specified user_doc_dir as {value}')
+                self.user_doc_dir = value
             else:
                 raise RuntimeError(f"Error the Sphinx builder does not support key '{key}'")
 
@@ -475,36 +489,37 @@ class SphinxBuilder(Builder):
             generate_standard_document_files(standard_docs, wrapped_sphinx_directory)
         logger.info(f'standard_docs: {standard_docs}')
 
-        # include user documentation
-        doc_directories = include_user_docs(package_xml_directory, wrapped_sphinx_directory)
-        logger.info(f'doc_directories: {doc_directories}')
-
         # Check if the user provided a sphinx directory.
-        sphinx_project_directory = self.sphinx_sourcedir
-        if sphinx_project_directory is not None:
+        doc_directories = []
+        user_doc_dir = None
+        if self.sphinx_sourcedir is not None:
             # We do not need to check if this directory exists, as that was done in __init__.
             logger.info(
                 'Note: the user provided sourcedir for Sphinx '
-                f"'{sphinx_project_directory}' will be used.")
+                f"'{self.sphinx_sourcedir}' will be used.")
+            # Copy all user content, like images or documentation files, and
+            # source files to the wrapping directory
+            try:
+                shutil.copytree(
+                    os.path.join(package_xml_directory, self.sphinx_sourcedir),
+                    wrapped_sphinx_directory, dirs_exist_ok=True)
+            except OSError as e:
+                print(f'Failed to copy user content: {e}')
         else:
-            # If the user does not supply a Sphinx sourcedir, check the standard locations.
-            standard_sphinx_sourcedir = self.locate_sphinx_sourcedir_from_standard_locations()
-            if standard_sphinx_sourcedir is not None:
-                logger.info(
-                    'Note: no sourcedir provided, but a Sphinx sourcedir located in the '
-                    f"standard location '{standard_sphinx_sourcedir}' and that will be used.")
-                sphinx_project_directory = standard_sphinx_sourcedir
+            # include user documentation
+            if self.user_doc_dir:
+                user_doc_dir = self.user_doc_dir
             else:
-                # If the user does not supply a Sphinx sourcedir, and there is no Sphinx project
-                # in the conventional location, i.e. '<package dir>/doc', create a temporary
-                # Sphinx project in the doc build directory to enable cross-references.
-                logger.info(
-                    'Note: no sourcedir provided by the user and no Sphinx sourcedir was found '
-                    'in the standard locations, therefore using a default Sphinx configuration.')
-                sphinx_project_directory = os.path.join(doc_build_folder, 'default_sphinx_project')
-
-                self.generate_default_project_into_directory(
-                    sphinx_project_directory, python_src_directory)
+                # If the user does not supply a doc directory, check the standard locations.
+                user_doc_dir = self.locate_user_doc_dir_from_standard_locations()
+                if user_doc_dir:
+                    logger.info(
+                        'Note: no user_doc_dir provided, but a doc directory was located in a '
+                        f'standard location "{user_doc_dir}" and that will be used.')
+            if user_doc_dir:
+                doc_directories = include_user_docs(
+                    user_doc_dir, wrapped_sphinx_directory, package_xml_directory)
+                logger.info(f'doc_directories: {doc_directories}')
 
         # Collect intersphinx mapping extensions from discovered inventory files.
         inventory_files = \
@@ -534,11 +549,28 @@ class SphinxBuilder(Builder):
             'package': self.build_context.package,
         })
 
+        # If the user did no include a conf.py, generate a default conf.py
+        if self.sphinx_sourcedir:
+            conf_py_directory = wrapped_sphinx_directory
+        elif user_doc_dir:
+            conf_py_directory = os.path.join(wrapped_sphinx_directory, user_doc_dir)
+        else:
+            conf_py_directory = None
+        if conf_py_directory and os.path.isfile(os.path.join(conf_py_directory, 'conf.py')):
+            os.rename(os.path.join(conf_py_directory, 'conf.py'),
+                      os.path.join(conf_py_directory, '__conf.py'))
+        else:
+            logger.info('Note: no conf.py provided by the user, '
+                        'therefore using a default Sphinx configuration.')
+            conf_py_directory = wrapped_sphinx_directory
+            self.generate_default_project_into_directory(
+                conf_py_directory, python_src_directory)
+
         # Setup rosdoc2 Sphinx file which will include and extend the one in
         # `sphinx_project_directory`.
         self.generate_wrapping_rosdoc2_sphinx_project_into_directory(
             wrapped_sphinx_directory,
-            sphinx_project_directory,
+            conf_py_directory,
             python_src_directory,
             intersphinx_mapping_extensions)
 
@@ -620,32 +652,30 @@ class SphinxBuilder(Builder):
         # Return the directory into which Sphinx generated.
         return sphinx_output_dir
 
-    def locate_sphinx_sourcedir_from_standard_locations(self):
+    def locate_user_doc_dir_from_standard_locations(self):
         """
-        Return the location of a Sphinx project for the package.
+        Return the location of a user documentation for the package.
 
-        If the sphinx configuration exists in a standard location, return it,
+        If the user documentation exists in a standard location, return it,
         otherwise return None.  The standard locations are
-        '<package.xml directory>/doc/source/conf.py' and
-        '<package.xml directory>/doc/conf.py', for projects that selected
+        '<package.xml directory>/doc/source' and
+        '<package.xml directory>/doc', for projects that selected
         "separate source and build directories" when running Sphinx-quickstart and
         those that did not, respectively.
         """
         package_xml_directory = os.path.dirname(self.build_context.package.filename)
         options = [
-            os.path.join(package_xml_directory, 'doc'),
-            os.path.join(package_xml_directory, 'doc', 'source'),
+            os.path.join('doc', 'source'),
+            'doc',
         ]
         for option in options:
-            if os.path.isfile(os.path.join(option, 'conf.py')):
+            if os.path.isdir(os.path.join(package_xml_directory, option)):
                 return option
         return None
 
     def generate_default_project_into_directory(
-            self, sphinx_project_directory, python_src_directory):
-        """Generate the default project configuration files."""
-        os.makedirs(sphinx_project_directory, exist_ok=True)
-
+            self, conf_py_directory, python_src_directory):
+        """Generate the default project configuration files if needed."""
         package = self.build_context.package
         self.template_variables.update({
             'package': package,
@@ -657,45 +687,31 @@ class SphinxBuilder(Builder):
             )),
         })
 
-        with open(os.path.join(sphinx_project_directory, 'conf.py'), 'w+') as f:
+        with open(os.path.join(conf_py_directory, '__conf.py'), 'w') as f:
             f.write(default_conf_py_template.format_map(self.template_variables))
 
     def generate_wrapping_rosdoc2_sphinx_project_into_directory(
         self,
         wrapped_sphinx_directory,
-        sphinx_project_directory,
+        conf_py_directory,
         python_src_directory,
         intersphinx_mapping_extensions,
     ):
         """Generate the rosdoc2 sphinx project configuration files."""
-        # Generate a default index.rst
+        index_rst_path = os.path.join(wrapped_sphinx_directory, 'index.rst')
         package = self.build_context.package
-        logger.info('Using a default index.rst.jinja')
-        template_path = resources.files('rosdoc2.verbs.build.builders').joinpath('index.rst.jinja')
-        template_jinja = template_path.read_text()
+        if not os.path.isfile(index_rst_path):
+            # Generate a default index.rst
+            logger.info('Using a default index.rst.jinja')
+            template_path = resources.files(
+                'rosdoc2.verbs.build.builders').joinpath('index.rst.jinja')
+            template_jinja = template_path.read_text()
 
-        index_rst = Template(template_jinja).render(self.template_variables)
+            index_rst = Template(template_jinja).render(self.template_variables)
 
-        with open(os.path.join(wrapped_sphinx_directory, 'index.rst'), 'w+') as f:
-            f.write(index_rst)
+            with open(os.path.join(wrapped_sphinx_directory, 'index.rst'), 'w+') as f:
+                f.write(index_rst)
 
-        # Copy all user content, like images or documentation files, and
-        # source files to the wrapping directory
-        #
-        # If the user created an index.rst, it will overwrite our default here. Later we will
-        # overwrite any user's conf.py with a wrapped version, that also includes any user's
-        # conf.py variables.
-        if sphinx_project_directory:
-            try:
-                shutil.copytree(
-                    os.path.abspath(sphinx_project_directory),
-                    os.path.abspath(wrapped_sphinx_directory),
-                    dirs_exist_ok=True)
-
-            except OSError as e:
-                print(f'Failed to copy user content: {e}')
-
-        package = self.build_context.package
         breathe_projects = []
         if self.doxygen_xml_directory is not None:
             breathe_projects.append(
@@ -710,7 +726,7 @@ class SphinxBuilder(Builder):
             'did_run_doxygen': self.doxygen_xml_directory is not None,
             'wrapped_sphinx_directory': esc_backslash(os.path.abspath(wrapped_sphinx_directory)),
             'user_conf_py_filename': esc_backslash(
-                os.path.abspath(os.path.join(sphinx_project_directory, 'conf.py'))),
+                os.path.abspath(os.path.join(conf_py_directory, '__conf.py'))),
             'breathe_projects': ',\n'.join(breathe_projects) + '\n    ',
             'intersphinx_mapping_extensions': ',\n        '.join(intersphinx_mapping_extensions),
             'package': package,
@@ -720,5 +736,5 @@ class SphinxBuilder(Builder):
             'package_version_short': '.'.join(package.version.split('.')[0:2]),
         })
 
-        with open(os.path.join(wrapped_sphinx_directory, 'conf.py'), 'w+') as f:
+        with open(os.path.join(wrapped_sphinx_directory, 'conf.py'), 'w') as f:
             f.write(rosdoc2_wrapping_conf_py_template.format_map(self.template_variables))
