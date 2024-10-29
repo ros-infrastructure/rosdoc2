@@ -612,6 +612,11 @@ class SphinxBuilder(Builder):
         with open(os.path.abspath(inventory_file_name) + '.location.json', 'w+') as f:
             f.write(json.dumps(data))
 
+        # Sometimes sphinx generates enormous .doctree files.
+        # See https://github.com/sphinx-doc/sphinx/issues/11354
+        # These do not seem to be needed for output display, so delete them.
+        shutil.rmtree(os.path.join(sphinx_output_dir, '.doctrees'), ignore_errors=True)
+
         # Return the directory into which Sphinx generated.
         return sphinx_output_dir
 
