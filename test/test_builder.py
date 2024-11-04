@@ -120,7 +120,7 @@ def test_src_python(module_dir):
         'src_python package',
         'documentation in source',  # We found the documentation in doc/source
     ]
-    links_exist = ['src_python.html']
+    links_exist = ['src_python.html', 'src_python.python_node.html']
 
     do_build_package(DATAPATH / PKG_NAME, module_dir)
 

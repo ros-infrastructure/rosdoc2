@@ -47,6 +47,8 @@ rosdoc2_wrapping_conf_py_template = """\
 
 import os
 import sys
+if '{python_src_directory}' != 'None':
+    sys.path.insert(0, os.path.abspath(os.path.join('{python_src_directory}', '..')))
 
 ## exec the user's conf.py to bring all of their settings into this file.
 exec(open("{user_conf_py_filename}").read())
@@ -227,13 +229,25 @@ default_conf_py_template = """\
 
 # -- Path setup --------------------------------------------------------------
 
-# If extensions (or modules to document with autodoc) are in another directory,
-# add these directories to sys.path here. If the directory is relative to the
-# documentation root, use os.path.abspath to make it absolute, like shown here.
+# rosdoc2 runs sphinx in a wrapping directory so that output does not contaminate
+# the source repository. But that can make figuring out the proper path to
+# python files tricky in conf.py. Normally you do not have to set this in a custom
+# conf.py, as the proper directory is set in the a wrapping conf.py (based on the project's
+# 'python_source' which by default is the package name). If for some reason you must
+# set a path here, as an example where your directory structure is:
 #
-import os
-import sys
-sys.path.insert(0, os.path.abspath(os.path.join('{python_src_directory}', '..')))
+#   some_package_name/
+#     package.xml
+#     doc/
+#       conf.py
+#     some_package_name/
+#       some_python_file.py
+#
+#  then the correct entry for sys.path would be:
+#
+#import os
+#import sys
+#sys.path.insert(0, os.path.abspath(os.path.join('..', '..', '..', 'some_package_name)))
 
 
 # -- Project information -----------------------------------------------------
