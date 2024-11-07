@@ -8,9 +8,9 @@
 * Links
 
   * `Rosindex <https://index.ros.org/p/{{package.name}}>`_
-{% for link in package.urls %}
+{%- for link in package.urls %}
   * `{{ link.type.capitalize() }} <{{ link.url }}>`_
-{% endfor -%}
+{%- endfor %}
 
 .. toctree::
    :maxdepth: 2
