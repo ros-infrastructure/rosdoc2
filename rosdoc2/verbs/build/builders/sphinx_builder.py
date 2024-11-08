@@ -232,23 +232,16 @@ default_conf_py_template = """\
 # rosdoc2 runs sphinx in a wrapping directory so that output does not contaminate
 # the source repository. But that can make figuring out the proper path to
 # python files tricky in conf.py. Normally you do not have to set this in a custom
-# conf.py, as the proper directory is set in the a wrapping conf.py (based on the project's
-# 'python_source' which by default is the package name). If for some reason you must
-# set a path here, as an example where your directory structure is:
+# conf.py, as the proper directory is set in a wrapping conf.py (based on the project's
+# 'python_source' which by default is the package name). Unfortunately there is no general
+# way to do that in a custom conf.py (as it depends on where docs_build is located), so we do
+# not recommend sys.path be modified here.
 #
-#   some_package_name/
-#     package.xml
-#     doc/
-#       conf.py
-#     some_package_name/
-#       some_python_file.py
-#
-#  then the correct entry for sys.path would be:
+# If for some reason you must set a path here, follow this pattern:
 #
 #import os
 #import sys
-#sys.path.insert(0, os.path.abspath(os.path.join('..', '..', '..', 'some_package_name)))
-
+#sys.path.insert(0, '<absolute path to python source directory>/..')
 
 # -- Project information -----------------------------------------------------
 
