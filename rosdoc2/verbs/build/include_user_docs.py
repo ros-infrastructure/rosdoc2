@@ -64,7 +64,7 @@ def include_user_docs(sphinx_project_directory: str,
                 break
 
     if not doc_directories:
-        logger.debug(f'no documentation found in {sphinx_project_directory}')
+        logger.debug(f'no documentation found in {user_doc_directory}')
         return doc_directories
 
     logger.info(f'Documentation found in directories {doc_directories}')
