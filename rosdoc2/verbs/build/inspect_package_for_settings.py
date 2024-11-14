@@ -149,7 +149,23 @@ def inspect_package_for_settings(package, tool_options):
 
     (settings_dict, builders_list) = parse_rosdoc2_yaml(configs, build_context)
 
-    # Extend the configs if requested. See test/ex_test.yaml as example of format.
+    # Extend rosdoc2.yaml if desired
+    #
+    # An optional fie may be used to modify the values in rosdoc2.yaml for this package. The format
+    # of this file is as follows:
+    """
+---
+<some_identifier_describing_a_collection_of_packages>:
+    packages:
+        <1st package name>:
+            <anything valid in rosdoc2.yaml file>
+        <2nd package name>:
+            <more valid rosdoc2.yaml>
+<another_description>
+    packages:
+        <another_package_name>
+            <valid rosdoc2.yaml>
+    """
     yaml_extend = tool_options.yaml_extend
     if yaml_extend:
         if not os.path.isfile(yaml_extend):
@@ -158,22 +174,12 @@ def inspect_package_for_settings(package, tool_options):
         with open(yaml_extend, 'r') as f:
             yaml_extend_text = f.read()
         extended_settings = yaml.load(yaml_extend_text, Loader=yaml.SafeLoader)
-        for item in extended_settings:
-            ex_name = next(iter(item))
-            options = item[ex_name]['options'] if 'options' in item[ex_name] else {}
-            logger.info(
-                f'Searching rosdoc2.yaml extension {ex_name} for {package.name} options {options}')
-            if 'packages' in item[ex_name] and package.name in item[ex_name]['packages']:
-                extended_object = item[ex_name]['packages'][package.name]
+        for ex_name in extended_settings:
+            if package.name in extended_settings[ex_name]['packages']:
+                extended_object = extended_settings[ex_name]['packages'][package.name]
                 if 'settings' in extended_object:
                     for key, value in extended_object['settings'].items():
                         settings_dict[key] = value
-                        # Don't override an existing value if 'only_if_missing' is true
-                        if 'only_if_missing' in options and options['only_if_missing']:
-                            if key in settings_dict:
-                                logger.warning(f'yaml extension wants to set {key} '
-                                               'but it is already set. Using existing value.')
-                                continue
                         logger.info(f'Overriding rosdoc2.yaml setting  <{key}> with <{value}>')
                 if 'builders' in extended_object:
                     for ex_builder in extended_object['builders']:
@@ -183,13 +189,6 @@ def inspect_package_for_settings(package, tool_options):
                             user_builder_name = next(iter(user_builder))
                             if user_builder_name == ex_builder_name:
                                 for builder_k, builder_v in ex_builder[ex_builder_name].items():
-                                    # Don't override an existing value if 'only_if_missing' is true
-                                    if 'only_if_missing' in options and options['only_if_missing']:
-                                        if builder_k in user_builder[user_builder_name]:
-                                            logger.warning('yaml extension wants to set '
-                                                           f'{builder_k} but it is already set. '
-                                                           'Using existing value.')
-                                            continue
                                     logger.info(f'Overriding rosdoc2 builder <{ex_builder_name}> '
                                                 f'property <{builder_k}> with <{builder_v}>')
                                     user_builder[user_builder_name][builder_k] = builder_v

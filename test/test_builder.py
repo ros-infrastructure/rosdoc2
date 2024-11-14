@@ -238,8 +238,10 @@ def test_has_sphinx_sourcedir(module_dir):
 
 
 def test_empty_doc_dir(module_dir):
+    # This package is run with an extended rosdoc2.yaml setting that adds all of the
+    # default rosdoc2.yaml settings to the extended yaml.
     PKG_NAME = 'empty_doc_dir'
-    do_build_package(DATAPATH / PKG_NAME, module_dir)
+    do_build_package(DATAPATH / PKG_NAME, module_dir, with_extension=True)
 
     includes = [
         'package with an empty doc directory',  # The package description
