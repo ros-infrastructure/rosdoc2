@@ -98,6 +98,11 @@ def prepare_arguments(parser):
         action='store_true',
         help='enable more output to debug problems'
     )
+    parser.add_argument(
+        '--yaml-extend',
+        '-y',
+        help='Extend rosdoc2.yaml'
+    )
     return parser
 
 
