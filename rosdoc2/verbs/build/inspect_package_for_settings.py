@@ -91,6 +91,7 @@ builders:
         ## needed. Unlike sphinx_sourcedir, specifying this does not override the standard rosdoc2
         ## output, but includes this user documentation along with other items included by default
         ## by rosdoc2.
+        ## If the value is null, any found documentation in doc/ or doc/source/ is ignored.
         # user_doc_dir: 'doc'
       }}
 """

@@ -270,3 +270,13 @@ def test_src_alt_python(module_dir):
     do_test_package(PKG_NAME, module_dir,
                     includes=includes,
                     links_exist=links_exist)
+
+
+def test_ignore_doc(module_dir):
+    """Tests of a package with doc directory, but rosdoc2.yaml says ignore."""
+    PKG_NAME = 'ignore_doc'
+    do_build_package(DATAPATH / PKG_NAME, module_dir)
+
+    excludes = ['do not show']
+
+    do_test_package(PKG_NAME, module_dir, excludes=excludes)

@@ -354,6 +354,9 @@ rosdoc2_settings = {{
 }}
 """
 
+# Special value for user_doc_dir if specified to ignore
+IGNORE_DOC_DIRECTORY = '__ignore__'
+
 
 class SphinxBuilder(Builder):
     """
@@ -415,12 +418,17 @@ class SphinxBuilder(Builder):
                 logger.info(f'The user specified sphinx_sourcedir as {value}')
                 self.sphinx_sourcedir = value
             elif key == 'user_doc_dir':
-                if not os.path.isdir(os.path.join(configuration_file_dir, value)):
-                    raise RuntimeError(
-                        f"Error user documentation directory '{value}' does not exist relative "
-                        f"to '{configuration_file_path}', or is not a directory.")
                 logger.info(f'The user specified user_doc_dir as {value}')
-                self.user_doc_dir = value
+                if value is not None:
+                    if not os.path.isdir(os.path.join(configuration_file_dir, value)):
+                        raise RuntimeError(
+                            f"Error user documentation directory '{value}' does not exist "
+                            f"relative to '{configuration_file_path}', or is not a directory.")
+                    self.user_doc_dir = value
+                else:
+                    # We have to be able to distinguish between no value set, and value set to null
+                    # (python None). We use a unique string for this.
+                    self.user_doc_dir = IGNORE_DOC_DIRECTORY
             else:
                 raise RuntimeError(f"Error the Sphinx builder does not support key '{key}'")
 
@@ -514,7 +522,9 @@ class SphinxBuilder(Builder):
                 print(f'Failed to copy user content: {e}')
         else:
             # include user documentation
-            if self.user_doc_dir:
+            if self.user_doc_dir == IGNORE_DOC_DIRECTORY:
+                user_doc_dir = None
+            elif self.user_doc_dir:
                 user_doc_dir = self.user_doc_dir
             else:
                 # If the user does not supply a doc directory, check the standard locations.
