@@ -1,0 +1,17 @@
+## This 'attic section' self-documents this file's type and version.
+type: 'rosdoc2 config'
+version: 1
+
+---
+
+settings: {
+    ## This setting, if true, will skip running `sphinx-apidoc` regardless of build
+    ## type. This is most useful if the user has generated python documentation elsewhere
+    ## that is included in the doc folder, or in external documentation.
+    never_run_sphinx_apidoc: true,
+}
+builders:
+    - doxygen: {
+      }
+    - sphinx: {
+      }

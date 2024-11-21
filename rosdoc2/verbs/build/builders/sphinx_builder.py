@@ -542,9 +542,14 @@ class SphinxBuilder(Builder):
         ]
 
         build_context = self.build_context
-        has_python = build_context.build_type == 'ament_python' or \
-            build_context.always_run_sphinx_apidoc or \
-            build_context.ament_cmake_python
+        if build_context.never_run_sphinx_apidoc:
+            logger.info(
+                'The package has never_run_sphinx_apidoc set, so sphinx apidoc will not be run.')
+        has_python = (
+            build_context.build_type == 'ament_python'
+            or build_context.always_run_sphinx_apidoc
+            or build_context.ament_cmake_python) \
+            and not build_context.never_run_sphinx_apidoc
 
         self.template_variables.update({
             'has_python': has_python,
