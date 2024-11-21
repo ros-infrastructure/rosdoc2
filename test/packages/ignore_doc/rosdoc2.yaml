@@ -1,0 +1,11 @@
+type: 'rosdoc2 config'
+version: 1
+---
+settings: {
+}
+builders:
+    - doxygen: {
+      }
+    - sphinx: {
+        user_doc_dir: null
+      }
