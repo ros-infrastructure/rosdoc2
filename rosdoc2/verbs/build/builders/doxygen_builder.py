@@ -182,7 +182,7 @@ class DoxygenBuilder(Builder):
             return None  # Explicitly generated no documentation.
 
         if self.build_context.never_run_doxygen:
-            logger.debug('The package has never_run_doxygen set, so skipping doxygen.')
+            logger.info('The package has never_run_doxygen set, so skipping doxygen.')
             return None
 
         # If both doxyfile and doxyfile_content are None, that means there is

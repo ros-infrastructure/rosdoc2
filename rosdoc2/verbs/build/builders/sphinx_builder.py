@@ -542,6 +542,9 @@ class SphinxBuilder(Builder):
         ]
 
         build_context = self.build_context
+        if build_context.never_run_sphinx_apidoc:
+            logger.info(
+                'The package has never_run_sphinx_apidoc set, so sphinx apidoc will not be run.')
         has_python = (
             build_context.build_type == 'ament_python'
             or build_context.always_run_sphinx_apidoc
