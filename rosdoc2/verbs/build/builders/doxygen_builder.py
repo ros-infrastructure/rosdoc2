@@ -246,7 +246,8 @@ class DoxygenBuilder(Builder):
             }))
 
         # Invoke Doxygen.
-        cmd = ['doxygen', os.path.relpath(extended_doxyfile_path, start=working_directory)]
+        abs_doxyfile_path = os.path.abspath(extended_doxyfile_path)
+        cmd = ['doxygen', abs_doxyfile_path]
         logger.info(
             f"Running Doxygen: '{' '.join(cmd)}' in '{working_directory}'"
         )
