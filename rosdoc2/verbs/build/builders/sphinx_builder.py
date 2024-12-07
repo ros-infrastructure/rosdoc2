@@ -29,6 +29,7 @@ from ..collect_inventory_files import collect_inventory_files
 from ..create_format_map_from_package import create_format_map_from_package
 from ..generate_interface_docs import generate_interface_docs
 from ..include_user_docs import include_user_docs
+from ..package_repo_url import package_repo_url
 from ..standard_documents import generate_standard_document_files, locate_standard_documents
 
 logger = logging.getLogger('rosdoc2')
@@ -560,6 +561,9 @@ class SphinxBuilder(Builder):
             or build_context.always_run_sphinx_apidoc
             or build_context.ament_cmake_python) \
             and not build_context.never_run_sphinx_apidoc
+
+        # Try to locate package repo url if missing
+        package_repo_url(self.build_context.package)
 
         self.template_variables.update({
             'has_python': has_python,
