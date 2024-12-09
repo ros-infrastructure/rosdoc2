@@ -28,6 +28,11 @@ settings: {
     ## for documentation purposes only. If not provided, documentation will be
     ## generated assuming the build_type in package.xml.
     # override_build_type: 'ament_python',
+
+    # These are invalid, but (deprecated) interpreted as never_run options. Include
+    # in this test so we can see the generated warning.
+    enable_breathe: false,
+    enable_exhale: false,
 }
 builders:
     ## Each stanza represents a separate build step, performed by a specific 'builder'.
