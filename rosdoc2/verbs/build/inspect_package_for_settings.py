@@ -178,6 +178,19 @@ def inspect_package_for_settings(package, tool_options):
         <another_package_name>
             <valid rosdoc2.yaml>
     """
+
+    # Over 10 packages incorrectly use enable_breathe=false and enable_exhale=false to mean
+    # "Don't parse my code for documentation" Detect those, give a warning, and interpret
+    # this as never_run_doxygen and never_run_sphinx_apidoc
+    if 'enable_breathe' in settings_dict or 'enable_exhale' in settings_dict:
+        logger.warning('rosdoc2.yaml contains enable_breathe or enable_exhale, which are not '
+                       'valid. If false, these will be interpreted to mean "never_run_doxygen='
+                       'true". This conversion is DEPRECATED and may be removed after 2025.')
+        if not settings_dict.get('enable_breathe', True) or \
+           not settings_dict.get('enable_exhale', True):
+            if 'never_run_doxygen' not in settings_dict:
+                settings_dict['never_run_doxygen'] = True
+
     yaml_extend = tool_options.yaml_extend
     if yaml_extend:
         if not os.path.isfile(yaml_extend):
