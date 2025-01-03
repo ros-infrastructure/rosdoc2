@@ -729,21 +729,21 @@ class SphinxBuilder(Builder):
         intersphinx_mapping_extensions,
     ):
         """Generate the rosdoc2 sphinx project configuration files."""
-        index_rst_path = os.path.join(wrapped_sphinx_directory, 'index.rst')
         package = self.build_context.package
-        if not os.path.isfile(index_rst_path):
+
+        wrapped_sphinx_directory_path = Path(wrapped_sphinx_directory)
+        index_rst_path = wrapped_sphinx_directory_path / 'index.rst'
+        if not index_rst_path.is_file():
             # Did the user provide index.rst.jinja?
-            user_jinja_path = os.path.join(wrapped_sphinx_directory, 'index.rst.jinja')
-            if os.path.isfile(user_jinja_path):
+            template_path = wrapped_sphinx_directory_path / 'index.rst.jinja'
+            if template_path.is_file():
                 logger.info('Using a user-supplied index.rst.jinja')
-                with open(user_jinja_path, 'r') as f:
-                    template_jinja = f.read()
             else:
                 # Generate a default index.rst
                 logger.info('Using a default index.rst.jinja')
                 template_path = resources.files(
                     'rosdoc2.verbs.build.builders').joinpath('index.rst.jinja')
-                template_jinja = template_path.read_text()
+            template_jinja = template_path.read_text()
             index_rst = Template(template_jinja).render(self.template_variables)
 
             with open(index_rst_path, 'w+') as f:
