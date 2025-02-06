@@ -354,3 +354,30 @@ def test_user_jinja_sphinx_sourcedir(module_dir):
 
     do_test_package(PKG_NAME, module_dir,
                     includes=includes)
+
+
+def test_index_excludes_content(module_dir):
+    PKG_NAME = 'index_excludes_content'
+    do_build_package(DATAPATH / PKG_NAME, module_dir)
+
+    includes = [
+        PKG_NAME,
+        'more documentation',  # file included in folder's index.rst
+    ]
+
+    excludes = [
+        'will not show',
+        'with_index/i_will_not_show/',
+        'this is some unshown documentation',
+    ]
+    links_exist = [
+        'doc/somedocs.html',
+        'doc/',
+        'doc/with_index/index.html',
+        'doc/without_index/index.html',
+        'doc/without_index/subdir1/index.html',
+        'doc/without_index/subdir2/anotherfile.html'
+    ]
+
+    do_test_package(PKG_NAME, module_dir,
+                    includes=includes, excludes=excludes, links_exist=links_exist)
