@@ -5,16 +5,10 @@
 
 {{ package.description }}
 
-* Links
-
-  * `Rosindex <https://index.ros.org/p/{{package.name}}>`_
-{%- for link in package.urls %}
-  * `{{ link.type.capitalize() }} <{{ link.url }}>`_
-{%- endfor %}
-
 .. toctree::
    :maxdepth: 2
 
+   Links <__links>
 {% if has_python %}   Python API <modules>{% endif %}
 {% if has_cpp %}   C++ API <generated/index>{% endif %}
 {% if interface_counts['msg'] > 0 %}   Message Definitions <interfaces/message_definitions>{% endif %}
