@@ -58,7 +58,8 @@ if os.path.isfile('{user_conf_py_filename}'):
         exec(open("{user_conf_py_filename}").read())
         confpy_succeeded = True
     except Exception as e:
-        print('[rosdoc2] *** Warning *** conf.py generated error: ' + str(e))
+        print(f'[rosdoc2] *** Warning *** conf.py for package {package_name} generated error: '
+              + str(e) + '. Falling back to default generated conf.py.')
 if not confpy_succeeded:
     exec(open("{default_conf_py_filename}").read())
 
