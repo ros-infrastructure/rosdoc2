@@ -163,9 +163,9 @@ def do_test_full_package(module_dir, output_path='output', pkg_name='full_packag
         f'{pkg_name}.dummy.html',
         'modules.html',
         'doc/morestuff/more_of_more/subsub.html',  # a deep documentation file
-        'standards.html',
+        '__standards.html',
         'https://example.com/repo',
-        'standard_docs/PACKAGE.html',  # package.xml
+        'PACKAGE.html',  # package.xml
     ]
     excludes = [
         'dontshowme'
