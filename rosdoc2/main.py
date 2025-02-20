@@ -19,6 +19,8 @@ from osrf_pycommon.cli_utils.verb_pattern import create_subparsers
 from osrf_pycommon.cli_utils.verb_pattern import list_verbs
 from osrf_pycommon.cli_utils.verb_pattern import split_arguments_by_verb
 
+from . import __version__ as VERSION
+
 COMMAND_NAME = 'rosdoc2'
 
 VERBS_ENTRY_POINT = f'{COMMAND_NAME}.verbs'
@@ -37,6 +39,7 @@ def main(sysargs=None):
     parser = argparse.ArgumentParser(
         description=f'{COMMAND_NAME} builds documentation for ROS packages'
     )
+    parser.add_argument('--version', action='version', version=f'{COMMAND_NAME} {VERSION}')
 
     # Generate a list of verbs available
     verbs = list_verbs(VERBS_ENTRY_POINT)
@@ -56,6 +59,10 @@ def main(sysargs=None):
     # Short circuit -h and --help
     if '-h' in pre_verb_args or '--help' in pre_verb_args:
         parser.print_help()
+        sys.exit(0)
+    # Short circuit --version
+    if '--version' in pre_verb_args:
+        parser.parse_args(sysargs)
         sys.exit(0)
 
     # Error on no verb provided
