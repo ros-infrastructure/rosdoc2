@@ -126,8 +126,13 @@ def do_test_package(
         link_object = urlparse(found_item)
         link_path = output_dir / name / link_object.path
         if not item.startswith('http'):
-            assert link_path.is_file(), \
-                f'file represented by <{found_item}> should exist at <{link_path}>'
+            if item.endswith('/'):
+                assert link_path.is_dir(), \
+                    f'directory represented by <{item}> ' \
+                    f'should exist at <{link_path}>'
+            else:
+                assert link_path.is_file(), \
+                    f'file represented by <{item}> should exist at <{link_path}>'
 
     # look for fragments of text
     for item in fragments:

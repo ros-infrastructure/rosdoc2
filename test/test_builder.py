@@ -388,7 +388,6 @@ def test_index_excludes_content(module_dir):
     ]
     links_exist = [
         'doc/somedocs.html',
-        'doc/',
         'doc/with_index/index.html',
         'doc/without_index/index.html',
         'doc/without_index/subdir1/index.html',
@@ -397,3 +396,12 @@ def test_index_excludes_content(module_dir):
 
     do_test_package(PKG_NAME, module_dir,
                     includes=includes, excludes=excludes, links_exist=links_exist)
+
+
+def test_disable_breathe(module_dir):
+    PKG_NAME = 'disable_breathe'
+    do_build_package(DATAPATH / PKG_NAME, module_dir)
+
+    links_exist = ['generated/doxygen/html/']
+
+    do_test_package(PKG_NAME, module_dir, links_exist=links_exist)
