@@ -124,11 +124,13 @@ def main_impl(options):
 
     if options.build_directory is not None:
         logger.warn(
-            'The --build-directory option (-b) is unused and will be removed in a future version')
+            'The --build-directory option (-b) is unused '
+            'and will be removed in a future version')
 
     if options.install_directory is not None:
         logger.warn(
-            'The --install-directory option (-i) is unused and will be removed in a future version')
+            'The --install-directory option (-i) is unused '
+            'and will be removed in a future version')
 
     # Inspect package for additional settings, using defaults if none found.
     tool_settings, builders = inspect_package_for_settings(
