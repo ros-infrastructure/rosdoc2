@@ -89,7 +89,8 @@ def main_impl(options):
 
     if options.install_directory is not None:
         logger.warn(
-            'The --install-directory option (-i) is unused and will be removed in a future version')
+            'The --install-directory option (-i) is unused '
+            'and will be removed in a future version')
 
     # Locate the packages to document.
     found_packages = find_packages_allowing_duplicates(options.package_path)
