@@ -39,7 +39,7 @@ def main(sysargs=None):
     parser = argparse.ArgumentParser(
         description=f'{COMMAND_NAME} builds documentation for ROS packages'
     )
-    parser.add_argument('--version', action='version', version=f'{COMMAND_NAME} {VERSION}')
+    parser.add_argument('-v', '--version', action='version', version=f'{COMMAND_NAME} {VERSION}')
 
     # Generate a list of verbs available
     verbs = list_verbs(VERBS_ENTRY_POINT)
@@ -61,7 +61,7 @@ def main(sysargs=None):
         parser.print_help()
         sys.exit(0)
     # Short circuit --version
-    if '--version' in pre_verb_args:
+    if '-v' in pre_verb_args or '--version' in pre_verb_args:
         parser.parse_args(sysargs)
         sys.exit(0)
 
