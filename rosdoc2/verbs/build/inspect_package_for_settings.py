@@ -93,6 +93,9 @@ builders:
         # doxyfile: null,
         ## additional statements to add to the Doxyfile, list of strings
         # extra_doxyfile_statements: [],
+        ## location of include files for Doxygen. By default, rosdoc2 searches in
+        ## 'include', 'src', '<package.name>'
+        # doxygen_input_dir: null,
       }}
     - sphinx: {{
         # name: '{package_name}',
