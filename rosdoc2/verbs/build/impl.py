@@ -119,6 +119,9 @@ def main(options):
 
 def main_impl(options):
     """Execute the program."""
+    # rosdoc2 only works for ROS version 2
+    os.environ['ROS_VERSION'] = '2'
+
     # Locate and parse the package's package.xml.
     package = get_package(options.package_path)
 

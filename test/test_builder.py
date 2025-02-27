@@ -265,6 +265,18 @@ def test_basic_cpp(module_dir):
         'Building should not create a "generated" directory in package/doc'
 
 
+def test_needs_ros_version(module_dir):
+    """Test a package needing ROS_VERSION to specify build type."""
+    PKG_NAME = 'needs_ros_version'
+
+    do_build_package(DATAPATH / PKG_NAME, module_dir)
+
+    includes = [
+        'full c++ api',  # needs ROS_VERSION=2 for correct build type.
+    ]
+    do_test_package(PKG_NAME, module_dir, includes=includes)
+
+
 def test_has_sphinx_sourcedir(module_dir):
     PKG_NAME = 'has_sphinx_sourcedir'
     do_build_package(DATAPATH / PKG_NAME, module_dir)
