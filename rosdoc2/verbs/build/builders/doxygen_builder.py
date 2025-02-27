@@ -32,7 +32,8 @@ PROJECT_NAME           = {package_name}
 PROJECT_NUMBER         = {package_version}
 PROJECT_BRIEF          = "{package_description}"
 
-INPUT                  = {package_directory}/include
+INPUT                  = {package_directory}/{include_dir}
+FILE_PATTERNS          = *.h *.hpp *.hh *.h++ *.hxx
 RECURSIVE              = YES
 
 GENERATE_LATEX         = NO
@@ -70,6 +71,8 @@ class DoxygenBuilder(Builder):
       - relative path, from the config file, to a Doxyfile to be used instead of the default
     - extra_doxyfile_statements (list[str]) (optional)
       - extra doxyfile statements which would be added after the default, or user, doxyfile
+    - doxygen_input_dir(str) (optional)
+      - relative path of directory containing C/C++ include files for Doxygen to process
     """
 
     def __init__(self, builder_name, builder_entry_dictionary, build_context):
@@ -86,6 +89,7 @@ class DoxygenBuilder(Builder):
         self.extra_doxyfile_statements = []
         self.rosdoc2_doxyfile_statements = []
         self.doxyfile_content = None
+        self.doxygen_input_dir = None
 
         # If the build type is not `ament_cmake/cmake`, there is no reason
         # to create a doxygen builder.
@@ -103,6 +107,7 @@ class DoxygenBuilder(Builder):
 
         # Process keys.
         configuration_file_path = build_context.configuration_file_path
+        package_directory = os.path.dirname(build_context.package.filename)
         for key, value in builder_entry_dictionary.items():
             if key in ['name', 'output_dir']:
                 continue
@@ -129,6 +134,15 @@ class DoxygenBuilder(Builder):
                             f"'extra_doxyfile_statements' to be a list of strings, "
                             f"found list with type '{type(statement)}' instead.")
                     self.extra_doxyfile_statements.append(statement)
+            elif key == 'doxygen_input_dir':
+                logger.info(f'User specified doxygen_input_dir as "{value}"')
+                if value:
+                    if not os.path.isdir(os.path.join(package_directory, value)):
+                        raise RuntimeError(
+                            f"Error processing file '{configuration_file_path}', expected setting "
+                            f"'doxygen_input_dir' to be a directory under {package_directory}"
+                        )
+                    self.doxygen_input_dir = value
             else:
                 raise RuntimeError(f"Error the Doxygen builder does not support key '{key}'")
 
@@ -137,9 +151,7 @@ class DoxygenBuilder(Builder):
 
         # If the user does not supply a Doxygen file, look for one in the package root.
         if self.doxyfile is None:
-            package_directory = os.path.dirname(build_context.package.filename)
             package_doxyfile = os.path.join(package_directory, 'Doxyfile')
-            package_include_directory = os.path.join(package_directory, 'include')
             if os.path.exists(package_doxyfile):
                 # In this case, use the package's Doxyfile, despite it not being
                 # explicitly specified in the configuration.
@@ -147,25 +159,48 @@ class DoxygenBuilder(Builder):
                 logger.info(
                     'No Doxyfile specified by user, but a Doxyfile was found in '
                     f"the package at '{package_doxyfile}' and will be used.")
-            elif os.path.isdir(package_include_directory):
-                # If neither the doxyfile setting is set,
-                # nor is there a Doxyfile in the package root,
-                # but there is a standard 'include' directory, then generatate a default.
-                self.doxyfile_content = DEFAULT_DOXYFILE.format_map(self.template_variables)
-                logger.info(
-                    'No Doxyfile specified by user, and no Doxyfile found in '
-                    f"the package at '{package_doxyfile}', but a standard include "
-                    f"directory was found at '{package_include_directory}', "
-                    'therefore a default Doxyfile will be generated and used.')
             else:
-                # If neither the doxyfile setting is set,
-                # nor is there a Doxyfile in the package root,
-                # and there is no standard 'include' directory, then do nothing.
-                logger.info(
-                    'No Doxyfile specified by user, no Doxyfile found in '
-                    f"the package at '{package_doxyfile}', and no standard include "
-                    f"directory found at '{package_include_directory}', "
-                    'therefore doxygen will not be run.')
+                include_dir = None
+                if self.doxygen_input_dir:
+                    include_dir = self.doxygen_input_dir
+                else:
+                    # Search for a valid include directory
+                    for candidate_dir in ('include', 'src', build_context.package.name):
+                        candidate_path = os.path.join(package_directory, candidate_dir)
+                        for root, _, files in os.walk(candidate_path):
+                            if '/test' in root:
+                                continue
+                            for file in files:
+                                ext = os.path.splitext(file)[1].lower()
+                                if ext in ['.h', '.hpp', '.hh', '.h++', '.hxx']:
+                                    include_dir = candidate_dir
+                                    logger.info(
+                                        f'Found C/C++ include file in {candidate_dir}, '
+                                        'using that path for Doxygen')
+                                    break
+                            if include_dir:
+                                break
+                        if include_dir:
+                            break
+                if include_dir:
+                    # If neither the doxyfile setting is set,
+                    # nor is there a Doxyfile in the package root,
+                    # but there is a standard 'include' directory, then generate a default.
+                    self.template_variables['include_dir'] = include_dir
+                    self.doxyfile_content = DEFAULT_DOXYFILE.format_map(
+                        self.template_variables)
+                    logger.info(
+                        'No Doxyfile specified by user, and no Doxyfile found in '
+                        f"the package at '{package_doxyfile}', but a standard include "
+                        f"directory was found at '{include_dir}', "
+                        'therefore a default Doxyfile will be generated and used.')
+                else:
+                    # If neither the doxyfile setting is set,
+                    # nor is there a Doxyfile in the package root, nor did we find
+                    # includable files in standard locations, then Doxygen will not run
+                    logger.info(
+                        'No Doxyfile specified by user, no *.h like files found in '
+                        'standard locations, therefore doxygen will not be run.')
         else:
             logger.info(f"Using user specified Doxyfile at '{self.doxyfile}'.")
 
@@ -194,6 +229,7 @@ class DoxygenBuilder(Builder):
             return None  # Explicitly generated no documentation.
 
         # Create a temporary output directory for doxygen.
+        logger.info('Trying to run doxygen')
         doxygen_output_dir = os.path.abspath(os.path.join(doc_build_folder, 'doxygen_output'))
         os.makedirs(doxygen_output_dir, exist_ok=True)
 

@@ -39,6 +39,14 @@ settings: {
     ## for documentation purposes only. If not provided, documentation will be
     ## generated assuming the build_type in package.xml.
     override_build_type: 'ament_cmake',
+
+    ## This setting, if true, will skip using breathe to process the C++ documentation, and
+    #  use the doxygen html instead. This is intended for cases where breathe is throwing
+    #  errors.
+    disable_breathe: false,
+
+    ## This setting, if true, will display a link to the Doxygen html output.
+    show_doxygen_html: false,
 }
 builders:
     ## Each stanza represents a separate build step, performed by a specific 'builder'.
@@ -58,6 +66,9 @@ builders:
         doxyfile: null,
         ## additional statements to add to the Doxyfile, list of strings
         extra_doxyfile_statements: [],
+        ## location of include files for Doxygen. By default, rosdoc2 searches in
+        ## 'include', 'src', '<package.name>'
+        doxygen_input_dir: null,
       }
     - sphinx: {
         name: 'default_yaml',
@@ -75,5 +86,6 @@ builders:
         ## needed. Unlike sphinx_sourcedir, specifying this does not override the standard rosdoc2
         ## output, but includes this user documentation along with other items included by default
         ## by rosdoc2.
+        ## If the value is null, any found documentation in doc/ or doc/source/ is ignored.
         user_doc_dir: 'doc'
       }

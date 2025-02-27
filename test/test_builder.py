@@ -406,3 +406,23 @@ def test_disable_breathe(module_dir):
     links_exist = ['generated/doxygen/html/']
 
     do_test_package(PKG_NAME, module_dir, links_exist=links_exist)
+
+
+def test_nonstandard_include(module_dir):
+    """Test a C++ package with non standard include."""
+    PKG_NAME = 'nonstandard_include'
+
+    do_build_package(DATAPATH / PKG_NAME, module_dir)
+
+    includes = ['full c++ api']  # package has includes at ./src instead of ./include
+    do_test_package(PKG_NAME, module_dir, includes=includes)
+
+
+def test_specify_include_path(module_dir):
+    """Test a C++ package with a specififed include directory."""
+    PKG_NAME = 'specify_include_path'
+
+    do_build_package(DATAPATH / PKG_NAME, module_dir)
+
+    includes = ['full c++ api']  # package has includes at some_path
+    do_test_package(PKG_NAME, module_dir, includes=includes)

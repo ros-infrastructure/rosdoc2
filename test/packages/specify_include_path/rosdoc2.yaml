@@ -1,0 +1,14 @@
+## This 'attic section' self-documents this file's type and version.
+type: 'rosdoc2 config'
+version: 1
+
+---
+
+settings: {
+}
+builders:
+    - doxygen: {
+        doxygen_input_dir: 'some_path'
+      }
+    - sphinx: {
+      }
