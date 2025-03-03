@@ -555,10 +555,14 @@ class SphinxBuilder(Builder):
             except OSError as e:
                 print(f'Failed to copy user content: {e}')
         else:
-            # copy jinja file if it exists
+            # copy index file if it exists
             index_jinja_path = os.path.join(package_xml_directory, 'index.rst.jinja')
             if os.path.isfile(index_jinja_path):
                 shutil.copy(index_jinja_path, wrapped_sphinx_directory)
+            else:
+                index_path = os.path.join(package_xml_directory, 'index.rst')
+                if os.path.isfile(index_path):
+                    shutil.copy(index_path, wrapped_sphinx_directory)
 
             # include user documentation
             if self.user_doc_dir == IGNORE_DOC_DIRECTORY:
