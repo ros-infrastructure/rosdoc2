@@ -279,6 +279,10 @@ default_conf_py_template = """\
 # -- Project information -----------------------------------------------------
 
 project = '{package.name}'
+ros_distro = os.environ.get('ROS_DISTRO')
+if ros_distro:
+    project += ': ' + ros_distro.capitalize()
+
 # TODO(tfoote) The docs say year and author but we have this and it seems more relevant.
 copyright = 'The <{package.name}> Contributors. License: {package_licenses}'
 author = \"\"\"{package_authors}\"\"\"
