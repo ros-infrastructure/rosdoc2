@@ -340,6 +340,7 @@ def test_rclcpp(module_dir):
 
     includes = [
         PKG_NAME,
+        'rclcpp: rolling'  # Confirm that rosdistro is appended to the title in the TOC.
     ]
 
     links_exist = ['https://github.com/ros2/rclcpp.git']  # Found repo url from rosdistro.
