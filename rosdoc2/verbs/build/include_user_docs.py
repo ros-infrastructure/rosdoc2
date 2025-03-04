@@ -27,7 +27,7 @@ Documentation
    :titlesonly:
    :glob:
 
-   {rel_user_doc_directory}/*
+   {rel_user_doc_directory}/{files}
 """
 
 subdirectory_rst_template = """\
@@ -83,8 +83,11 @@ def include_user_docs(rel_user_doc_directory: str,
 
     logger.info(f'Documentation found in directories {doc_directories}')
 
+    toc_files = '*'
+    if os.path.isfile(os.path.join(user_doc_directory, 'index.rst')):
+        toc_files = 'index'
     toc_content = documentation_rst_template.format_map(
-        {'rel_user_doc_directory': rel_user_doc_directory})
+        {'rel_user_doc_directory': rel_user_doc_directory, 'files': toc_files})
     # generate a glob rst entry for each directory with documents
     for relpath in doc_directories:
         # files that will be explicitly listed in index.rst

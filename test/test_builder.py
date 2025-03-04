@@ -254,8 +254,12 @@ def test_basic_cpp(module_dir):
         'a different title',  # changed in custom index.rst
         'basic_cpp_and_more',  # changed in custom config.py
         'add me to toc',  # added in a template
+        'welcome to the documentation for basic_cpp',  # from doc/index.rst
     ]
-    do_test_package(PKG_NAME, module_dir, includes=includes)
+
+    excludes = 'overview'  # should not show rst files from doc/
+
+    do_test_package(PKG_NAME, module_dir, includes=includes, excludes=excludes)
 
     # Previously, running rosdoc2 would create a 'generated' folder in the doc
     # subdirectory of the package. Directory refactoring should have eliminated
