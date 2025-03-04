@@ -8,5 +8,6 @@
   <license>Apache License 2.0</license>
   <export>
     <build_type>ament_cmake</build_type>
+    <rosdoc2>rosdoc2.yaml</rosdoc2>
   </export>
 </package>
