@@ -24,12 +24,13 @@ from catkin_pkg.packages import find_packages_allowing_duplicates
 from rosdoc2.verbs.build.impl import main_impl as build_main_impl
 from rosdoc2.verbs.build.impl import prepare_arguments as build_prepare_arguments
 
+mp.set_start_method('spawn', force=True)
+
 logging.basicConfig(
     format='[%(name)s] [%(levelname)s] %(message)s', level=logging.INFO)
 logger = logging.getLogger('rosdoc2')
 logger_scan = logging.getLogger('rosdoc2.scan')
 
-goptions = None
 # Setting the MAX_PACKAGES to a smaller value may be useful in debugging
 # this module, to reduce run time or isolate sections that cause hangs.
 MAX_PACKAGES = 10000
@@ -84,8 +85,7 @@ def prepare_arguments(parser):
 
 def main_impl(options):
     """Execute the program."""
-    global goptions
-    goptions = options
+    import traceback
 
     if options.install_directory is not None:
         logger.warn(
@@ -110,7 +110,7 @@ def main_impl(options):
         logger_scan.info(f'Adding {package.name} for processing')
 
     pool = mp.Pool(maxtasksperchild=1, processes=subprocesses)
-    pool_results = pool.imap_unordered(package_impl, packages)
+    pool_results = pool.imap_unordered(package_impl, ((p, options) for p in packages))
     while True:
         try:
             (package, returns, message) = pool_results.next()
@@ -126,6 +126,7 @@ def main_impl(options):
             break
         except BaseException as e:  # noqa: B902
             logger_scan.error(f'Unexpected error in scan: {type(e).__name__ + " " + str(e)}')
+            print(traceback.format_exc())
             break
     logger_scan.info('Finished')
     # I'd prefer close() then join() but that seems to sometimes hang.
@@ -145,10 +146,10 @@ def _clocktime():
     return time.strftime('%H:%M:%S')
 
 
-def package_impl(package):
+def package_impl(package_options):
     """Execute for a single function."""
-    global goptions
-    options = Struct(**goptions.__dict__)
+    (package, options) = package_options
+    options = Struct(**options.__dict__)
     package_path = os.path.dirname(package.filename)
     options.package_path = package_path
     return_value = 100
