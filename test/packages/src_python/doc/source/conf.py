@@ -55,10 +55,9 @@ version = '0.0'
 ## rosdoc2 will extend the extensions to enable Breathe and Exhale if you
 ## do not add them here, as well as others, perhaps.
 ## If you add them manually rosdoc2 may still try to configure them.
-## See the rosdoc2_settings below for some options on avoiding that.
-extensions = [
-    'sphinx_rtd_theme',
-]
+
+# This tests inclusion of non-default extensions, since 'allow_other_extensions' = True
+extensions = ['sphinx_prompt']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -83,16 +82,12 @@ source_suffix = {
 #
 ## rosdoc2 will override the theme, but you may set one here for running Sphinx
 ## without the rosdoc2 tool.
-html_theme = 'sphinx_rtd_theme'
 
-html_theme_options = {
-    # Toc options
-    'collapse_navigation': False,
-    'sticky_navigation': True,
-    'navigation_depth': 4,
-    'includehidden': True,
-    'titles_only': False,
-}
+# This tests using a different theme, since 'override_theme' = False.  Note we don't
+# have to install the extension in Sphinx for the theme to be found.
+html_theme = 'plone_sphinx_theme'
+
+html_theme_options = { 'i_do_not_exist': 1 }
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -131,7 +126,7 @@ rosdoc2_settings = {
 
     ## This setting, if True, will have the 'html_theme' overridden to provide
     ## a consistent style across all of the ROS documentation.
-    # 'override_theme': True,
+    'override_theme': False,
 
     ## This setting, if True, will automatically extend the intersphinx mapping
     ## using inventory files found in the cross-reference directory.
@@ -142,4 +137,10 @@ rosdoc2_settings = {
 
     ## Support markdown
     # 'support_markdown': True,
+
+    ## Allow additional extension. If true, at runtime rosdoc2 will check to see if
+    ## non-default extensions are installed, and if so allow them. If false, only
+    ## extensions loaded by default by Sphinx or rosdoc2 installs are allowed.
+    'allow_other_extensions': True,
+
 }
