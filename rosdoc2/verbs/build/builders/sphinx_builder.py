@@ -51,6 +51,8 @@ rosdoc2_wrapping_conf_py_template = """\
 import os
 import shutil
 import sys
+from importlib.metadata import entry_points
+
 if '{python_src_directory}' != 'None':
     sys.path.insert(0, os.path.abspath(os.path.join('{python_src_directory}', '..')))
 
@@ -62,6 +64,7 @@ if os.path.isfile('{user_conf_py_filename}'):
     try:
         exec(open("{user_conf_py_filename}").read())
         confpy_succeeded = True
+        print('[rosdoc2] Using user supplied conf.py')
     except Exception as e:
         print(f'[rosdoc2] *** Warning *** conf.py for package {package_name} generated error: '
               + str(e) + '. Falling back to default generated conf.py.')
@@ -91,6 +94,7 @@ ensure_global('project', "{package_name}")
 ensure_global('author', \"\"\"{package_authors}\"\"\")
 ensure_global('release', "{package.version}")
 ensure_global('version', "{package_version_short}")
+ensure_global('html_theme', 'sphinx_rtd_theme')
 
 # Remove any unsupported extensions
 allowed_extensions = set((
@@ -128,13 +132,20 @@ else:
 
 for extension in extensions[:]:
     if extension not in allowed_extensions:
-        print(f'[rosdoc2] *** Warning *** removing extension "{{extension}}", not supported')
+        if rosdoc2_settings.get('allow_other_extensions', False):
+            print(f"[rosdoc2] Checking if extension '{{extension}}' is installed")
+            try:
+                __import__(extension)
+                continue
+            except ModuleNotFoundError:
+                print(f"[rosdoc2] requested extension '{{extension}}' not installed")
+        print(f"[rosdoc2] *** Warning *** removing extension '{{extension}}', not supported")
         extensions.remove(extension)
 if extensions:
     print(f'[rosdoc2] user conf.py specified allowed extensions: {{extensions}}')
 
 if rosdoc2_settings.get('enable_autodoc', True):
-    print('[rosdoc2] enabling autodoc', file=sys.stderr)
+    print('[rosdoc2] enabling autodoc')
     extensions.append('sphinx.ext.autodoc')
 
     pkgs_to_mock = []
@@ -152,7 +163,7 @@ if rosdoc2_settings.get('enable_autodoc', True):
     autodoc_mock_imports = pkgs_to_mock
 
 if rosdoc2_settings.get('enable_intersphinx', True):
-    print('[rosdoc2] enabling intersphinx', file=sys.stderr)
+    print('[rosdoc2] enabling intersphinx')
     extensions.append('sphinx.ext.intersphinx')
 
 build_type = '{build_type}'
@@ -163,7 +174,7 @@ is_doxygen_invoked = {did_run_doxygen}
 if rosdoc2_settings.get('enable_breathe', is_doxygen_invoked):
     # Configure Breathe.
     # Breathe ingests the XML output from Doxygen and makes it accessible from Sphinx.
-    print('[rosdoc2] enabling breathe', file=sys.stderr)
+    print('[rosdoc2] enabling breathe')
     # First check that doxygen would have been run
     if not is_doxygen_invoked:
         raise RuntimeError(
@@ -183,7 +194,7 @@ if rosdoc2_settings.get('enable_exhale', is_doxygen_invoked):
     # for classes and functions documented with Doxygen.
     # This is similar to the class hierarchies and namespace listing provided by
     # Doxygen out of the box.
-    print('[rosdoc2] enabling exhale', file=sys.stderr)
+    print('[rosdoc2] enabling exhale')
     # First check that doxygen would have been run
     if not is_doxygen_invoked:
         raise RuntimeError(
@@ -225,13 +236,24 @@ if rosdoc2_settings.get('enable_exhale', is_doxygen_invoked):
             lambda kind: exhale_specs_mapping.get(kind, [])),
     }})
 
-if rosdoc2_settings.get('override_theme', True):
+use_user_theme = False
+if not rosdoc2_settings.get('override_theme', True) and html_theme != 'sphinx_rtd_theme':
+    ## Detect if requested theme exists
+    for entry_point in entry_points(group='sphinx.html_themes'):
+        if entry_point.name == html_theme:
+            use_user_theme = True
+            break
+    if not use_user_theme:
+        print(f"[rosdoc2] *** warning *** user specified theme '{{html_theme}}' not found")
+if not use_user_theme:
     extensions.append('sphinx_rtd_theme')
     html_theme = 'sphinx_rtd_theme'
-    print(f"[rosdoc2] overriding theme to be '{{html_theme}}'", file=sys.stderr)
+    print(f"[rosdoc2] overriding theme to be '{{html_theme}}'")
+else:
+    print(f"[rosdoc2] Using user specified theme '{{html_theme}}'")
 
 if rosdoc2_settings.get('automatically_extend_intersphinx_mapping', True):
-    print(f"[rosdoc2] extending intersphinx mapping", file=sys.stderr)
+    print(f"[rosdoc2] extending intersphinx mapping")
     if 'sphinx.ext.intersphinx' not in extensions:
         raise RuntimeError(
             "Cannot extend intersphinx mapping if 'sphinx.ext.intersphinx' "
@@ -241,7 +263,7 @@ if rosdoc2_settings.get('automatically_extend_intersphinx_mapping', True):
     }})
 
 if rosdoc2_settings.get('support_markdown', True):
-    print(f"[rosdoc2] adding markdown parser", file=sys.stderr)
+    print(f"[rosdoc2] adding markdown parser")
     # The `myst_parser` is used specifically if there are markdown files
     # in the sphinx project
     extensions.append('myst_parser')
@@ -376,7 +398,8 @@ rosdoc2_settings = {{
     # 'enable_intersphinx': True,
 
     ## This setting, if True, will have the 'html_theme' overridden to provide
-    ## a consistent style across all of the ROS documentation.
+    ## a consistent style across all of the ROS documentation. If False, will only
+    ## override the 'html_theme' if that theme is not installed.
     # 'override_theme': True,
 
     ## This setting, if True, will automatically extend the intersphinx mapping
@@ -388,6 +411,11 @@ rosdoc2_settings = {{
 
     ## Support markdown
     # 'support_markdown': True,
+
+    ## Allow additional extensions. If true, at runtime rosdoc2 will check to see if
+    ## non-default extensions are installed, and if so allow them. If false, only
+    ## extensions loaded by default by Sphinx or rosdoc2 installs are allowed.
+    # 'allow_other_extensions': False,
 }}
 """
 
