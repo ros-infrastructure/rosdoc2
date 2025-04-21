@@ -119,6 +119,8 @@ Additionally, if your package is laid out in a standard way then it will automat
 However, if you need to place your files in non-standard locations, configure Sphinx and/or Doxygen beyond the defaults, or do something else, you will need to create a `rosdoc2.yaml` file and reference it from your package's `package.xml`.
 How to do that, and how to handle some other special cases will follow.
 
+Also refer to the [Documenting a ROS 2 package how-to guide in the ROS 2 docs](https://docs.ros.org/en/rolling/How-To-Guides/Documenting-a-ROS-2-Package.html).
+
 #### Using a `rosdoc2.yaml` file to control how your package is documented
 
 To generate a default config file, run
