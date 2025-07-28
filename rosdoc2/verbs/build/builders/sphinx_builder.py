@@ -95,6 +95,7 @@ ensure_global('author', \"\"\"{package_authors}\"\"\")
 ensure_global('release', "{package.version}")
 ensure_global('version', "{package_version_short}")
 ensure_global('html_theme', 'sphinx_rtd_theme')
+ensure_global('autodoc_mock_imports', [])
 
 # Remove any unsupported extensions
 allowed_extensions = set((
@@ -157,10 +158,10 @@ if rosdoc2_settings.get('enable_autodoc', True):
             importlib.import_module(exec_depend)
         except ImportError:
             pkgs_to_mock.append(exec_depend)
-    # todo(YV): If users provide autodoc_mock_imports in their conf.py
-    # it will be overwritten by those in exec_depends.
-    # Consider appending to autodoc_mock_imports instead.
-    autodoc_mock_imports = pkgs_to_mock
+    
+    autodoc_mock_imports.extend(pkgs_to_mock)
+
+    print(f"[rosdoc2] autodoc mock imports: '{{autodoc_mock_imports}}'")
 
 if rosdoc2_settings.get('enable_intersphinx', True):
     print('[rosdoc2] enabling intersphinx')
