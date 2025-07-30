@@ -337,6 +337,16 @@ templates_path = ['_templates']
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = []
 
+# List of Python modules to mock during documentation generation.
+# When Sphinx's autodoc extension tries to import your Python modules to extract
+# docstrings, it may fail if dependencies are not available in the build environment.
+# Modules listed here will be mocked (fake imports) to prevent import errors.
+## rosdoc2 automatically adds modules from exec_depend and doc_depend tags in 
+## package.xml that cannot be imported. You can manually add additional modules
+## here if your code has dependencies not listed in package.xml or if the module
+## name differs from the package name.
+autodoc_mock_imports = []
+
 master_doc = 'index'
 
 source_suffix = {{
