@@ -161,7 +161,8 @@ if rosdoc2_settings.get('enable_autodoc', True):
     
     autodoc_mock_imports.extend(pkgs_to_mock)
 
-    print(f"[rosdoc2] autodoc mock imports: '{{autodoc_mock_imports}}'")
+    if len(autodoc_mock_imports) > 0:
+        print(f"[rosdoc2] autodoc mock imports: '{{'\\', \\''.join(autodoc_mock_imports)}}'")
 
 if rosdoc2_settings.get('enable_intersphinx', True):
     print('[rosdoc2] enabling intersphinx')
