@@ -158,7 +158,7 @@ if rosdoc2_settings.get('enable_autodoc', True):
             importlib.import_module(exec_depend)
         except ImportError:
             pkgs_to_mock.append(exec_depend)
-    
+
     autodoc_mock_imports.extend(pkgs_to_mock)
 
     if len(autodoc_mock_imports) > 0:
@@ -342,7 +342,7 @@ exclude_patterns = []
 # When Sphinx's autodoc extension tries to import your Python modules to extract
 # docstrings, it may fail if dependencies are not available in the build environment.
 # Modules listed here will be mocked (fake imports) to prevent import errors.
-## rosdoc2 automatically adds modules from exec_depend and doc_depend tags in 
+## rosdoc2 automatically adds modules from exec_depend and doc_depend tags in
 ## package.xml that cannot be imported. You can manually add additional modules
 ## here if your code has dependencies not listed in package.xml or if the module
 ## name differs from the package name.
