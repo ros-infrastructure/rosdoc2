@@ -141,10 +141,12 @@ def test_only_python(module_dir):
     includes = [
         PKG_NAME,
     ]
-    links_exist = ['only_python.python_node.html']
+    links_exist = ['modules.html']
+    fragments = [('only_python.python_node.html', 'a dummy class for testing purposes')]
     do_test_package(PKG_NAME, module_dir,
                     includes=includes,
-                    links_exist=links_exist)
+                    links_exist=links_exist,
+                    fragments=fragments)
 
 
 def test_src_python(module_dir):
