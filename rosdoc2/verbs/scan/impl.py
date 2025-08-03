@@ -66,13 +66,13 @@ def prepare_arguments(parser):
         '--timeout',
         '-t',
         default=WATCHDOG_TIMEOUT,
-        help='maximum time in seconds allowed per package',
+        help='maximum time in seconds allowed per package (default: %(default)s)',
     )
     parser.add_argument(
         '--max-packages',
         '-m',
         default=MAX_PACKAGES,
-        help='maximum number of packages to process'
+        help='maximum number of packages to process (default: %(default)s)'
     )
     parser.add_argument(
         '--subprocesses',
