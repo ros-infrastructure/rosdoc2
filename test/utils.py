@@ -66,7 +66,8 @@ def do_test_package(
         (relative to root index.html directory) of files that should not exist
     :param list[str] links_exist: Confirm that 1) a link exists containing this text, and
         2) the link is a valid file
-    :param list[str] fragments: lower case text found partially in index.html data
+    :param list[(str,str)] fragments(filename, content):
+        lower case text 'content' found partially in filename 'filename'
     """
     output_dir = work_dir / output_path
     logger.info(f'*** Testing package {name} output_dir {output_dir}')
@@ -135,14 +136,20 @@ def do_test_package(
                     f'file represented by <{item}> should exist at <{link_path}>'
 
     # look for fragments of text
-    for item in fragments:
+    for (filename, content) in fragments:
+        fragment_file_path = output_dir / name / filename
+        assert fragment_file_path.is_file()
+
         found_fragment = False
-        for text in parser.content:
-            if item in text:
+        fragment_content = fragment_file_path.read_text(errors='replace').lower()
+        fragment_parser = htmlParser()
+        fragment_parser.feed(fragment_content)
+        for text in fragment_parser.content:
+            if content in text:
                 found_fragment = True
                 break
         assert found_fragment, \
-            f'html should have text fragment <{item}>'
+            f'html in file <{filename}> should have text fragment <{content}>'
 
     return parser
 
@@ -176,7 +183,7 @@ def do_test_full_package(module_dir, output_path='output', pkg_name='full_packag
         'dontshowme'
     ]
     fragments = [
-        'this is the package readme.',
+        ('index.html', 'this is the package readme.'),
     ]
     parser = do_test_package(pkg_name, module_dir,
                              output_path=output_path,
