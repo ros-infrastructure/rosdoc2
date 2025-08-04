@@ -25,8 +25,7 @@ def prepare_arguments(parser):
         'package_output_directory',
         nargs='?',
         default=DEFAULT_OUTPUT_DIR,
-        help=f'(optional) path to the built documentation (default "{DEFAULT_OUTPUT_DIR}") '
-             'OR package name',
+        help='(optional) path to the built documentation (default: %(default)s) OR package name',
     )
     return parser
 

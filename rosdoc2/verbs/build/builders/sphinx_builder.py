@@ -95,6 +95,7 @@ ensure_global('author', \"\"\"{package_authors}\"\"\")
 ensure_global('release', "{package.version}")
 ensure_global('version', "{package_version_short}")
 ensure_global('html_theme', 'sphinx_rtd_theme')
+ensure_global('autodoc_mock_imports', [])
 
 # Remove any unsupported extensions
 allowed_extensions = set((
@@ -157,10 +158,12 @@ if rosdoc2_settings.get('enable_autodoc', True):
             importlib.import_module(exec_depend)
         except ImportError:
             pkgs_to_mock.append(exec_depend)
-    # todo(YV): If users provide autodoc_mock_imports in their conf.py
-    # it will be overwritten by those in exec_depends.
-    # Consider appending to autodoc_mock_imports instead.
-    autodoc_mock_imports = pkgs_to_mock
+
+    autodoc_mock_imports.extend(pkgs_to_mock)
+
+    if len(autodoc_mock_imports) > 0:
+        joined_imports = "', '".join(autodoc_mock_imports)
+        print(f"[rosdoc2] autodoc mock imports: '{{joined_imports}}'")
 
 if rosdoc2_settings.get('enable_intersphinx', True):
     print('[rosdoc2] enabling intersphinx')
@@ -335,6 +338,16 @@ templates_path = ['_templates']
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = []
+
+# List of Python modules to mock during documentation generation.
+# When Sphinx's autodoc extension tries to import your Python modules to extract
+# docstrings, it may fail if dependencies are not available in the build environment.
+# Modules listed here will be mocked (fake imports) to prevent import errors.
+## rosdoc2 automatically adds modules from exec_depend and doc_depend tags in
+## package.xml that cannot be imported. You can manually add additional modules
+## here if your code has dependencies not listed in package.xml or if the module
+## name differs from the package name.
+autodoc_mock_imports = []
 
 master_doc = 'index'
 

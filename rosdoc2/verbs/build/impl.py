@@ -72,25 +72,31 @@ def prepare_arguments(parser):
         '--cross-reference-directory',
         '-c',
         default=DEFAULT_CROSS_REFERENCE_DIR,
-        help='directory containing cross reference files, like tag files and inventory files',
+        help=(
+            'directory containing cross reference files, like tag files and inventory files'
+            ' (default: %(default)s)'
+        ),
     )
     parser.add_argument(
         '--base-url',
         '-u',
         default='http://docs.ros.org/en/latest/p',
-        help='The base url where the package docs will be hosted, used to configure tag files.',
+        help=(
+            'base url where the package docs will be hosted, used to configure tag files'
+            ' (default: %(default)s)'
+        ),
     )
     parser.add_argument(
         '--output-directory',
         '-o',
         default=DEFAULT_OUTPUT_DIR,
-        help='directory to output the documenation artifacts into',
+        help='directory to output the documenation artifacts into (default: %(default)s)',
     )
     parser.add_argument(
         '--doc-build-directory',
         '-d',
         default=DEFAULT_BUILD_DIR,
-        help='directory to setup build prefix'
+        help='directory to setup build prefix (default: %(default)s)'
     )
     parser.add_argument(
         '--debug',
