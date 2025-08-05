@@ -16,6 +16,16 @@ import os
 import shutil
 
 
+STANDARD_DOCUMENT_NAMES = [
+    'authors',
+    'changelog',
+    'contributing',
+    'license',
+    'package',
+    'quality_declaration',
+    'readme'
+]
+
 standard_documents_rst = """\
 Standard Documents
 ==================
@@ -36,22 +46,13 @@ README
 
 def locate_standard_documents(package_xml_directory):
     """Locate standard documents."""
-    names = [
-        'readme',
-        'license',
-        'contributing',
-        'changelog',
-        'quality_declaration',
-        'package',
-        'authors'
-    ]
     found_paths = {}
     package_directory_items = os.scandir(package_xml_directory)
     for item in package_directory_items:
         if not item.is_file():
             continue
         (basename, ext) = os.path.splitext(item.name)
-        for name in names:
+        for name in STANDARD_DOCUMENT_NAMES:
             if name in found_paths:
                 continue
             if basename.lower() == name:
