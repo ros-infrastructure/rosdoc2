@@ -36,7 +36,15 @@ README
 
 def locate_standard_documents(package_xml_directory):
     """Locate standard documents."""
-    names = ['readme', 'license', 'contributing', 'changelog', 'quality_declaration', 'package']
+    names = [
+        'readme',
+        'license',
+        'contributing',
+        'changelog',
+        'quality_declaration',
+        'package',
+        'authors'
+    ]
     found_paths = {}
     package_directory_items = os.scandir(package_xml_directory)
     for item in package_directory_items:
