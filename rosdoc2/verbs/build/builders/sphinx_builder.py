@@ -646,17 +646,43 @@ class SphinxBuilder(Builder):
             logger.info('Note: no conf.py provided by the user, '
                         'therefore using a default Sphinx configuration.')
 
+        breathe_projects = []
+        package = self.build_context.package
+
+        if self.doxygen_xml_directory is not None:
+            breathe_projects.append(
+                f'        "{package.name} Doxygen Project": '
+                f'"{esc_backslash(self.doxygen_xml_directory)}"')
+
         self.template_variables.update({
+            'always_run_doxygen': self.build_context.always_run_doxygen,
+            'breathe_projects': ',\n'.join(breathe_projects) + '\n    ',
+            'build_type': self.build_context.build_type,
             'conf_py_directory': conf_py_directory,
+            'did_run_doxygen': self.doxygen_xml_directory is not None,
+            'default_conf_py_filename': esc_backslash(
+                os.path.abspath(os.path.join(conf_py_directory, '__conf_default.py'))),
+            'disable_breathe': self.build_context.disable_breathe,
+            'exec_depends': [exec_depend.name for exec_depend in package.exec_depends]
+            + [doc_depend.name for doc_depend in package.doc_depends],
             'has_python': has_python,
             'has_cpp': has_cpp,
             'has_standard_docs': bool(standard_docs),
             'has_documentation': bool(doc_directories),
             'has_readme': 'readme' in standard_docs,
             'interface_counts': interface_counts,
-            'package': self.build_context.package,
-            'disable_breathe': self.build_context.disable_breathe,
+            'intersphinx_mapping_extensions': ',\n        '.join(intersphinx_mapping_extensions),
+            'package': package,
+            'package_authors': ', '.join(sorted(set(
+                [a.name for a in package.authors] + [m.name for m in package.maintainers]
+            ))),
+            'package_licenses': ', '.join(package.licenses),
+            'python_src_directory': esc_backslash(python_src_directory),
+            'package_version_short': '.'.join(package.version.split('.')[0:2]),
             'show_doxygen_html': self.build_context.show_doxygen_html,
+            'user_conf_py_filename': esc_backslash(
+                os.path.abspath(os.path.join(conf_py_directory, '__conf.py'))),
+            'wrapped_sphinx_directory': esc_backslash(os.path.abspath(wrapped_sphinx_directory)),
         })
 
         # We always generate a default in case the user's conf.py fails.
@@ -667,10 +693,7 @@ class SphinxBuilder(Builder):
         # Setup rosdoc2 Sphinx file which will include and extend the one in
         # `sphinx_project_directory`.
         self.generate_wrapping_rosdoc2_sphinx_project_into_directory(
-            wrapped_sphinx_directory,
-            conf_py_directory,
-            python_src_directory,
-            intersphinx_mapping_extensions)
+            wrapped_sphinx_directory)
 
         # If the package has python code, then invoke `sphinx-apidoc` before building
         if has_python:
@@ -774,30 +797,14 @@ class SphinxBuilder(Builder):
     def generate_default_project_into_directory(
             self, conf_py_directory, python_src_directory):
         """Generate the default project configuration files if needed."""
-        package = self.build_context.package
-        self.template_variables.update({
-            'package': package,
-            'python_src_directory': esc_backslash(python_src_directory),
-            'package_version_short': '.'.join(package.version.split('.')[0:2]),
-            'package_licenses': ', '.join(package.licenses),
-            'package_authors': ', '.join(set(
-                [a.name for a in package.authors] + [m.name for m in package.maintainers]
-            )),
-        })
-
         with open(os.path.join(conf_py_directory, '__conf_default.py'), 'w') as f:
             f.write(default_conf_py)
 
     def generate_wrapping_rosdoc2_sphinx_project_into_directory(
         self,
         wrapped_sphinx_directory,
-        conf_py_directory,
-        python_src_directory,
-        intersphinx_mapping_extensions,
     ):
         """Generate the rosdoc2 sphinx project configuration files."""
-        package = self.build_context.package
-
         wrapped_sphinx_directory_path = Path(wrapped_sphinx_directory)
         index_rst_path = wrapped_sphinx_directory_path / 'index.rst'
         if not index_rst_path.is_file():
@@ -815,32 +822,6 @@ class SphinxBuilder(Builder):
 
             with open(index_rst_path, 'w+') as f:
                 f.write(index_rst)
-
-        breathe_projects = []
-        if self.doxygen_xml_directory is not None:
-            breathe_projects.append(
-                f'        "{package.name} Doxygen Project": '
-                f'"{esc_backslash(self.doxygen_xml_directory)}"')
-        self.template_variables.update({
-            'python_src_directory': python_src_directory,
-            'exec_depends': [exec_depend.name for exec_depend in package.exec_depends]
-            + [doc_depend.name for doc_depend in package.doc_depends],
-            'build_type': self.build_context.build_type,
-            'always_run_doxygen': self.build_context.always_run_doxygen,
-            'did_run_doxygen': self.doxygen_xml_directory is not None,
-            'wrapped_sphinx_directory': esc_backslash(os.path.abspath(wrapped_sphinx_directory)),
-            'user_conf_py_filename': esc_backslash(
-                os.path.abspath(os.path.join(conf_py_directory, '__conf.py'))),
-            'default_conf_py_filename': esc_backslash(
-                os.path.abspath(os.path.join(conf_py_directory, '__conf_default.py'))),
-            'breathe_projects': ',\n'.join(breathe_projects) + '\n    ',
-            'intersphinx_mapping_extensions': ',\n        '.join(intersphinx_mapping_extensions),
-            'package': package,
-            'package_authors': ', '.join(sorted(set(
-                [a.name for a in package.authors] + [m.name for m in package.maintainers]
-            ))),
-            'package_version_short': '.'.join(package.version.split('.')[0:2]),
-        })
 
         with open(os.path.join(wrapped_sphinx_directory, 'conf.py'), 'w') as f:
             f.write(rosdoc2_wrapping_conf_py_template.format_map(self.template_variables))
