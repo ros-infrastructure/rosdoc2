@@ -19,13 +19,16 @@ import os
 logger = logging.getLogger('rosdoc2')
 
 
-def collect_tag_files(cross_reference_directory):
+def collect_tag_files(cross_reference_directory, depends):
     """Collect all tag files if a given cross reference directory."""
     tag_files = {}
     for root, directories, filenames in os.walk(cross_reference_directory):
         for filename in filenames:
             filename_base, filename_ext = os.path.splitext(filename)
             if filename_ext == '.tag':
+                if filename_base not in depends:
+                    # Only include tag files for packages we depend on.
+                    continue
                 # The filename_base should be a package name.
                 if filename_base in tag_files:
                     raise RuntimeError(
