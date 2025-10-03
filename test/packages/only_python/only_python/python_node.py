@@ -1,4 +1,8 @@
-import dummy_module  # noqa: F401
+import dummy_module
+import test_of_automock
+
+test_of_automock.hello()
+dummy_module.goodbye()
 
 
 def main():
