@@ -511,7 +511,8 @@ class SphinxBuilder(Builder):
                         f"Error the 'doxygen_xml_directory' specified "
                         f"'{self.doxygen_xml_directory}' does not exist.")
 
-        package_xml_directory = os.path.dirname(self.build_context.package.filename)
+        package = self.build_context.package
+        package_xml_directory = os.path.dirname(package.filename)
         # If 'python_source' is specified, construct 'python_src_directory' from it
         python_src_directory = None
         if self.build_context.python_source is not None:
@@ -606,7 +607,10 @@ class SphinxBuilder(Builder):
 
         # Collect intersphinx mapping extensions from discovered inventory files.
         inventory_files = \
-            collect_inventory_files(self.build_context.tool_options.cross_reference_directory)
+            collect_inventory_files(
+                self.build_context.tool_options.cross_reference_directory,
+                [d.name for d in package.exec_depends + package.doc_depends]
+            )
         base_url = self.build_context.tool_options.base_url
         intersphinx_mapping_extensions = [
             f"'{package_name}': "
@@ -618,7 +622,7 @@ class SphinxBuilder(Builder):
         ]
 
         # Collect package-only exec_depends
-        exec_depends = self.build_context.package.exec_depends
+        exec_depends = package.exec_depends
         ros_distro = os.environ.get('ROS_DISTRO')
         if not ros_distro:
             logger.warning('ROS_DISTRO not set, cannot check ros package dependencies')
@@ -671,7 +675,6 @@ class SphinxBuilder(Builder):
                         'therefore using a default Sphinx configuration.')
 
         breathe_projects = []
-        package = self.build_context.package
 
         if self.doxygen_xml_directory is not None:
             breathe_projects.append(

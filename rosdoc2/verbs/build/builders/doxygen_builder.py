@@ -244,7 +244,11 @@ class DoxygenBuilder(Builder):
         self.rosdoc2_doxyfile_statements.append(f'GENERATE_TAGFILE = {tag_file_name}')
 
         # Add entries for tag files found in the cross-reference directory.
-        tag_files = collect_tag_files(self.build_context.tool_options.cross_reference_directory)
+        package = self.build_context.package
+        tag_files = collect_tag_files(
+            self.build_context.tool_options.cross_reference_directory,
+            [d.name for d in package.exec_depends + package.doc_depends]
+        )
         base_url = self.build_context.tool_options.base_url
         tag_file_entries = [
             f'TAGFILES += "{os.path.abspath(tagfile_dict["tag_file"])}'
