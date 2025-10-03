@@ -4,7 +4,7 @@ Command-line tool for generating documentation for ROS 2 packages.
 
 ## Quick-start
 
-This tool can be viewed from two perspectives: first from the perspective of a user wanting to building documentation for any given ROS 2 package in order to view it, and second from the perspective of package maintainers who need to write their documentation and configure how this tool works on their package.
+This tool can be viewed from two perspectives: first from the perspective of a user wanting to build documentation for any given ROS 2 package in order to view it, and second from the perspective of package maintainers who need to write their documentation and configure how this tool works on their package.
 
 ### Build documentation for a ROS 2 package
 
@@ -25,7 +25,11 @@ The package directory that you specify must contain a single ROS 2 package that 
 There will be an `index.html` file in the output directory which you can open manually, or with this command:
 
 ```
-rosdoc2 open ./doc_output/index.html
+rosdoc2 open ./docs_output
+```
+then click through to the package name, then `index.html`. Or you can do that directly, filling in the package name, using:
+```
+rosdoc2 open ./docs_output/<package_name>/index.html
 ```
 
 For more advanced usage see the documentation.
@@ -38,13 +42,33 @@ python3 -m rosdoc2.main <options>
 
 ### Set up a ROS 2 package to be used with this tool
 
-In many cases, C/C++ packages require no configuration, and will work if you simply layout your package in a standard configuration and the tool will do the rest.
+In many cases, C/C++ or python packages require no configuration, and will work if you simply
+layout your package in a standard configuration and the tool will do the rest.
 
-However, if you want to provide additional documentation, like a conceptual overview or tutorials, then you will want to provide a Sphinx `conf.py` file and do that documentation in `.rst` files using Sphinx.
+If you want to provide additional documentation, like a conceptual overview or tutorials,
+you can provide those files in either restructured text (.rst) or markdown (.md) in a `doc/` folder.
+It is also highly recommended that you provide a README file, which will be rendered on the package
+documentation front page by rosdoc2 (and also by the other ROS documentation tool, rosindex).
 
-Additionally, if you have a Python API then you will want to provide a Sphinx `conf.py`
+Currently, official documentation builds for released packages are done automatically by the build system,
+placing results under `https://docs.ros.org/en/<distro>/p/` for example [rolling](https://docs.ros.org/en/rolling/p/)
 
 ## Installation
+
+The official package documentation builds install rosdoc2 directly from its git repository, so the best way to test with rosdoc2 is
+to install from source. Other methods are also available, though the rosdoc2 version there may be older.
+
+### Installation from source
+
+We recommend you install and use rosdoc2 it from a [virtualenv](https://docs.python.org/3/library/venv.html).
+
+To install:
+
+```
+python3 -m pip install --upgrade 'git+https://github.com/ros-infrastructure/rosdoc2@main'
+```
+
+### Installation from ROS repositories
 
 `rosdoc2` can be installed from the [ROS repositories](https://docs.ros.org/en/jazzy/Installation/Ubuntu-Install-Debians.html#enable-required-repositories).
 
@@ -52,22 +76,13 @@ Additionally, if you have a Python API then you will want to provide a Sphinx `c
 apt install -y python3-rosdoc2
 ```
 
-#### Installation from PyPI
+### Installation from PyPI
 
 You may also install rosdoc2 from [PyPI](https://pypi.org/project/rosdoc2).
 If you do so, we recommend you install and use it from a [virtualenv](https://docs.python.org/3/library/venv.html).
 
 ```
 python3 -m pip install rosdoc2
-```
-
-#### Installation from source
-
-You can also use pip to install rosdoc2 from source.
-Again, we recommend you install and use it from a [virtualenv](https://docs.python.org/3/library/venv.html).
-
-```
-python3 -m pip install --upgrade 'git+https://github.com/ros-infrastructure/rosdoc2@main'
 ```
 
 ## Documentation
@@ -102,8 +117,6 @@ Some features were kept in mind while initially developing this tool, but are no
 Including:
 
 - extensible "builders", so that other kinds of documentation tools can be supported in the future
-- documenting packages without first building them, if the package does not require it
-  - packages with generated code, including packages with ROS 2 Messages, need to be built first, but many do not need to be
 - using this tool in automated testing and/or CI
 
 ### Building Documentation for a Package

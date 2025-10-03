@@ -56,251 +56,6 @@ from importlib.metadata import entry_points
 if '{python_src_directory}' != 'None':
     sys.path.insert(0, os.path.abspath(os.path.join('{python_src_directory}', '..')))
 
-## exec the user's conf.py to bring all of their settings into this file.
-confpy_succeeded = False
-templates_path = []
-
-if os.path.isfile('{user_conf_py_filename}'):
-    try:
-        exec(open("{user_conf_py_filename}").read())
-        confpy_succeeded = True
-        print('[rosdoc2] Using user supplied conf.py')
-    except Exception as e:
-        print(f'[rosdoc2] *** Warning *** conf.py for package {package_name} generated error: '
-              + str(e) + '. Falling back to default generated conf.py.')
-if not confpy_succeeded:
-    exec(open("{default_conf_py_filename}").read())
-
-## Copy any templates to the wrapped location.
-for t_dir in templates_path:
-    source_t_dir = os.path.join('{conf_py_directory}', t_dir)
-    target_t_dir = os.path.join('{wrapped_sphinx_directory}', t_dir)
-    if os.path.isdir(target_t_dir):
-        # Template already copied
-        pass
-    elif os.path.isdir(source_t_dir):
-        shutil.copytree(source_t_dir, target_t_dir)
-
-def ensure_global(name, default):
-    if name not in globals():
-        globals()[name] = default
-
-## Based on the rosdoc2 settings, do various things to the settings before
-## letting Sphinx continue.
-
-ensure_global('rosdoc2_settings', {{}})
-ensure_global('extensions', [])
-ensure_global('project', "{package_name}")
-ensure_global('author', \"\"\"{package_authors}\"\"\")
-ensure_global('release', "{package.version}")
-ensure_global('version', "{package_version_short}")
-ensure_global('html_theme', 'sphinx_rtd_theme')
-ensure_global('autodoc_mock_imports', [])
-
-# Remove any unsupported extensions
-allowed_extensions = set((
-    # Shipped with sphinx
-    'sphinx.ext.autodoc',
-    'sphinx.ext.autosectionlabel',
-    'sphinx.ext.autosummary',
-    'sphinx.ext.coverage',
-    'sphinx.ext.doctest',
-    'sphinx.ext.duration',
-    'sphinx.ext.extlinks',
-    'sphinx.ext.githubpages',
-    'sphinx.ext.graphviz',
-    'sphinx.ext.ifconfig',
-    'sphinx.ext.imgconverter',
-    'sphinx.ext.inheritance_diagram',
-    'sphinx.ext.intersphinx',
-    'sphinx.ext.linkcode',
-    'sphinx.ext.napoleon',
-    'sphinx.ext.todo',
-    'sphinx.ext.viewcode',
-    # Sphinx-included math extensions
-    'sphinx.ext.imgmath',
-    'sphinx.ext.mathjax',
-    # Installed by us
-    'myst_parser',
-    'sphinx_rtd_theme',
-))
-
-if not {disable_breathe}:
-    allowed_extensions.add(('breathe', 'exhale'))
-else:
-    rosdoc2_settings['enable_breathe'] = False
-    rosdoc2_settings['enable_exhale'] = False
-
-for extension in extensions[:]:
-    if extension not in allowed_extensions:
-        if rosdoc2_settings.get('allow_other_extensions', False):
-            print(f"[rosdoc2] Checking if extension '{{extension}}' is installed")
-            try:
-                __import__(extension)
-                continue
-            except ModuleNotFoundError:
-                print(f"[rosdoc2] requested extension '{{extension}}' not installed")
-        print(f"[rosdoc2] *** Warning *** removing extension '{{extension}}', not supported")
-        extensions.remove(extension)
-if extensions:
-    print(f'[rosdoc2] user conf.py specified allowed extensions: {{extensions}}')
-
-if rosdoc2_settings.get('enable_autodoc', True):
-    print('[rosdoc2] enabling autodoc')
-    extensions.append('sphinx.ext.autodoc')
-
-    pkgs_to_mock = []
-    import importlib
-    for exec_depend in {exec_depends}:
-        try:
-            # Some python dependencies may be dist packages.
-            exec_depend = exec_depend.split("python3-")[-1]
-            importlib.import_module(exec_depend)
-        except ImportError:
-            pkgs_to_mock.append(exec_depend)
-
-    autodoc_mock_imports.extend(pkgs_to_mock)
-
-    if len(autodoc_mock_imports) > 0:
-        joined_imports = "', '".join(autodoc_mock_imports)
-        print(f"[rosdoc2] autodoc mock imports: '{{joined_imports}}'")
-
-if rosdoc2_settings.get('enable_intersphinx', True):
-    print('[rosdoc2] enabling intersphinx')
-    extensions.append('sphinx.ext.intersphinx')
-
-build_type = '{build_type}'
-always_run_doxygen = {always_run_doxygen}
-# By default, the `exhale`/`breathe` extensions should be added if `doxygen` was invoked
-is_doxygen_invoked = {did_run_doxygen}
-
-if rosdoc2_settings.get('enable_breathe', is_doxygen_invoked):
-    # Configure Breathe.
-    # Breathe ingests the XML output from Doxygen and makes it accessible from Sphinx.
-    print('[rosdoc2] enabling breathe')
-    # First check that doxygen would have been run
-    if not is_doxygen_invoked:
-        raise RuntimeError(
-            "Cannot enable the 'breathe' extension if 'doxygen' is not invoked. "
-            "Please enable 'always_run_doxygen' if the package is not an "
-            "'ament_cmake' or 'cmake' package.")
-    ensure_global('breathe_projects', {{}})
-    breathe_projects.update({{{breathe_projects}}})
-    if breathe_projects:
-        # Enable Breathe and arbitrarily select the first project.
-        extensions.append('breathe')
-        breathe_default_project = next(iter(breathe_projects.keys()))
-
-if rosdoc2_settings.get('enable_exhale', is_doxygen_invoked):
-    # Configure Exhale.
-    # Exhale uses the output of Doxygen and Breathe to create easier to browse pages
-    # for classes and functions documented with Doxygen.
-    # This is similar to the class hierarchies and namespace listing provided by
-    # Doxygen out of the box.
-    print('[rosdoc2] enabling exhale')
-    # First check that doxygen would have been run
-    if not is_doxygen_invoked:
-        raise RuntimeError(
-            "Cannot enable the 'breathe' extension if 'doxygen' is not invoked. "
-            "Please enable 'always_run_doxygen' if the package is not an "
-            "'ament_cmake' or 'cmake' package.")
-    extensions.append('exhale')
-    ensure_global('exhale_args', {{}})
-
-    default_exhale_specs_mapping = {{
-        'page': [':content-only:'],
-        **dict.fromkeys(
-            ['class', 'struct'],
-            [':members:', ':protected-members:', ':undoc-members:']),
-    }}
-
-    exhale_specs_mapping = rosdoc2_settings.get(
-        'exhale_specs_mapping', default_exhale_specs_mapping)
-
-    from exhale import utils
-    exhale_args.update({{
-        # These arguments are required.
-        "containmentFolder": "{wrapped_sphinx_directory}/generated",
-        "rootFileName": "index.rst",
-        "rootFileTitle": "C++ API",
-        "doxygenStripFromPath": "..",
-        # Suggested optional arguments.
-        "createTreeView": True,
-        "fullToctreeMaxDepth": 1,
-        "unabridgedOrphanKinds": [],
-        "fullApiSubSectionTitle": "Full C++ API",
-        # TIP: if using the sphinx-bootstrap-theme, you need
-        # "treeViewIsBootstrap": True,
-        "exhaleExecutesDoxygen": False,
-        # Maps markdown files to the "md" lexer, and not the "markdown" lexer
-        # Pygments registers "md" as a valid markdown lexer, and not "markdown"
-        "lexerMapping": {{r".*\\.(md|markdown)$": "md",}},
-        "customSpecificationsMapping": utils.makeCustomSpecificationsMapping(
-            lambda kind: exhale_specs_mapping.get(kind, [])),
-    }})
-
-use_user_theme = False
-if not rosdoc2_settings.get('override_theme', True) and html_theme != 'sphinx_rtd_theme':
-    ## Detect if requested theme exists
-    for entry_point in entry_points(group='sphinx.html_themes'):
-        if entry_point.name == html_theme:
-            use_user_theme = True
-            break
-    if not use_user_theme:
-        print(f"[rosdoc2] *** warning *** user specified theme '{{html_theme}}' not found")
-if not use_user_theme:
-    extensions.append('sphinx_rtd_theme')
-    html_theme = 'sphinx_rtd_theme'
-    print(f"[rosdoc2] overriding theme to be '{{html_theme}}'")
-else:
-    print(f"[rosdoc2] Using user specified theme '{{html_theme}}'")
-
-if rosdoc2_settings.get('automatically_extend_intersphinx_mapping', True):
-    print(f"[rosdoc2] extending intersphinx mapping")
-    if 'sphinx.ext.intersphinx' not in extensions:
-        raise RuntimeError(
-            "Cannot extend intersphinx mapping if 'sphinx.ext.intersphinx' "
-            "has not been added to the extensions")
-    ensure_global('intersphinx_mapping', {{
-        {intersphinx_mapping_extensions}
-    }})
-
-if rosdoc2_settings.get('support_markdown', True):
-    print(f"[rosdoc2] adding markdown parser")
-    # The `myst_parser` is used specifically if there are markdown files
-    # in the sphinx project
-    extensions.append('myst_parser')
-
-if {show_doxygen_html} and {has_cpp}:
-    templates_path.append('__doxy_template')
-"""  # noqa: W605 B902
-
-default_conf_py_template = """\
-## Generated by rosdoc2.verbs.build.builders.SphinxBuilder.
-## Based on a recent output from Sphinx-quickstart.
-
-# Configuration file for the Sphinx documentation builder.
-#
-# This file only contains a selection of the most common options. For a full
-# list see the documentation:
-# https://www.sphinx-doc.org/en/master/usage/configuration.html
-
-# -- Path setup --------------------------------------------------------------
-
-# rosdoc2 runs sphinx in a wrapping directory so that output does not contaminate
-# the source repository. But that can make figuring out the proper path to
-# python files tricky in conf.py. Normally you do not have to set this in a custom
-# conf.py, as the proper directory is set in a wrapping conf.py (based on the project's
-# 'python_source' which by default is the package name). Unfortunately there is no general
-# way to do that in a custom conf.py (as it depends on where docs_build is located), so we do
-# not recommend sys.path be modified here.
-#
-# If for some reason you must set a path here, follow this pattern:
-#
-#import os
-#import sys
-#sys.path.insert(0, '<absolute path to python source directory>/..')
-
 # -- Project information -----------------------------------------------------
 
 project = '{package.name}'
@@ -308,15 +63,13 @@ ros_distro = os.environ.get('ROS_DISTRO')
 if ros_distro:
     project += ': ' + ros_distro.capitalize()
 
-# TODO(tfoote) The docs say year and author but we have this and it seems more relevant.
+# The docs say year and author but we have this and it seems more relevant.
 copyright = 'The <{package.name}> Contributors. License: {package_licenses}'
 author = \"\"\"{package_authors}\"\"\"
 
 # The full version, including alpha/beta/rc tags
 release = '{package.version}'
-
 version = '{package_version_short}'
-
 
 # -- General configuration ---------------------------------------------------
 
@@ -348,8 +101,11 @@ exclude_patterns = []
 ## here if your code has dependencies not listed in package.xml or if the module
 ## name differs from the package name.
 autodoc_mock_imports = []
-
+pkgs_to_mock = []
+exhale_args = {{}}
+breathe_projects = {{}}
 master_doc = 'index'
+intersphinx_mapping = {{ {intersphinx_mapping_extensions} }}
 
 source_suffix = {{
     '.rst': 'restructuredtext',
@@ -430,6 +186,226 @@ rosdoc2_settings = {{
     ## extensions loaded by default by Sphinx or rosdoc2 installs are allowed.
     # 'allow_other_extensions': False,
 }}
+
+## exec the user's conf.py to bring all of their settings into this file.
+confpy_succeeded = False
+templates_path = []
+
+if os.path.isfile('{user_conf_py_filename}'):
+    try:
+        exec(open("{user_conf_py_filename}").read())
+        confpy_succeeded = True
+        print('[rosdoc2] Using user supplied conf.py')
+    except Exception as e:
+        print(f'[rosdoc2] *** Warning *** conf.py for package {package_name} generated error: '
+              + str(e) + '. Falling back to default generated conf.py.')
+if not confpy_succeeded:
+    exec(open("{default_conf_py_filename}").read())
+
+## Copy any templates to the wrapped location.
+for t_dir in templates_path:
+    source_t_dir = os.path.join('{conf_py_directory}', t_dir)
+    target_t_dir = os.path.join('{wrapped_sphinx_directory}', t_dir)
+    if os.path.isdir(target_t_dir):
+        # Template already copied
+        pass
+    elif os.path.isdir(source_t_dir):
+        shutil.copytree(source_t_dir, target_t_dir)
+
+## Based on the rosdoc2 settings, do various things to the settings before
+## letting Sphinx continue.
+
+# Remove any unsupported extensions
+allowed_extensions = set((
+    # Shipped with sphinx
+    'sphinx.ext.autodoc',
+    'sphinx.ext.autosectionlabel',
+    'sphinx.ext.autosummary',
+    'sphinx.ext.coverage',
+    'sphinx.ext.doctest',
+    'sphinx.ext.duration',
+    'sphinx.ext.extlinks',
+    'sphinx.ext.githubpages',
+    'sphinx.ext.graphviz',
+    'sphinx.ext.ifconfig',
+    'sphinx.ext.imgconverter',
+    'sphinx.ext.inheritance_diagram',
+    'sphinx.ext.intersphinx',
+    'sphinx.ext.linkcode',
+    'sphinx.ext.napoleon',
+    'sphinx.ext.todo',
+    'sphinx.ext.viewcode',
+    # Sphinx-included math extensions
+    'sphinx.ext.imgmath',
+    'sphinx.ext.mathjax',
+    # Installed by us
+    'myst_parser',
+    'sphinx_rtd_theme',
+))
+
+if not {disable_breathe}:
+    allowed_extensions.add(('breathe', 'exhale'))
+else:
+    rosdoc2_settings['enable_breathe'] = False
+    rosdoc2_settings['enable_exhale'] = False
+
+for extension in extensions[:]:
+    if extension not in allowed_extensions:
+        if rosdoc2_settings.get('allow_other_extensions', False):
+            print(f"[rosdoc2] Checking if extension '{{extension}}' is installed")
+            try:
+                __import__(extension)
+                continue
+            except ModuleNotFoundError:
+                print(f"[rosdoc2] requested extension '{{extension}}' not installed")
+        print(f"[rosdoc2] *** Warning *** removing extension '{{extension}}', not supported")
+        extensions.remove(extension)
+if extensions:
+    print(f'[rosdoc2] user conf.py specified allowed extensions: {{extensions}}')
+
+if rosdoc2_settings.get('enable_autodoc', True):
+    print('[rosdoc2] enabling autodoc')
+    extensions.append('sphinx.ext.autodoc')
+
+    import importlib
+    for exec_depend in {exec_depends}:
+        try:
+            # Some python dependencies may be dist packages.
+            exec_depend = exec_depend.split("python3-")[-1]
+            importlib.import_module(exec_depend)
+        except ImportError:
+            pkgs_to_mock.append(exec_depend)
+
+    autodoc_mock_imports.extend(pkgs_to_mock)
+
+    if len(autodoc_mock_imports) > 0:
+        joined_imports = "', '".join(autodoc_mock_imports)
+        print(f"[rosdoc2] autodoc mock imports: '{{joined_imports}}'")
+
+if rosdoc2_settings.get('enable_intersphinx', True):
+    print('[rosdoc2] enabling intersphinx')
+    extensions.append('sphinx.ext.intersphinx')
+
+build_type = '{build_type}'
+always_run_doxygen = {always_run_doxygen}
+# By default, the `exhale`/`breathe` extensions should be added if `doxygen` was invoked
+is_doxygen_invoked = {did_run_doxygen}
+
+if rosdoc2_settings.get('enable_breathe', is_doxygen_invoked):
+    # Configure Breathe.
+    # Breathe ingests the XML output from Doxygen and makes it accessible from Sphinx.
+    print('[rosdoc2] enabling breathe')
+    # First check that doxygen would have been run
+    if not is_doxygen_invoked:
+        raise RuntimeError(
+            "Cannot enable the 'breathe' extension if 'doxygen' is not invoked. "
+            "Please enable 'always_run_doxygen' if the package is not an "
+            "'ament_cmake' or 'cmake' package.")
+    breathe_projects.update({{{breathe_projects}}})
+    if breathe_projects:
+        # Enable Breathe and arbitrarily select the first project.
+        extensions.append('breathe')
+        breathe_default_project = next(iter(breathe_projects.keys()))
+
+if rosdoc2_settings.get('enable_exhale', is_doxygen_invoked):
+    # Configure Exhale.
+    # Exhale uses the output of Doxygen and Breathe to create easier to browse pages
+    # for classes and functions documented with Doxygen.
+    # This is similar to the class hierarchies and namespace listing provided by
+    # Doxygen out of the box.
+    print('[rosdoc2] enabling exhale')
+    # First check that doxygen would have been run
+    if not is_doxygen_invoked:
+        raise RuntimeError(
+            "Cannot enable the 'breathe' extension if 'doxygen' is not invoked. "
+            "Please enable 'always_run_doxygen' if the package is not an "
+            "'ament_cmake' or 'cmake' package.")
+    extensions.append('exhale')
+
+    default_exhale_specs_mapping = {{
+        'page': [':content-only:'],
+        **dict.fromkeys(
+            ['class', 'struct'],
+            [':members:', ':protected-members:', ':undoc-members:']),
+    }}
+
+    exhale_specs_mapping = rosdoc2_settings.get(
+        'exhale_specs_mapping', default_exhale_specs_mapping)
+
+    from exhale import utils
+    exhale_args.update({{
+        # These arguments are required.
+        "containmentFolder": "{wrapped_sphinx_directory}/generated",
+        "rootFileName": "index.rst",
+        "rootFileTitle": "C++ API",
+        "doxygenStripFromPath": "..",
+        # Suggested optional arguments.
+        "createTreeView": True,
+        "fullToctreeMaxDepth": 1,
+        "unabridgedOrphanKinds": [],
+        "fullApiSubSectionTitle": "Full C++ API",
+        # TIP: if using the sphinx-bootstrap-theme, you need
+        # "treeViewIsBootstrap": True,
+        "exhaleExecutesDoxygen": False,
+        # Maps markdown files to the "md" lexer, and not the "markdown" lexer
+        # Pygments registers "md" as a valid markdown lexer, and not "markdown"
+        "lexerMapping": {{r".*\\.(md|markdown)$": "md",}},
+        "customSpecificationsMapping": utils.makeCustomSpecificationsMapping(
+            lambda kind: exhale_specs_mapping.get(kind, [])),
+    }})
+
+use_user_theme = False
+if not rosdoc2_settings.get('override_theme', True) and html_theme != 'sphinx_rtd_theme':
+    ## Detect if requested theme exists
+    for entry_point in entry_points(group='sphinx.html_themes'):
+        if entry_point.name == html_theme:
+            use_user_theme = True
+            break
+    if not use_user_theme:
+        print(f"[rosdoc2] *** warning *** user specified theme '{{html_theme}}' not found")
+if not use_user_theme:
+    extensions.append('sphinx_rtd_theme')
+    html_theme = 'sphinx_rtd_theme'
+    print(f"[rosdoc2] overriding theme to be '{{html_theme}}'")
+else:
+    print(f"[rosdoc2] Using user specified theme '{{html_theme}}'")
+
+if rosdoc2_settings.get('automatically_extend_intersphinx_mapping', True):
+    print(f"[rosdoc2] extending intersphinx mapping")
+    if 'sphinx.ext.intersphinx' not in extensions:
+        raise RuntimeError(
+            "Cannot extend intersphinx mapping if 'sphinx.ext.intersphinx' "
+            "has not been added to the extensions")
+
+if rosdoc2_settings.get('support_markdown', True):
+    print(f"[rosdoc2] adding markdown parser")
+    # The `myst_parser` is used specifically if there are markdown files
+    # in the sphinx project
+    extensions.append('myst_parser')
+
+if {show_doxygen_html} and {has_cpp}:
+    templates_path.append('__doxy_template')
+"""  # noqa: W605 B902
+
+default_conf_py = """\
+## Generated by rosdoc2.verbs.build.builders.SphinxBuilder.
+
+# Configuration file for the Sphinx documentation builder.
+
+# rosdoc2 runs sphinx in a wrapping directory so that output does not contaminate
+# the source repository. The wrapping directory includes a 'wrapping' conf.py file
+# which imports this file or a user-provided version, and extends it to support
+# Breathe and Exhale.
+#
+# This default file is used if the user does not provide their own conf.py file.
+# The minimal content of this file, as you can see below, is nothing, as standard
+# defaults which work with ros documentation generation are provided in the
+# wrapping conf.py file. We recommend that, if you provide your own conf.py file,
+# that you only include settings that you want to change from the defaults.
+#
+# If you want to see what the defaults are, you can run rosdoc2 on a package, and
+# look at the generated conf.py file in the build folder under the package's
+# documentation build folder.
 """
 
 # Special value for user_doc_dir if specified to ignore
@@ -670,17 +646,43 @@ class SphinxBuilder(Builder):
             logger.info('Note: no conf.py provided by the user, '
                         'therefore using a default Sphinx configuration.')
 
+        breathe_projects = []
+        package = self.build_context.package
+
+        if self.doxygen_xml_directory is not None:
+            breathe_projects.append(
+                f'        "{package.name} Doxygen Project": '
+                f'"{esc_backslash(self.doxygen_xml_directory)}"')
+
         self.template_variables.update({
+            'always_run_doxygen': self.build_context.always_run_doxygen,
+            'breathe_projects': ',\n'.join(breathe_projects) + '\n    ',
+            'build_type': self.build_context.build_type,
             'conf_py_directory': conf_py_directory,
+            'did_run_doxygen': self.doxygen_xml_directory is not None,
+            'default_conf_py_filename': esc_backslash(
+                os.path.abspath(os.path.join(conf_py_directory, '__conf_default.py'))),
+            'disable_breathe': self.build_context.disable_breathe,
+            'exec_depends': [exec_depend.name for exec_depend in package.exec_depends]
+            + [doc_depend.name for doc_depend in package.doc_depends],
             'has_python': has_python,
             'has_cpp': has_cpp,
             'has_standard_docs': bool(standard_docs),
             'has_documentation': bool(doc_directories),
             'has_readme': 'readme' in standard_docs,
             'interface_counts': interface_counts,
-            'package': self.build_context.package,
-            'disable_breathe': self.build_context.disable_breathe,
+            'intersphinx_mapping_extensions': ',\n        '.join(intersphinx_mapping_extensions),
+            'package': package,
+            'package_authors': ', '.join(sorted(set(
+                [a.name for a in package.authors] + [m.name for m in package.maintainers]
+            ))),
+            'package_licenses': ', '.join(package.licenses),
+            'python_src_directory': esc_backslash(python_src_directory),
+            'package_version_short': '.'.join(package.version.split('.')[0:2]),
             'show_doxygen_html': self.build_context.show_doxygen_html,
+            'user_conf_py_filename': esc_backslash(
+                os.path.abspath(os.path.join(conf_py_directory, '__conf.py'))),
+            'wrapped_sphinx_directory': esc_backslash(os.path.abspath(wrapped_sphinx_directory)),
         })
 
         # We always generate a default in case the user's conf.py fails.
@@ -691,10 +693,7 @@ class SphinxBuilder(Builder):
         # Setup rosdoc2 Sphinx file which will include and extend the one in
         # `sphinx_project_directory`.
         self.generate_wrapping_rosdoc2_sphinx_project_into_directory(
-            wrapped_sphinx_directory,
-            conf_py_directory,
-            python_src_directory,
-            intersphinx_mapping_extensions)
+            wrapped_sphinx_directory)
 
         # If the package has python code, then invoke `sphinx-apidoc` before building
         if has_python:
@@ -798,30 +797,14 @@ class SphinxBuilder(Builder):
     def generate_default_project_into_directory(
             self, conf_py_directory, python_src_directory):
         """Generate the default project configuration files if needed."""
-        package = self.build_context.package
-        self.template_variables.update({
-            'package': package,
-            'python_src_directory': esc_backslash(python_src_directory),
-            'package_version_short': '.'.join(package.version.split('.')[0:2]),
-            'package_licenses': ', '.join(package.licenses),
-            'package_authors': ', '.join(set(
-                [a.name for a in package.authors] + [m.name for m in package.maintainers]
-            )),
-        })
-
         with open(os.path.join(conf_py_directory, '__conf_default.py'), 'w') as f:
-            f.write(default_conf_py_template.format_map(self.template_variables))
+            f.write(default_conf_py)
 
     def generate_wrapping_rosdoc2_sphinx_project_into_directory(
         self,
         wrapped_sphinx_directory,
-        conf_py_directory,
-        python_src_directory,
-        intersphinx_mapping_extensions,
     ):
         """Generate the rosdoc2 sphinx project configuration files."""
-        package = self.build_context.package
-
         wrapped_sphinx_directory_path = Path(wrapped_sphinx_directory)
         index_rst_path = wrapped_sphinx_directory_path / 'index.rst'
         if not index_rst_path.is_file():
@@ -839,32 +822,6 @@ class SphinxBuilder(Builder):
 
             with open(index_rst_path, 'w+') as f:
                 f.write(index_rst)
-
-        breathe_projects = []
-        if self.doxygen_xml_directory is not None:
-            breathe_projects.append(
-                f'        "{package.name} Doxygen Project": '
-                f'"{esc_backslash(self.doxygen_xml_directory)}"')
-        self.template_variables.update({
-            'python_src_directory': python_src_directory,
-            'exec_depends': [exec_depend.name for exec_depend in package.exec_depends]
-            + [doc_depend.name for doc_depend in package.doc_depends],
-            'build_type': self.build_context.build_type,
-            'always_run_doxygen': self.build_context.always_run_doxygen,
-            'did_run_doxygen': self.doxygen_xml_directory is not None,
-            'wrapped_sphinx_directory': esc_backslash(os.path.abspath(wrapped_sphinx_directory)),
-            'user_conf_py_filename': esc_backslash(
-                os.path.abspath(os.path.join(conf_py_directory, '__conf.py'))),
-            'default_conf_py_filename': esc_backslash(
-                os.path.abspath(os.path.join(conf_py_directory, '__conf_default.py'))),
-            'breathe_projects': ',\n'.join(breathe_projects) + '\n    ',
-            'intersphinx_mapping_extensions': ',\n        '.join(intersphinx_mapping_extensions),
-            'package': package,
-            'package_authors': ', '.join(sorted(set(
-                [a.name for a in package.authors] + [m.name for m in package.maintainers]
-            ))),
-            'package_version_short': '.'.join(package.version.split('.')[0:2]),
-        })
 
         with open(os.path.join(wrapped_sphinx_directory, 'conf.py'), 'w') as f:
             f.write(rosdoc2_wrapping_conf_py_template.format_map(self.template_variables))
