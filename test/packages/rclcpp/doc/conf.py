@@ -79,7 +79,7 @@ source_suffix = {
 # a list of builtin themes.
 #
 # In tests, this theme is installed, but will not be used since 'override_theme' = True,
-html_theme = 'plone_sphinx_theme'
+html_theme = 'sphinx_book_theme'
 
 html_theme_options = {
     # Toc options. The default theme seems to require at least this to be set:

@@ -85,7 +85,7 @@ source_suffix = {
 
 # This tests using a different theme, since 'override_theme' = False.  Note we don't
 # have to install the extension in Sphinx for the theme to be found.
-html_theme = 'plone_sphinx_theme'
+html_theme = 'sphinx_book_theme'
 
 html_theme_options = { 'i_do_not_exist': 1 }
 
