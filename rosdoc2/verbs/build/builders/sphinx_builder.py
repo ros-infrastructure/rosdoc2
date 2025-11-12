@@ -273,7 +273,7 @@ if rosdoc2_settings.get('enable_autodoc', True):
     for exec_depend in {exec_depends}:
         try:
             # Some python dependencies may be dist packages.
-            exec_depend = exec_depend.split("python3-")[-1]
+            exec_depend = exec_depend.split("python3-")[-1].split("-pip")[0].replace('-', '_')
             importlib.import_module(exec_depend)
         except ImportError:
             pkgs_to_mock.append(exec_depend)
