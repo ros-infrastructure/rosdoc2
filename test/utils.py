@@ -167,6 +167,7 @@ def do_test_full_package(module_dir, output_path='output', pkg_name='full_packag
         'changelog',
         'full ros2 test package',  # the package description
         'links',
+        'rclcpp',  # a ros package dependency
     ]
     file_includes = [
         'generated/index.html'
@@ -178,9 +179,11 @@ def do_test_full_package(module_dir, output_path='output', pkg_name='full_packag
         '__standards.html',
         'https://example.com/repo',
         'PACKAGE.html',  # package.xml
+        'https://docs.ros.org/en/rolling/p/rclpy/',  # a link to a package dependency
     ]
     excludes = [
-        'dontshowme'
+        'dontshowme',
+        'eigen',  # This is a system dependency, not a ros package.
     ]
     fragments = [
         ('index.html', 'this is the package readme.'),

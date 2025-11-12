@@ -22,6 +22,7 @@ import subprocess
 import sys
 
 from jinja2 import Template
+import rosdistro
 import setuptools
 
 from ..builder import Builder
@@ -29,6 +30,7 @@ from ..collect_inventory_files import collect_inventory_files
 from ..create_format_map_from_package import create_format_map_from_package
 from ..doxygen_toc_template import doxygen_toc_template
 from ..generate_interface_docs import generate_interface_docs
+from ..generate_ros_package_dependencies import generate_ros_package_dependencies
 from ..include_links import include_links
 from ..include_user_docs import include_user_docs
 from ..package_repo_url import package_repo_url
@@ -615,6 +617,28 @@ class SphinxBuilder(Builder):
             if package_name != self.build_context.package.name
         ]
 
+        # Collect package-only exec_depends
+        exec_depends = self.build_context.package.exec_depends
+        ros_distro = os.environ.get('ROS_DISTRO')
+        if not ros_distro:
+            logger.warning('ROS_DISTRO not set, cannot check ros package dependencies')
+        package_depends = []
+        if exec_depends and ros_distro:
+            index = rosdistro.get_index(rosdistro.get_index_url())
+            dist_file = rosdistro.get_distribution_file(index, ros_distro)
+            rosdistro_packages = dist_file.release_packages
+            for exec_depend in exec_depends:
+                if exec_depend.name in rosdistro_packages:
+                    package_depends.append(exec_depend.name)
+
+        # Generate ros package dependencies rst file
+        if package_depends and ros_distro:
+            logger.info(f'generating ros package dependencies with depends: {package_depends}')
+            generate_ros_package_dependencies(
+                wrapped_sphinx_directory,
+                package_depends,
+                ros_distro)
+
         build_context = self.build_context
         if build_context.never_run_sphinx_apidoc:
             logger.info(
@@ -676,9 +700,10 @@ class SphinxBuilder(Builder):
             'package_authors': ', '.join(sorted(set(
                 [a.name for a in package.authors] + [m.name for m in package.maintainers]
             ))),
+            'package_depends': package_depends,
             'package_licenses': ', '.join(package.licenses),
-            'python_src_directory': esc_backslash(python_src_directory),
             'package_version_short': '.'.join(package.version.split('.')[0:2]),
+            'python_src_directory': esc_backslash(python_src_directory),
             'show_doxygen_html': self.build_context.show_doxygen_html,
             'user_conf_py_filename': esc_backslash(
                 os.path.abspath(os.path.join(conf_py_directory, '__conf.py'))),
