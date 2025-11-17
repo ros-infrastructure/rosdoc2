@@ -17,7 +17,7 @@
 {% if interface_counts['srv'] > 0 %}   Service Definitions <__service_definitions>{% endif %}
 {% if interface_counts['action'] > 0 %}   Action Definitions <__action_definitions>{% endif %}
 {% if has_standard_docs %}   Standard Documents <__standards>{% endif %}
-{% if package_depends | length > 0 %}   Ros Package Dependencies <__ros_package_dependencies>{% endif %}
+{% if package_depends | length > 0 %}   ROS Package Dependencies <__ros_package_dependencies>{% endif %}
 {% if external_doc_url %}
    Documentation <{{ external_doc_url }}>
 {% elif has_documentation %}
