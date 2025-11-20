@@ -49,11 +49,11 @@ EXTENDED_DOXYFILE = """\
 ## Include the user defined, or default if none specified, Doxyfile.
 @INCLUDE = {doxyfile_file_name}
 
-## Add extra doxyfile statements given by the user.
-{extra_doxyfile_statements}
-
 ## Add rosdoc2 doxyfile statements for tag files, output directory, etc.
 {rosdoc2_doxyfile_statements}
+
+## Add extra doxyfile statements given by the user.
+{extra_doxyfile_statements}
 """
 
 
