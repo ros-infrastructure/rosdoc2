@@ -547,6 +547,21 @@ class SphinxBuilder(Builder):
         os.makedirs(wrapped_sphinx_directory, exist_ok=True)
         Path(wrapped_sphinx_directory).joinpath('COLCON_IGNORE').touch()
 
+        # In versions of Sphinx prior to 5.2, it is challenging to create a toc link to
+        # the index. This workaround overcomes that.
+        # See https://stackoverflow.com/questions/40556423/
+        # how-can-i-link-the-generated-index-page-in-readthedocs-navigation-bar
+        # Remove when we no longer support Sphinx < 5.2,
+        # that is when humble is no longer supported.
+        GENINDEX = """
+.. This file is a placeholder and will be replaced
+
+Index
+#####
+"""
+        with open(os.path.join(wrapped_sphinx_directory, 'genindex.rst'), 'w+') as f:
+            f.write(GENINDEX)
+
         # Generate rst documents for interfaces
         interface_counts = generate_interface_docs(
             package_xml_directory,
