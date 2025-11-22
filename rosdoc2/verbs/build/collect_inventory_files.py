@@ -19,7 +19,7 @@ import os
 logger = logging.getLogger('rosdoc2')
 
 
-def collect_inventory_files(cross_reference_directory):
+def collect_inventory_files(cross_reference_directory, depends):
     """
     Collect all inventory files of a given cross reference directory.
 
@@ -35,6 +35,9 @@ def collect_inventory_files(cross_reference_directory):
                     raise RuntimeError(
                         f"unexpectedly got duplicate tag file for package '{package_name}'"
                     )
+                # only include if in depends list
+                if package_name not in depends:
+                    continue
                 inventory_file_path = os.path.join(root, filename)
                 location_json_path = inventory_file_path + '.location.json'
                 if not os.path.exists(location_json_path):
