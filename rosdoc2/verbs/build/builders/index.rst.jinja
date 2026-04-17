@@ -13,7 +13,10 @@
 {% if has_python %}   Python API <modules>{% endif %}
 {% if has_cpp and not disable_breathe %}   C++ API <generated/index>{% endif %}
 
-{% if show_doxygen_html and has_cpp %}* `C++ API (Doxygen) <generated/doxygen/html/>`_{% endif %}
+{% if show_doxygen_html and has_cpp %}
+* `C++ API (Doxygen) <generated/doxygen/html/>`_
+
+{% endif %}
 .. toctree::
    :maxdepth: 2
 
