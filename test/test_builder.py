@@ -459,3 +459,65 @@ def test_qt_property(module_dir):
     includes = ['full c++ api']
     file_includes = ['generated/classqt__property_1_1FloatEdit.html']
     do_test_package(PKG_NAME, module_dir, includes=includes, file_includes=file_includes)
+
+
+def test_cminx_package(module_dir):
+    """Test a package of CMake extensions documented with CMinx comments."""
+    PKG_NAME = 'cminx_package'
+
+    do_build_package(DATAPATH / PKG_NAME, module_dir)
+
+    includes = [
+        'cmake api',  # toc entry from index.rst
+    ]
+    excludes = [
+        'c++ api',
+        'python api',
+    ]
+    file_includes = [
+        'cmake_api/core/cminx_package_add_widget.html',
+        'cmake_api/core/cminx_package_undocumented.html',
+        'cmake_api/utils/cminx_package_list_append_unique.html',
+    ]
+    links_exist = [
+        'cmake_api/index.html',
+    ]
+    fragments = [
+        # Like ament_cmake packages, cmake/ has only subdirectories, so cminx does not
+        # create the root index; rosdoc2 generates one that links to each subdirectory.
+        ('cmake_api/index.html', 'cminx_package.core'),
+        ('cmake_api/index.html', 'cminx_package.utils'),
+        ('cmake_api/core/cminx_package_add_widget.html',
+         'add a widget target to the current project.'),  # function description
+        ('cmake_api/core/cminx_package_add_widget.html',
+         'widgets are purely decorative'),  # note in the doc comment
+        ('cmake_api/core/cminx_package_add_widget.html',
+         'cminx_package_default_color'),  # documented variable
+        ('cmake_api/utils/cminx_package_list_append_unique.html',
+         'this is a macro'),  # note added by cminx for macros
+        ('cmake_api/utils/cminx_package_list_append_unique.html',
+         'append elements to a list if they are not already in the list.'),
+    ]
+    do_test_package(PKG_NAME, module_dir,
+                    includes=includes,
+                    excludes=excludes,
+                    file_includes=file_includes,
+                    links_exist=links_exist,
+                    fragments=fragments)
+
+
+def test_cminx_not_enabled(module_dir):
+    """Test that cminx does not run on a package with CMinx comments unless requested."""
+    PKG_NAME = 'cminx_not_enabled'
+
+    do_build_package(DATAPATH / PKG_NAME, module_dir)
+
+    excludes = [
+        'cmake api',
+    ]
+    file_excludes = [
+        'cmake_api/index.html',
+    ]
+    do_test_package(PKG_NAME, module_dir,
+                    excludes=excludes,
+                    file_excludes=file_excludes)

@@ -107,6 +107,7 @@ Additionally, the tool aims to enable a few features:
 - consistent landing page with basic package information for all packages
 - support C++ API documentation extraction via Doxygen
 - support Python API documentation extraction via Sphinx
+- support CMake API documentation extraction via CMinx (opt-in with the `use_cminx` setting)
 - support free form documentation (prose, tutorial, concept pages, etc) via Sphinx
 - support cross-language API cross-referencing via Sphinx using Breathe
 - support cross-package documentation cross-referencing between packages via Sphinx
