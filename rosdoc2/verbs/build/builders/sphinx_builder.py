@@ -308,6 +308,14 @@ if rosdoc2_settings.get('enable_breathe', is_doxygen_invoked):
         # Enable Breathe and arbitrarily select the first project.
         extensions.append('breathe')
         breathe_default_project = next(iter(breathe_projects.keys()))
+        # Doxygen emits memberdef kind="property" for Qt's Q_PROPERTY, which breathe's
+        # C++ renderer does not handle (KeyError: 'property'). Map it to a C++ member,
+        # as proposed upstream in breathe-doc/breathe#1047 (issue #574).
+        try:
+            from breathe.renderer.sphinxrenderer import CPPMemberObject, DomainDirectiveFactory
+            DomainDirectiveFactory.cpp_classes.setdefault('property', (CPPMemberObject, 'member'))
+        except (ImportError, AttributeError):
+            pass
 
 if rosdoc2_settings.get('enable_exhale', is_doxygen_invoked):
     # Configure Exhale.

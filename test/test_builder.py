@@ -448,3 +448,14 @@ def test_specify_include_path(module_dir):
 
     includes = ['full c++ api']  # package has includes at some_path
     do_test_package(PKG_NAME, module_dir, includes=includes)
+
+
+def test_qt_property(module_dir):
+    """Test a C++ package with a Qt Q_PROPERTY, which breathe does not handle by default."""
+    PKG_NAME = 'qt_property'
+
+    do_build_package(DATAPATH / PKG_NAME, module_dir)
+
+    includes = ['full c++ api']
+    file_includes = ['generated/classqt__property_1_1FloatEdit.html']
+    do_test_package(PKG_NAME, module_dir, includes=includes, file_includes=file_includes)
