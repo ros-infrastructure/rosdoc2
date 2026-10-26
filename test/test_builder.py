@@ -124,6 +124,29 @@ def test_full_package(module_dir):
 
     do_test_full_package(module_dir)
 
+    # full_package also enables cminx, with .cmake files directly in cmake/ so that
+    # cminx generates the root index itself.
+    includes = [
+        'cmake api',  # toc entry from index.rst
+    ]
+    links_exist = [
+        'cmake_api/index.html',
+        'cmake_api/full_package_configure_node.html',
+    ]
+    fragments = [
+        ('cmake_api/index.html', 'full_package_configure_node'),
+        ('cmake_api/full_package_configure_node.html',
+         'configure an executable target as a full_package node.'),  # function description
+        ('cmake_api/full_package_configure_node.html',
+         'the target must already exist.'),  # note in the doc comment
+        ('cmake_api/full_package_configure_node.html',
+         'full_package_default_rate'),  # documented variable
+    ]
+    do_test_package(PKG_NAME, module_dir,
+                    includes=includes,
+                    links_exist=links_exist,
+                    fragments=fragments)
+
 
 def test_default_yaml(module_dir):
     """Test a package with C++, python, and docs using specified default rosdoc2.yaml configs."""
