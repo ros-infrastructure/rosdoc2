@@ -239,6 +239,9 @@ class DoxygenBuilder(Builder):
         # Turn on XML generation, so it can be used with Breathe.
         self.rosdoc2_doxyfile_statements.append('GENERATE_XML = YES')
 
+        # Disable output subdirectories, since exhale does not create them.
+        self.rosdoc2_doxyfile_statements.append('CREATE_SUBDIRS = NO')
+
         # Turn on tag file generation and put it into the output directory.
         tag_file_name = os.path.join(doxygen_output_dir, f'{self.build_context.package.name}.tag')
         self.rosdoc2_doxyfile_statements.append(f'GENERATE_TAGFILE = {tag_file_name}')
