@@ -1,0 +1,16 @@
+## This 'attic section' self-documents this file's type and version.
+type: 'rosdoc2 config'
+version: 1
+
+---
+
+settings: {
+    ## Generate CMake documentation from CMinx-style comments. Since no cminx
+    ## builder is listed below, rosdoc2 adds one before the sphinx builder.
+    use_cminx: true,
+}
+builders:
+    - doxygen: {
+      }
+    - sphinx: {
+      }
