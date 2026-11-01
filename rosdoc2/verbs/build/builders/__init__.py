@@ -12,10 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from .cminx_builder import CMinxBuilder
 from .doxygen_builder import DoxygenBuilder
 from .sphinx_builder import SphinxBuilder
 
 __all__ = [
+    'CMinxBuilder',
     'create_builder_by_name',
     'DoxygenBuilder',
     'SphinxBuilder',
@@ -26,6 +28,7 @@ def create_builder_by_name(builder_name, *, builder_dict, build_context):
     """Instantiate a new builder with the given builder_name."""
     # TODO(wjwwood): make this an extension point
     builders = {
+        'cminx': CMinxBuilder,
         'doxygen': DoxygenBuilder,
         'sphinx': SphinxBuilder,
     }

@@ -12,6 +12,7 @@
    Links <__links>
 {% if has_python %}   Python API <modules>{% endif %}
 {% if has_cpp and not disable_breathe %}   C++ API <generated/index>{% endif %}
+{% if has_cmake %}   CMake API <cmake_api/index>{% endif %}
 
 {% if show_doxygen_html and has_cpp %}
 * `C++ API (Doxygen) <generated/doxygen/html/>`_

@@ -77,6 +77,11 @@ settings: {
 
     ## This setting, if true, will display a link to the Doxygen html output.
     # show_doxygen_html: false,
+
+    ## This setting, if true, runs `cminx` to generate documentation from CMake files
+    ## that contain CMinx-style doc comments (`#[[[ ... #]]`). This is most useful for
+    ## packages that are primarily CMake extensions. Requires the `CMinx` python package.
+    # use_cminx: false,
 }
 builders:
     ## Each stanza represents a separate build step, performed by a specific 'builder'.
@@ -100,10 +105,21 @@ builders:
         ## 'include', 'src', '<package.name>'
         # doxygen_input_dir: null,
       }
+    - cminx: {
+        ## This builder only runs if the setting 'use_cminx' is true.
+        # name: 'full_package CMake API',
+        # output_dir: 'generated/cminx',
+        ## directory (relative to the package.xml directory) containing .cmake files
+        # cminx_input_dir: 'cmake',
+        ## file name (relative to the package.xml directory) of a CMinx settings file
+        # cminx_settings_file: null,
+      }
     - sphinx: {
         # name: 'full_package',
         ## This path is relative to output staging.
         # doxygen_xml_directory: 'generated/doxygen/xml',
+        ## This path is relative to output staging.
+        # cminx_rst_directory: 'generated/cminx',
         # output_dir: '',
         ## If sphinx_sourcedir is specified and not null, then the documentation in that folder
         ## (specified relative to the package.xml directory) will replace rosdoc2's normal output.
@@ -136,3 +152,31 @@ builders:
     - sphinx: {
       }
 ```
+
+### Documenting CMake extensions with CMinx
+
+Packages that mainly provide CMake functions and macros (for example the `ament_cmake` packages) can be documented with [CMinx](https://github.com/CMakePP/CMinx). Write the documentation as a CMinx doc comment, a block comment starting with `#[[[`, right before the function, macro, or variable it documents. The comment content is reStructuredText:
+
+```cmake
+#[[[
+# Append elements to a list if they are not already in the list.
+#
+# :param list: the list
+# :type list: list variable
+# :param ARGN: the elements
+# :type ARGN: list of strings
+#]]
+function(list_append_unique list)
+```
+
+Then enable CMinx in `rosdoc2.yaml`:
+
+```yaml
+settings: {
+    use_cminx: true,
+}
+```
+
+By default, rosdoc2 recursively documents all `.cmake` files in the `cmake` directory of the package, and adds a "CMake API" entry to the package's documentation. If your `rosdoc2.yaml` does not list a `cminx` builder, one is added automatically before the `sphinx` builder. Add a `cminx` builder stanza only to change its options, such as `cminx_input_dir`.
+
+CMinx is installed as a dependency of rosdoc2. If `use_cminx` is true but the `cminx` executable cannot be found, rosdoc2 prints a warning and builds the rest of the documentation without the CMake API.

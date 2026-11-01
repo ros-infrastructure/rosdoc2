@@ -1,0 +1,14 @@
+## rosdoc2 configuration for full_package, enabling CMinx documentation of CMake files.
+type: 'rosdoc2 config'
+version: 1
+
+---
+
+settings: {
+    use_cminx: true,
+}
+builders:
+    - doxygen: {
+      }
+    - sphinx: {
+      }
