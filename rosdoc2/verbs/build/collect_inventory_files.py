@@ -35,7 +35,7 @@ def collect_inventory_files(cross_reference_directory, depends):
                     raise RuntimeError(
                         f"unexpectedly got duplicate tag file for package '{package_name}'"
                     )
-                # only include if in depends list
+                # only include if in depends set
                 if package_name not in depends:
                     continue
                 inventory_file_path = os.path.join(root, filename)

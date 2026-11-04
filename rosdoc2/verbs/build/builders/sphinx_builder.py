@@ -651,7 +651,10 @@ Index
         inventory_files = \
             collect_inventory_files(
                 self.build_context.tool_options.cross_reference_directory,
-                [d.name for d in package.exec_depends + package.doc_depends]
+                {
+                    d.name
+                    for d in package.build_depends + package.exec_depends + package.doc_depends
+                }
             )
         base_url = self.build_context.tool_options.base_url
         intersphinx_mapping_extensions = [

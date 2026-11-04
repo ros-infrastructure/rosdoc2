@@ -250,7 +250,7 @@ class DoxygenBuilder(Builder):
         package = self.build_context.package
         tag_files = collect_tag_files(
             self.build_context.tool_options.cross_reference_directory,
-            [d.name for d in package.exec_depends + package.doc_depends]
+            {d.name for d in package.build_depends + package.doc_depends}
         )
         base_url = self.build_context.tool_options.base_url
         tag_file_entries = [
